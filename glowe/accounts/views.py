@@ -8,7 +8,7 @@ def signup_page(request):
     
    
     
-    return HttpResponse("nandh")
+    return HttpResponse("nandkh")
 
 
 # Create your views here.
