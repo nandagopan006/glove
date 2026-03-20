@@ -42,18 +42,15 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
 }
 .btn-dark:hover { background:#2d1f0e; }
 
-/* Image hover zoom */
 .iz { overflow:hidden; display:block; }
 .iz img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s ease; }
 .iz:hover img { transform:scale(1.04); }
 
-/* Desktop: Seasonal woman overlap */
 @media (min-width:768px) {
   .seas-woman { margin-left:50vw; margin-top:-14vw; overflow:hidden; height:clamp(280px,54vw,680px); }
   .seas-woman img { width:100%; height:100%; object-fit:cover; object-position:center top; display:block; }
 }
 
-/* Desktop: Summer 25 collage */
 .s25-scene { position:relative; height:clamp(500px,60vw,860px); }
 .s25-a { position:absolute; left:2%;  bottom:40px; width:41%; height:88%; overflow:hidden; }
 .s25-b { position:absolute; left:40%; bottom:40px; width:24%; height:57%; overflow:hidden; }
@@ -64,10 +61,81 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
 .s25-cb { position:absolute; left:40%; bottom:0; width:24%; text-align:center; }
 .s25-cc { position:absolute; left:66%; bottom:0; width:24%; text-align:center; }
 
-/* Desktop: Glow images */
 .glow-img { height:clamp(260px,41vw,560px); overflow:hidden; }
 .glow-img img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s; }
 .glow-img:hover img { transform:scale(1.03); }
+
+/* ── Profile Dropdown ── */
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 260px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(26,18,8,0.08);
+  box-shadow: 0 8px 40px rgba(26,18,8,0.12), 0 2px 8px rgba(26,18,8,0.06);
+  opacity: 0;
+  transform: translateY(-8px) scale(0.97);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 200;
+  overflow: hidden;
+}
+.profile-dropdown.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+/* Mobile dropdown: full-width from top of screen */
+.profile-dropdown-mobile {
+  position: fixed;
+  top: 64px;
+  right: 12px;
+  left: 12px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(26,18,8,0.08);
+  box-shadow: 0 8px 40px rgba(26,18,8,0.14);
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 200;
+  overflow: hidden;
+}
+.profile-dropdown-mobile.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #2a2018;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s;
+  letter-spacing: 0.02em;
+}
+.dropdown-item:hover { background: #f7f3ee; }
+.dropdown-item.danger { color: #c0392b; }
+.dropdown-item.danger:hover { background: #fdf3f1; }
+
+.dropdown-item svg { opacity: 0.5; flex-shrink: 0; }
+.dropdown-item:hover svg { opacity: 0.8; }
+.dropdown-item.danger svg { opacity: 0.7; }
 </style>
 </head>
 <body class="bg-[#f0ebe2] font-montserrat text-[#1a1208] overflow-x-hidden">
@@ -79,13 +147,14 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
 <header class="sticky top-0 z-50 bg-white border-b border-[#e6e0d8] h-16 flex items-center">
   <div class="w-full px-5 md:px-8 flex items-center justify-between relative">
 
-    <!-- Mobile -->
+    <!-- ── MOBILE nav ── -->
     <div class="flex md:hidden w-full items-center justify-between">
       <button class="flex flex-col gap-[5px] p-1" aria-label="Menu">
         <span class="w-[22px] h-[1.5px] bg-[#1a1208] block"></span>
         <span class="w-[22px] h-[1.5px] bg-[#1a1208] block"></span>
         <span class="w-[22px] h-[1.5px] bg-[#1a1208] block"></span>
       </button>
+
       <a href="#" class="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 no-underline">
         <svg width="20" height="20" viewBox="0 0 28 28" fill="none" stroke="#1a1208" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 24C14 24 4 18 4 10C4 6 8 3 12 4C13 4 14 5 14 5"/>
@@ -94,16 +163,76 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         </svg>
         <span class="font-cormorant text-[20px] font-semibold tracking-[0.04em] text-[#1a1208]">Glowé</span>
       </a>
-      <div class="w-9 h-9 rounded-full border border-[#d8d2ca] flex items-center justify-center cursor-pointer shrink-0">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="#2a2018" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <path d="M16 10a4 4 0 0 1-8 0"/>
-        </svg>
+
+      <!-- Mobile avatar trigger -->
+      <div class="relative shrink-0">
+        {% if user.is_authenticated %}
+          <!-- Authenticated: avatar opens dropdown -->
+          <button id="avatar-btn-mobile" onclick="toggleDropdown('mobile')" aria-label="Profile menu" aria-haspopup="true" aria-expanded="false"
+            class="w-9 h-9 rounded-full overflow-hidden border-2 border-[#e6e0d8] hover:border-[#c8b89a] transition-colors focus:outline-none focus:ring-2 focus:ring-[#c8b89a] focus:ring-offset-1">
+            {% if user.profile_image %}
+  <img src="{{ user.profile_image.url }}" alt="{{ user.full_name }}" class="w-full h-full object-cover"/>
+            {% else %}
+              <div class="w-full h-full bg-[#e6e0d8] flex items-center justify-center font-montserrat font-semibold text-[12px] text-[#1a1208]">
+                {{ user.full_name|first|upper }}
+              </div>
+            {% endif %}
+          </button>
+          <!-- Mobile dropdown -->
+          <div id="dropdown-mobile" class="profile-dropdown-mobile" role="menu">
+            <!-- User info -->
+            <div class="flex items-center gap-3 px-4 py-4 border-b border-[#f0ebe2]">
+              <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-[#e6e0d8] bg-[#e6e0d8] flex items-center justify-center">
+                {% if user.profile_image %}
+  <img src="{{ user.profile_image.url }}" alt="{{ user.full_name }}" class="w-full h-full object-cover"/>
+                {% else %}
+                  <span class="font-montserrat font-semibold text-[12px] text-[#1a1208]">{{ user.full_name|first|upper }}</span>
+                {% endif %}
+              </div>
+              <div class="min-w-0">
+                <p class="font-montserrat font-semibold text-[13px] text-[#1a1208] leading-tight truncate">{{ user.get_full_name}}</p>
+                <p class="font-montserrat font-light text-[11px] text-[#8a7e72] leading-tight truncate">{{ user.email }}</p>
+              </div>
+            </div>
+            <!-- Menu items -->
+            <div class="py-2">
+              <a href="{% url "profile_overview"%}" class="dropdown-item" role="menuitem">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                My Profile
+              </a>
+              <a href="" class="dropdown-item" role="menuitem">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Account Settings
+              </a>
+              <a href="" class="dropdown-item" role="menuitem">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                My Orders
+              </a>
+            </div>
+            <!-- Logout -->
+            <div class="border-t border-[#f0ebe2] py-2">
+              <form method="post" action="{% url 'signout' %}">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item danger" role="menuitem">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Sign Out
+                </button>
+              </form>
+            </div>
+          </div>
+        {% else %}
+          <!-- Not authenticated: icon links to signin -->
+          <a href="{% url 'signin' %}" aria-label="Sign in"
+            class="w-9 h-9 rounded-full border border-[#d8d2ca] flex items-center justify-center hover:border-[#c8b89a] transition-colors">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="#2a2018" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </a>
+        {% endif %}
       </div>
     </div>
 
-    <!-- Desktop -->
+    <!-- ── DESKTOP nav ── -->
     <div class="hidden md:flex items-center justify-between w-full">
       <a href="#" class="flex items-center gap-2.5 no-underline shrink-0">
         <svg width="26" height="26" viewBox="0 0 28 28" fill="none" stroke="#1a1208" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -113,20 +242,92 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         </svg>
         <span class="font-cormorant text-[22px] font-semibold tracking-[0.04em] text-[#1a1208]">Glowé</span>
       </a>
+
       <nav class="flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
         <a href="#" class="font-montserrat text-[11px] font-medium tracking-[0.16em] uppercase text-[#2a2018] no-underline hover:text-black">Shop</a>
         <a href="#" class="font-montserrat text-[11px] font-medium tracking-[0.16em] uppercase text-[#2a2018] no-underline hover:text-black">Collections</a>
         <a href="#" class="font-montserrat text-[11px] font-medium tracking-[0.16em] uppercase text-[#2a2018] no-underline hover:text-black">About</a>
         <a href="#" class="font-montserrat text-[11px] font-medium tracking-[0.16em] uppercase text-[#2a2018] no-underline hover:text-black">Contact</a>
       </nav>
+
       <div class="flex items-center gap-5 shrink-0">
+        <!-- Search -->
         <svg class="w-5 h-5 cursor-pointer" viewBox="0 0 24 24" fill="none" stroke="#2a2018" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4.8-4.8"/></svg>
+        <!-- Wishlist -->
         <svg class="w-5 h-5 cursor-pointer" viewBox="0 0 24 24" fill="none" stroke="#2a2018" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        <svg class="w-5 h-5 cursor-pointer" viewBox="0 0 24 24" fill="none" stroke="#2a2018" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <!-- Cart -->
         <div class="relative cursor-pointer">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#2a2018" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           <span class="absolute -top-2 -right-2.5 bg-[#1a1208] text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">2</span>
         </div>
+
+        <!-- ── Profile avatar + dropdown ── -->
+        <div class="relative" id="profile-wrapper-desktop">
+          {% if user.is_authenticated %}
+            <!-- Authenticated: avatar opens dropdown -->
+            <button id="avatar-btn-desktop" onclick="toggleDropdown('desktop')" aria-label="Profile menu" aria-haspopup="true" aria-expanded="false"
+              class="w-9 h-9 rounded-full overflow-hidden border-2 border-[#e6e0d8] hover:border-[#c8b89a] transition-all focus:outline-none focus:ring-2 focus:ring-[#c8b89a] focus:ring-offset-1 cursor-pointer">
+              {% if user.profile_image %}
+  <img src="{{ user.profile_image.url }}" alt="{{ user.full_name }}" class="w-full h-full object-cover"/>
+              {% else %}
+                <div class="w-full h-full bg-[#e6e0d8] flex items-center justify-center font-montserrat font-semibold text-[12px] text-[#1a1208]">
+                {{ user.full_name|first|upper }}
+                </div>
+              {% endif %}
+            </button>
+            <!-- Desktop dropdown -->
+            <div id="dropdown-desktop" class="profile-dropdown" role="menu" aria-label="Profile menu">
+              <!-- User info header -->
+              <div class="flex items-center gap-3 px-4 py-4 bg-[#faf8f5] border-b border-[#f0ebe2]">
+                <div class="w-11 h-11 rounded-full overflow-hidden shrink-0 border border-[#e6e0d8] bg-[#e6e0d8] flex items-center justify-center">
+                 {% if user.profile_image %}
+  <img src="{{ user.profile_image.url }}" alt="{{ user.full_name }}" class="w-full h-full object-cover"/>
+                  {% else %}
+                    <span class="font-montserrat font-semibold text-[13px] text-[#1a1208]">{{ user.full_name|first|upper }}</span>
+                  {% endif %}
+                </div>
+                <div class="min-w-0">
+                  <p class="font-montserrat font-semibold text-[13px] text-[#1a1208] leading-tight">{{ user.get_full_name|default:user.full_name }}</p>
+                  <p class="font-montserrat font-light text-[11px] text-[#8a7e72] leading-tight mt-0.5">{{ user.email }}</p>
+                </div>
+              </div>
+              <!-- Menu items -->
+              <div class="py-2">
+                <a href="{% url "profile_overview"%}" class="dropdown-item" role="menuitem">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  My Profile
+                </a>
+                <a href="" class="dropdown-item" role="menuitem">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  Account Settings
+                </a>
+                <a href="" class="dropdown-item" role="menuitem">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                  My Orders
+                </a>
+              </div>
+              <!-- Divider + Logout -->
+              <div class="border-t border-[#f0ebe2] py-2">
+                <form method="post" action="{% url 'signout' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-item danger" role="menuitem">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Sign Out
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% else %}
+            <!-- Not authenticated: icon links to signin -->
+            <a href="{% url 'signin' %}" aria-label="Sign in"
+              class="w-9 h-9 rounded-full border border-[#d8d2ca] flex items-center justify-center hover:border-[#c8b89a] transition-colors">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#2a2018" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+            </a>
+          {% endif %}
+        </div>
+        <!-- ── End profile ── -->
       </div>
     </div>
 
@@ -142,8 +343,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
        alt="Hero" class="absolute inset-0 w-full h-full object-cover object-[center_20%]"/>
   <div class="absolute inset-0 hidden md:block" style="background:linear-gradient(to right,rgba(14,9,3,0.38) 0%,rgba(14,9,3,0.12) 44%,transparent 66%);"></div>
   <div class="absolute inset-0 md:hidden" style="background:linear-gradient(to top,rgba(8,4,0,0.80) 0%,rgba(8,4,0,0.35) 35%,transparent 58%);"></div>
-
-  <!-- Desktop text -->
   <div class="relative z-10 h-full hidden md:flex items-center" style="padding-left:8%;">
     <div class="flex flex-col items-center max-w-[510px]">
       <h1 class="font-cormorant font-bold italic text-white text-center leading-[1.1] mb-5" style="font-size:clamp(44px,5.2vw,70px); text-shadow:0 2px 30px rgba(6,2,0,0.22);">
@@ -155,8 +354,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
       <a href="#" class="btn-pill">SHOP THE PRODUCTS</a>
     </div>
   </div>
-
-  <!-- Mobile text -->
   <div class="absolute inset-0 z-10 flex flex-col justify-end md:hidden">
     <div class="px-6 pb-5">
       <h1 class="font-cormorant font-bold italic text-white leading-[1.05] mb-3 text-[36px]" style="text-shadow:0 2px 20px rgba(4,1,0,0.4);">
@@ -186,36 +383,24 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
       Revealing a luminous, healthy glow that feels effortlessly natural.
     </p>
   </div>
-
-  <!--
-    Desktop: edge-to-edge, NO gap, fixed shared height so both images are identical.
-    Left = 63% wide, Right = 37% wide. Both fill 100% of the container height.
-  -->
-  <!-- Mobile: stacked -->
   <div class="flex flex-col md:hidden">
     <div class="iz w-full h-[280px]">
-      <img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=1100&q=90&fit=crop&crop=faces,top"
-           alt="Philosophy 1" style="object-position:center 25%;"/>
+      <img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=1100&q=90&fit=crop&crop=faces,top" alt="Philosophy 1" style="object-position:center 25%;"/>
     </div>
     <div class="iz w-full h-[240px]">
-      <img src="https://images.unsplash.com/photo-1600428610114-e9d4f8faebe2?w=900&q=90&fit=crop"
-           alt="Philosophy 2" style="object-position:center center;"/>
+      <img src="https://images.unsplash.com/photo-1600428610114-e9d4f8faebe2?w=900&q=90&fit=crop" alt="Philosophy 2" style="object-position:center center;"/>
     </div>
   </div>
-  <!-- Desktop: left image wide, right image narrower, both same height, cream bg gap on right ~17vw -->
   <div class="hidden md:flex gap-[4px]">
     <div class="iz shrink-0" style="width:54vw; height:clamp(340px,42vw,600px);">
-      <img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=1100&q=90&fit=crop&crop=faces,top"
-           alt="Philosophy 1" style="object-position:center 25%;"/>
+      <img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=1100&q=90&fit=crop&crop=faces,top" alt="Philosophy 1" style="object-position:center 25%;"/>
     </div>
     <div class="iz shrink-0" style="width:29vw; height:clamp(340px,42vw,600px);">
-      <img src="https://images.unsplash.com/photo-1600428610114-e9d4f8faebe2?w=900&q=90&fit=crop"
-           alt="Philosophy 2" style="object-position:center center;"/>
+      <img src="https://images.unsplash.com/photo-1600428610114-e9d4f8faebe2?w=900&q=90&fit=crop" alt="Philosophy 2" style="object-position:center center;"/>
     </div>
   </div>
 </section>
 
-<!-- SHOP NOW -->
 <div class="bg-[#f0ebe2] py-10 md:py-[52px] px-6 md:px-0 text-center">
   <a href="#" class="flex md:inline-flex items-center justify-center bg-[#1a1208] text-white font-montserrat text-[10px] font-bold tracking-[0.22em] uppercase no-underline py-[18px] md:py-4 px-6 md:px-12 w-full md:w-auto transition-colors hover:bg-[#2d1f0e]">SHOP NOW</a>
 </div>
@@ -226,8 +411,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
 ══════════════════════════════════ -->
 <section class="bg-[#f0ebe2] pb-14 md:pb-[72px]">
   <h2 class="font-montserrat font-bold uppercase text-[#1a1208] text-center mb-8 md:mb-12 px-6 tracking-[0.22em]" style="font-size:clamp(16px,2.2vw,30px);">Shop All Products</h2>
-
-  <!-- gap-[2px] = thin gap between cards matching reference -->
   <div class="grid grid-cols-2 md:grid-cols-4 w-full gap-[2px]">
 
     <div class="bg-[#f0ebe2]">
@@ -294,10 +477,8 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
   SEASONAL ESSENTIAL
 ══════════════════════════════════ -->
 <section class="bg-[#f0ebe2] pt-14 md:pt-[68px] overflow-hidden">
-
   <p class="hidden md:block font-cormorant italic text-[20px] text-[#1a1208] text-center mb-8">The Summer Glow Ritual</p>
   <p class="md:hidden font-montserrat font-bold uppercase text-[#1a1208] text-center mb-6 text-[17px] tracking-[0.22em] px-6">SEASONAL ESSENTIAL</p>
-
   <div class="flex flex-col md:flex-row md:items-start md:gap-10 md:pl-[7vw]">
     <div class="iz mx-6 md:mx-0 md:shrink-0 md:w-[43vw] h-[240px] md:h-[clamp(280px,44vw,560px)]">
       <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&q=90&fit=crop" alt="Beach"/>
@@ -314,14 +495,12 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
       <a href="#" class="hidden md:inline-flex btn-dark">DISCOVER RELEASE</a>
     </div>
   </div>
-
   <div class="iz md:hidden w-full h-[300px] mt-10">
     <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=1600&q=90&fit=crop&crop=top" alt="Woman"/>
   </div>
   <div class="hidden md:block seas-woman">
     <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=1600&q=90&fit=crop&crop=top" alt="Woman"/>
   </div>
-
 </section>
 
 
@@ -329,7 +508,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
   SUMMER 25 SEASON
 ══════════════════════════════════ -->
 <section class="bg-[#f0ebe2] md:pt-[72px] md:pb-[88px]">
-
   <div class="hidden md:block">
     <h2 class="font-montserrat font-bold uppercase text-[#1a1208] text-center mb-11 tracking-[0.24em]" style="font-size:clamp(14px,1.7vw,22px);">Summer 25 Season</h2>
     <div class="s25-scene">
@@ -340,11 +518,8 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
       <div class="s25-cb"><p class="font-montserrat font-semibold uppercase text-[11px] tracking-[0.2em] text-[#1a1208]">Serums</p></div>
       <div class="s25-cc"><p class="font-montserrat font-semibold uppercase text-[11px] tracking-[0.2em] text-[#1a1208]">Sun Cream</p></div>
     </div>
-    <div class="text-center mt-14">
-      <a href="#" class="btn-dark">SEE ALL CATEGORIES</a>
-    </div>
+    <div class="text-center mt-14"><a href="#" class="btn-dark">SEE ALL CATEGORIES</a></div>
   </div>
-
   <div class="md:hidden">
     <div class="text-center pt-9 pb-7 px-6">
       <p class="font-montserrat font-bold uppercase text-[#1a1208] text-[17px] tracking-[0.22em]">SUMMER 25 SEASON</p>
@@ -357,7 +532,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
       <a href="#" class="flex items-center justify-center w-full bg-[#1a1208] text-white font-montserrat text-[10px] font-bold tracking-[0.22em] uppercase no-underline py-[18px] hover:bg-[#2d1f0e]">SEE ALL CATEGORIES</a>
     </div>
   </div>
-
 </section>
 
 
@@ -366,9 +540,7 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
 ══════════════════════════════════ -->
 <section class="bg-[#f0ebe2] border-t border-[#ddd6cc] pt-14 md:pt-[72px] pb-14 md:pb-[72px]">
   <h2 class="font-montserrat font-bold uppercase text-[#1a1208] text-center mb-8 md:mb-10 px-6 md:px-10 tracking-[0.24em]" style="font-size:clamp(15px,1.8vw,22px);">What's New?</h2>
-
   <div class="grid grid-cols-1 md:grid-cols-3 gap-0 md:gap-2.5 max-w-[1440px] mx-auto px-0 md:px-10">
-
     <div>
       <div class="iz h-[240px] md:h-[clamp(200px,14vw,215px)]">
         <img src="https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=700&q=90&fit=crop&crop=faces" alt="Blog 1"/>
@@ -379,7 +551,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         <p class="font-montserrat text-[11px] font-light text-[#5a4e42] leading-[1.75]">Sed ut perspiciatis unde omnis iste natus error sit volupt atem accusantium</p>
       </div>
     </div>
-
     <div>
       <div class="iz h-[240px] md:h-[clamp(200px,14vw,215px)]">
         <img src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=700&q=90&fit=crop" alt="Blog 2"/>
@@ -390,7 +561,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         <p class="font-montserrat text-[11px] font-light text-[#5a4e42] leading-[1.75]">Sed ut perspiciatis unde omnis iste natus error sit volupt atem accusantium</p>
       </div>
     </div>
-
     <div>
       <div class="iz h-[240px] md:h-[clamp(200px,14vw,215px)]">
         <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=700&q=90&fit=crop&crop=faces,top" alt="Blog 3"/>
@@ -401,7 +571,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         <p class="font-montserrat text-[11px] font-light text-[#5a4e42] leading-[1.75]">Sed ut perspiciatis unde omnis iste natus error sit volupt atem accusantium</p>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -412,7 +581,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
 <section class="bg-[#f0ebe2] py-14 md:py-[72px] px-4 md:px-10">
   <h2 class="font-montserrat font-bold uppercase text-[#1a1208] text-center mb-8 md:mb-10 tracking-[0.24em]" style="font-size:clamp(15px,1.8vw,22px);">Mostly Viewed</h2>
   <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-2.5 max-w-[1440px] mx-auto">
-
     <div>
       <div class="iz h-[170px] md:h-[clamp(140px,16vw,260px)]">
         <img src="https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=700&q=90&fit=crop" alt="Hydra Glow Serum"/>
@@ -423,7 +591,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         <span class="font-montserrat text-[11px] md:text-[12px] font-light text-[#b0a494] line-through">$43.00</span>
       </div>
     </div>
-
     <div>
       <div class="iz h-[170px] md:h-[clamp(140px,16vw,260px)]">
         <img src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=700&q=90&fit=crop" alt="Vitamin C Cleanser"/>
@@ -434,7 +601,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         <span class="font-montserrat text-[11px] md:text-[12px] font-light text-[#b0a494] line-through">$43.00</span>
       </div>
     </div>
-
     <div>
       <div class="iz h-[170px] md:h-[clamp(140px,16vw,260px)]">
         <img src="https://images.unsplash.com/photo-1631730486784-74757a9ea37f?w=700&q=90&fit=crop&crop=faces" alt="Barrier Repair Cream"/>
@@ -445,7 +611,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         <span class="font-montserrat text-[11px] md:text-[12px] font-light text-[#b0a494] line-through">$43.00</span>
       </div>
     </div>
-
     <div>
       <div class="iz h-[170px] md:h-[clamp(140px,16vw,260px)]">
         <img src="https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=700&q=90&fit=crop" alt="Daily Shield SPF 55+"/>
@@ -456,13 +621,12 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         <span class="font-montserrat text-[11px] md:text-[12px] font-light text-[#b0a494] line-through">$43.00</span>
       </div>
     </div>
-
   </div>
 </section>
 
 
 <!-- ══════════════════════════════════
-  GLOW BEYOND (desktop) / GET READY (mobile)
+  GLOW BEYOND / GET READY
 ══════════════════════════════════ -->
 <section class="hidden md:block bg-[#f0ebe2] pt-20">
   <div class="text-center px-10 mb-14">
@@ -515,8 +679,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
 ══════════════════════════════════ -->
 <footer class="bg-[#3b2414]">
   <div class="max-w-[1440px] mx-auto px-6 md:px-12 pt-10 md:pt-16 pb-6 md:pb-8">
-
-    <!-- Desktop: 4-col -->
     <div class="hidden md:grid gap-10 mb-14" style="grid-template-columns:280px 1fr 1fr 1fr;">
       <div>
         <div class="flex items-center gap-2 mb-4">
@@ -559,8 +721,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         <a href="#" class="block font-montserrat text-[12px] font-light text-white/60 no-underline hover:text-white/90">Terms &amp; Conditions</a>
       </div>
     </div>
-
-    <!-- Mobile -->
     <div class="md:hidden pb-2">
       <div class="mb-7">
         <div class="flex items-center gap-2 mb-3">
@@ -605,8 +765,6 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         <a href="#" class="block font-montserrat text-[10px] font-light text-white/58 no-underline">Terms &amp; Conditions</a>
       </div>
     </div>
-
-    <!-- Bottom bar -->
     <div class="pt-5 border-t border-white/[0.08]">
       <div class="md:hidden flex flex-col gap-2">
         <p class="font-montserrat text-[9px] font-light text-white/25">© 2023 Glowé Skincare. All rights reserved.</p>
@@ -625,9 +783,52 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         </div>
       </div>
     </div>
-
   </div>
 </footer>
+
+
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  let activeDropdown = null;
+
+  function toggleDropdown(type) {
+    const id = type === 'desktop' ? 'dropdown-desktop' : 'dropdown-mobile';
+    const btn = type === 'desktop' ? 'avatar-btn-desktop' : 'avatar-btn-mobile';
+    const el = document.getElementById(id);
+    const btnEl = document.getElementById(btn);
+    const isOpen = el.classList.contains('open');
+
+    closeAll();
+
+    if (!isOpen) {
+      el.classList.add('open');
+      if (btnEl) btnEl.setAttribute('aria-expanded', 'true');
+      activeDropdown = id;
+    }
+  }
+
+  function closeAll() {
+    ['dropdown-desktop', 'dropdown-mobile'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('open');
+    });
+    ['avatar-btn-desktop', 'avatar-btn-mobile'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.setAttribute('aria-expanded', 'false');
+    });
+    activeDropdown = null;
+  }
+
+  document.addEventListener('click', function(e) {
+    const clickedAvatar = e.target.closest('[id^="avatar-btn"]');
+    const clickedDropdown = e.target.closest('[id^="dropdown-"]');
+    if (!clickedAvatar && !clickedDropdown) closeAll();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeAll();
+  });
+</script>
 
 </body>
 </html>

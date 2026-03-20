@@ -1,0 +1,29 @@
+{% load socialaccount %}
+
+<div class="min-h-screen flex items-center justify-center bg-gray-50">
+
+  <div class="bg-white shadow-lg rounded-xl p-8 w-[400px] text-center">
+
+    <h2 class="text-2xl font-semibold mb-4">
+      Continue with Google
+    </h2>
+
+    <p class="text-gray-500 mb-6">
+      Sign in to Glowé using your Google account.
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <button type="submit"
+        class="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-900 transition">
+
+        Continue with Google
+
+      </button>
+
+    </form>
+
+  </div>
+
+</div>

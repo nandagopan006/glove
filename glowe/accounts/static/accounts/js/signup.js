@@ -27,27 +27,14 @@ const STEPS = [
 ];
 const STEP_MS = 1500;
 
-/* ── RESET BUTTON ── */
-function resetBtn() {
-  var btn    = document.getElementById('submit-btn');
-  var label  = document.getElementById('btn-label');
-  var arrow  = document.getElementById('btn-arrow');
-  var loader = document.getElementById('btn-loader');
-
-  btn.disabled         = false;
-  arrow.style.display  = 'inline-flex';
-  label.textContent    = 'Create Account';
-  loader.style.display = 'none';
-}
-
 /* ── ON PAGE LOAD ── */
 document.addEventListener('DOMContentLoaded', function () {
 
   var form = document.getElementById('signup-form');
   if (!form) return;
 
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
+  form.addEventListener('submit', function () {
+    // NO e.preventDefault() — form submits normally to Django ✅
 
     var btn    = document.getElementById('submit-btn');
     var label  = document.getElementById('btn-label');
@@ -64,46 +51,15 @@ document.addEventListener('DOMContentLoaded', function () {
     label.textContent    = STEPS[0].title;
     loader.style.display = 'flex';
 
-    // fetch to check validation
-    var formData = new FormData(form);
+    // cycle through steps while form submits
+    var step = 1;
+    setInterval(function () {
+      if (step >= STEPS.length) return;
+      label.textContent = STEPS[step].title;
+      step++;
+    }, STEP_MS);
 
-    fetch(form.action, {
-      method: 'POST',
-      body: formData,
-      headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(function(response) { return response.text(); })
-    .then(function(html) {
-
-      var parser   = new DOMParser();
-      var doc      = parser.parseFromString(html, 'text/html');
-      var hasErrors = doc.querySelector('.text-red-500') !== null;
-
-      if (hasErrors) {
-        // show errors — replace page
-        document.open();
-        document.write(html);
-        document.close();
-
-      } else {
-        // cycle through steps then submit
-        var step = 1;
-        var iv = setInterval(function () {
-          if (step >= STEPS.length) { clearInterval(iv); return; }
-          label.textContent = STEPS[step].title;
-          step++;
-        }, STEP_MS);
-
-        setTimeout(function () {
-          clearInterval(iv);
-          form.submit(); // final real submit
-        }, STEP_MS * (STEPS.length - 1) + 300);
-      }
-    })
-    .catch(function() {
-      resetBtn();
-      form.submit(); // fallback
-    });
-
+    // form submits normally to Django ✅
+    // no fetch — no CSRF problem ✅
   });
 });

@@ -1,0 +1,236 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Glowé – Verify Email</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          cormorant: ['"Cormorant Garamond"', 'serif'],
+          montserrat: ['Montserrat', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Montserrat', sans-serif; background: #F5F1EC; color: #1a1208; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.5s ease both; }
+
+  /* ── OTP INPUTS ── */
+  .otp-input {
+    width: 56px;
+    height: 60px;
+    border: 1.5px solid #e8e0d8;
+    border-radius: 10px;
+    background: #faf8f5;
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1208;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    caret-color: #4A2E24;
+    -moz-appearance: textfield;
+  }
+  .otp-input::-webkit-outer-spin-button,
+  .otp-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .otp-input:focus  { border-color: #4A2E24; background: #fff; box-shadow: 0 0 0 3px rgba(74,46,36,0.07); }
+  .otp-input.filled { border-color: #4A2E24; background: #fff; }
+  .otp-input.error  { border-color: #e05050; box-shadow: 0 0 0 3px rgba(224,80,80,0.07); animation: shake 0.4s ease; }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25%      { transform: translateX(-4px); }
+    75%      { transform: translateX(4px); }
+  }
+
+  /* ── BUTTON LOADING ── */
+  @keyframes otpSpin { to { transform: rotate(360deg); } }
+  @keyframes shimmer {
+    0%   { transform: translateX(-100%) skewX(-12deg); }
+    100% { transform: translateX(200%)  skewX(-12deg); }
+  }
+  .btn-loading { position: relative; overflow: hidden; pointer-events: none; opacity: 0.9; }
+  .btn-loading::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.14) 50%, transparent 70%);
+    animation: shimmer 1.3s ease-in-out infinite;
+  }
+  .btn-spinner {
+    display: inline-block; width: 13px; height: 13px;
+    border: 1.8px solid rgba(245,242,237,0.3); border-top-color: #f5f2ed;
+    border-radius: 50%; animation: otpSpin 0.7s linear infinite; flex-shrink: 0;
+  }
+
+  /* ── TOAST ── */
+  @keyframes tIn   { to { transform: translateY(0); opacity: 1; } }
+  @keyframes tOut  { to { transform: translateY(-80px); opacity: 0; } }
+  @keyframes tProg { from { width: 100%; } to { width: 0%; } }
+  .toast {
+    pointer-events: all; display: flex; align-items: center;
+    width: min(248px, 90vw); border-radius: 12px; overflow: hidden; position: relative;
+    box-shadow: 0 8px 28px rgba(42,31,20,0.2);
+    animation: tIn 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    transform: translateY(-80px); opacity: 0;
+  }
+  .toast.hide { animation: tOut 0.3s ease forwards; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#F5F1EC]">
+
+<!-- TOAST CONTAINER -->
+<div id="toastContainer" class="fixed top-5 z-[999] flex flex-col gap-2 pointer-events-none" style="left:50%;transform:translateX(-50%);align-items:center;"></div>
+
+<!-- ══════════════════════
+  NAVBAR
+══════════════════════ -->
+<header class="sticky top-0 z-50 bg-[#F5F1EC] border-b border-[#E8DED6]" style="height:60px;">
+  <div class="max-w-[960px] mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
+
+    <!-- Logo LEFT -->
+    <a href="{% url 'home' %}" class="flex items-center gap-1.5 no-underline shrink-0">
+      <svg width="22" height="22" viewBox="0 0 28 28" fill="none" stroke="#1a1208" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 24C14 24 4 18 4 10C4 6 8 3 12 4C13 4 14 5 14 5"/>
+        <path d="M14 24C14 24 24 18 24 10C24 6 20 3 16 4C15 4 14 5 14 5"/>
+        <line x1="14" y1="24" x2="14" y2="10"/>
+      </svg>
+      <span class="font-cormorant text-[22px] font-semibold tracking-[0.03em] text-[#1a1208]">Glowé</span>
+    </a>
+
+    <!-- Back RIGHT -->
+    <a href="{% url 'edit_profile' %}"
+      class="font-montserrat text-[10px] font-medium text-[#8C7F77] uppercase tracking-[0.12em] hover:text-[#1a1208] transition-colors no-underline flex items-center gap-1.5">
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </a>
+
+  </div>
+</header>
+
+<!-- ══════════════════════
+  MAIN
+══════════════════════ -->
+<main class="flex-1 flex items-center justify-center px-4 py-12">
+  <div class="fade-up w-full max-w-[420px]">
+
+    <div class="bg-white rounded-2xl border border-[#e8e0d8] px-7 sm:px-10 py-10 text-center" style="box-shadow:0 2px 16px rgba(26,18,8,0.07);">
+
+      <!-- email icon -->
+      <div class="flex justify-center mb-5">
+        <div class="w-14 h-14 rounded-full bg-[#F5F1EC] border border-[#e8e0d8] flex items-center justify-center">
+          <svg class="w-6 h-6 text-[#4A2E24]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+        </div>
+      </div>
+
+      <h1 class="font-cormorant text-[30px] font-semibold text-[#1a1208] mb-2">Verify Your Email</h1>
+      <p class="font-montserrat text-[12px] font-light text-[#8C7F77] leading-[1.8] mb-1">We sent a 4-digit code to</p>
+      <p class="font-montserrat text-[12px] font-semibold text-[#1a1208] mb-6">{{ pending_email }}</p>
+
+      <!-- django error inline -->
+      {% if messages %}
+        {% for message in messages %}
+          {% if message.tags == 'error' %}
+            <div class="bg-[#fdf3f1] border border-[#f5c6c6] rounded-lg px-4 py-3 mb-5 text-left">
+              <p class="font-montserrat text-[11px] text-[#c0392b]">{{ message }}</p>
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+
+      <!-- OTP VERIFY FORM -->
+      <form method="POST" action="{% url 'verify_email_change' %}" id="otpForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="verify"/>
+        <input type="hidden" name="otp" id="otpHidden"/>
+
+        <!-- 4 boxes -->
+        <div class="flex items-center justify-center gap-3 mb-5">
+          <input type="text" maxlength="1" class="otp-input" id="otp0" oninput="otpMove(this,0)" onkeydown="otpBack(event,0)" inputmode="numeric"/>
+          <input type="text" maxlength="1" class="otp-input" id="otp1" oninput="otpMove(this,1)" onkeydown="otpBack(event,1)" inputmode="numeric"/>
+          <input type="text" maxlength="1" class="otp-input" id="otp2" oninput="otpMove(this,2)" onkeydown="otpBack(event,2)" inputmode="numeric"/>
+          <input type="text" maxlength="1" class="otp-input" id="otp3" oninput="otpMove(this,3)" onkeydown="otpBack(event,3)" inputmode="numeric"/>
+        </div>
+
+        <!-- timer -->
+        <p class="font-montserrat text-[11px] text-[#8C7F77] mb-5">
+          Code expires in <span id="timer" class="font-semibold text-[#1a1208]">{{ seconds_left }}s</span>
+        </p>
+
+        <!-- verify button -->
+        <button type="submit" id="verifyBtn" onclick="buildOtp(event)"
+          class="w-full flex items-center justify-center gap-2 bg-[#1a1208] hover:bg-[#3a2414] text-white font-montserrat text-[11px] font-semibold px-6 py-3.5 rounded-xl transition-colors mb-4" style="letter-spacing:0.08em;">
+          <span id="verifyBtnContent" class="flex items-center gap-2">
+            Verify Email
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+        </button>
+      </form>
+
+      <!-- divider -->
+      <div class="flex items-center gap-3 mb-3">
+        <div class="flex-1 h-px bg-[#e8e0d8]"></div>
+        <span class="font-montserrat text-[9px] text-[#b0a49a] uppercase tracking-[0.14em]">or</span>
+        <div class="flex-1 h-px bg-[#e8e0d8]"></div>
+      </div>
+
+      <!-- RESEND FORM -->
+      <form method="POST" action="{% url 'verify_email_change' %}" class="mb-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="resend"/>
+        <button type="submit"
+          class="w-full font-montserrat text-[11px] font-medium text-[#8C7F77] hover:text-[#1a1208] transition-colors bg-transparent border border-[#e8e0d8] hover:border-[#d4c8be] rounded-xl py-3 cursor-pointer">
+          Resend Code
+        </button>
+      </form>
+
+      <!-- CANCEL FORM -->
+      <form method="POST" action="{% url 'cancel_email_verification' %}">
+        {% csrf_token %}
+        <button type="submit"
+          class="w-full font-montserrat text-[11px] font-medium text-[#c0392b] hover:text-[#a93226] transition-colors bg-transparent border border-[#f5c6c6] hover:border-[#e8a0a0] rounded-xl py-3 cursor-pointer">
+          Cancel Email Change
+        </button>
+      </form>
+
+      <!-- expiry note -->
+      <div class="flex items-center justify-center gap-1.5 mt-5 text-[9px] font-montserrat text-[#b0a49a]">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span>
+        Code expires in 5 minutes
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- django messages hidden spans -->
+{% if messages %}
+  {% for message in messages %}
+    <span id="msg-{{ forloop.counter }}" data-type="{{ message.tags }}" class="hidden">{{ message }}</span>
+  {% endfor %}
+{% endif %}
+
+<script>
+  window.SECONDS_LEFT = {{ seconds_left }};
+</script>
+
+<script src="{% static 'user/js/verify_email_change.js' %}"></script>
+
+</body>
+</html>

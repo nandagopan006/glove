@@ -18,11 +18,11 @@ class SignupForm(forms.ModelForm):
     def clean_full_name(self):
         
         full_name=self.cleaned_data.get('full_name','').strip()    # # get full_name and remove extra spaces from start and end
-        # minimum 4 characters required
+       
         if len(full_name) < 4:
             raise forms.ValidationError('Full name must be at least 4 characters.')
         
-        # no double spaces allowed like "Amal  Doe"
+    
         if '  ' in full_name:
             raise forms.ValidationError('Full name must not contain double spaces.')
         
@@ -35,6 +35,8 @@ class SignupForm(forms.ModelForm):
      #email valiadiation   
     def clean_email(self):
         email=self.cleaned_data.get("email",'').strip().lower()
+        if re.match(r'^\*+@gmail\.com$', email):
+            raise forms.ValidationError("Masked email is not allowed")
         
         existing =ProfileUser.objects.filter(email=email).first()
         if existing :
@@ -49,10 +51,10 @@ class SignupForm(forms.ModelForm):
     def clean_password(self):
         password=self.cleaned_data.get("password")
             
-        # one regex to check all requirements at once
+ 
         pattern = r'^(?=.*[A-Z])(?=.*[0-9])(?=.*[@!#$%&*]).{8,}$'
         
-        if not re.match(pattern, password):
+        if not re.match(pattern,password):
             raise forms.ValidationError(
                 'Password must be at least 8 characters, include one uppercase letter, one number, and one special character (@!#$%&*).'
             )
@@ -64,7 +66,7 @@ class SignupForm(forms.ModelForm):
         return password
     
     # Password match validation
-    def clean(self):  #Run the default form validation first and give me the cleaned data.
+    def clean(self):
         
         cleaned_data=super().clean()# Get the validated form data from Django  ,  Run the default form validation first and give me the cleaned data.(or we need to give each field self )
         
