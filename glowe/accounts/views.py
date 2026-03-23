@@ -22,13 +22,13 @@ def signup_page(request):
     if request.user.is_authenticated:
         return redirect('home')
     
-      # check if the form was submitted by the user
+      
     if request.method == 'POST':
         
          # take the data sent from the signup form
         form = SignupForm(request.POST)
         
-        if form.is_valid():   #check if all validations the form are correct 
+        if form.is_valid():    
             email = form.cleaned_data['email']
             existing_user = ProfileUser.objects.filter(
             email=email,is_verified=False).first()
@@ -45,16 +45,16 @@ def signup_page(request):
                 # create  new user
                 user= form.save(commit=False)           #create user objet and but not save in database
 
-                user.username= user.email    # since we are not using username field in form
+                user.username= user.email   
                 user.set_password(password)
             
             
-            # generate 4 digit otp
+      
             user.is_active=False
             user.is_verified = False
             user.save()
             
-            OTPVerification.objects.filter(user=user, is_verified=False).delete()# delete old OTPs the user have before
+            OTPVerification.objects.filter(user=user, is_verified=False).delete()
             
             otp_code= str(random.randint(1000, 9999))
             OTPVerification.objects.create(user= user,otp_code= otp_code,
@@ -82,19 +82,19 @@ def signup_page(request):
 
 def signup_otp_verify(request):
     email=request.session.get('email')
-    otp_msg = request.session.pop('otp_msg', None) # after use delete
+    otp_msg = request.session.pop('otp_msg', None)
     
     try:
         user = ProfileUser.objects.get(email=email)
     except ProfileUser.DoesNotExist:
-        return redirect('signup')   # if user not found → send back to signup
+        return redirect('signup')  
     
     
     # get the latest unverified OTP record for this user
     otp_record = OTPVerification.objects.filter(user=user,is_verified=False).first()    
     
     if not otp_record:
-        return redirect('signup')  # no OTP found  redirect to signup
+        return redirect('signup') 
 
     #seconds remaining for the timer start with remaing
     seconds_left =max(0,round((otp_record.expires_at - timezone.now()).total_seconds()))
