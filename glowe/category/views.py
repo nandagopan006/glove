@@ -1,8 +1,10 @@
 from django.shortcuts import render
 
 
-def category_management(request):
+def category_management(request):   
     return render(request,'category_management.html')
+
+
 
 
     
