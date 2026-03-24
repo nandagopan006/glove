@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'adminpanel',
     'user',
     'category',
+    'product',
     
 ]
 
