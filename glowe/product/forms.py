@@ -50,6 +50,66 @@ class ProductForm(forms.ModelForm):
         return skin_type
     
     
+class VariantForm(forms.ModelForm):
+    class Meta:
+        model=Variant
+        fields= ['size','price','stock','is_default']
+    
+    def clean_size(self):
+        size=self.cleaned_data.get('size','').split().lower().replace(' ','')
+        
+        if not size :
+            raise forms.ValidationError("Size is required")
+        # 30ml or 50g
+        pattern =r'^\d+(ml|g)$'  
+        if not re.match(pattern, size):
+            raise forms.ValidationError("Size must be like 30ml or 50g")
+        return size
+    
+    def clean_price(self):
+        price=self.cleaned_data.get('price')
+        
+        if price is None or price <= 0 :
+            raise forms.ValidationError("Price must be greater than 0")
+        
+        if price > 10000:
+            raise forms.ValidationError("Price too high it is not allow")
+        
+        return price
+    
+    def clean_stock(self):
+        stock=self.cleaned_data.get('stock')
+        
+        if stock is None or stock <= 0:
+            raise forms.ValidationError("Stock cannot be negative")
+        
+        if stock > 10000:
+            raise forms.ValidationError("Stock too large")
+
+        return stock
+        
+    def clean(self):
+        
+        cleaned_data =super().clean()
+        size=cleaned_data.get('size')
+        price=cleaned_data.get('price')
+        stock=cleaned_data.get('stock')
+
+        if size and self.instance.product:
+            exists=Variant.objects.filter(product=self.instance.product,size=size
+                                          ).exclude(id=self.instance.id).exists()
+
+            if exists:
+                raise forms.ValidationError("This size already exists for this product")
+            
+        if price and stock == 0:
+            raise forms.ValidationError("Stock is 0, product will be unavailable")
+
+        return cleaned_data
+            
+        
+    
+    
         
         
         
