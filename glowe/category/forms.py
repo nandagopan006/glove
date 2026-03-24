@@ -13,7 +13,7 @@ class CategoryForm(forms.ModelForm):
         qs=Category.objects.filter(name__iexact=name,is_deleted=False )
         
         # If editing exclude current object
-        if self.instance and  self.instance.id:
+        if self.instance and self.instance.id: 
             qs=qs.exclude(id=self.instance.id)
             
         if qs.exists():
