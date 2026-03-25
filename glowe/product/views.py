@@ -237,8 +237,34 @@ def edit_variant(request,id):
             'product':product,'variants': variants,
             'form':form,'edit_variant':variant})
     
-    return redirect('edit_variant',product_id=product.id)
+    return redirect('variant_management',product_id=product.id)
 
+def delete_variant(request,id):
+    if request.method == "POST":
+        variant=get_object_or_404(Variant,id=id)
+        product=variant.product
+
+        #  Prevent dlt last variant
+        if product.variants.count() <= 1:
+            messages.error(request, "At least one variant is required")
+            return redirect('variant_management', product_id=product.id)
+
+         # Check if this default
+        if variant.is_default:
+            variant.delete()
+            # Make another variant deflt
+            new_variant=product.variants.first()
+            new_variant.is_default=True
+            new_variant.save()
+
+        else:
+            #Normal delete
+            variant.delete()
+
+        messages.success(request,"Variant deleted successfully")
+        return redirect('variant_management',product_id=product.id)
+
+    return redirect('product_management')
 
  
 
