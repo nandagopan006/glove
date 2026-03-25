@@ -8,5 +8,6 @@ urlpatterns = [
      path('adminpanel/categories/edit/<int:id>/',views.edit_category,name='edit_category'),
      path('adminpanel/categories/delete/<int:id>/',views.delete_category,name='delete_category'),
      path('adminpanel/categories/toggle-category/<int:id>/',views.toggle_category,name='toggle_category'),
+     path('categories/restore/<int:id>',views.restore_category, name='restore_category'),
 
 ]
