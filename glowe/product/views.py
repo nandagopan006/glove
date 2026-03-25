@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .forms import ProductForm
+from .forms import ProductForm,VariantForm
 from .models import ProductImage,Product,Variant
 from django.shortcuts import get_object_or_404
 
@@ -143,7 +143,7 @@ def soft_delete_product(request,id):
         messages.success(request,"Product deleted successfully")
         return redirect('product_management')
     
-    messages.error(request, "Invalid request")
+    messages.error(request,"Invalid request")
     return redirect('product_management')
 
 def restore_product(request,id):
@@ -175,11 +175,47 @@ def permanent_delete_product(request, id):
     return redirect('product_management')
 
     
-    
-
 def product_management(request): 
     
     return render(request,'product_management.html')
 
     
+def add_variant(request,product_id):
+    product = get_object_or_404(Product,id=product_id,is_deleted=False)
+    
+    if request.method =="POST":
+        form=VariantForm(request.POST)
+        
+        if form.is_valid():
+            variant=form.save(commit=False)
+            variant.product = product
+            #if select as default true  and change pervies default false 
+            if variant.is_default:
+                product.variants.filter(is_default=True).update(is_default=False)
+            #If no default exists make this automtly default
+            if not product.variant.filter(is_default=True).exist():
+                variant.is_default =True 
+                 
+            variant.save()
 
+            messages.success(request, "Variant added successfully")
+            return redirect('variant_management',product_id=product.id)
+        else :
+            # If invalid  show errors
+            variants=product.variants.all().order_by('id')
+            return render(request,'admin/variant_management.html',{
+                                    'product':product,
+                                    'variants':variants,'form':form})
+            
+        
+    return redirect('variant_management',product_id=product.id)
+
+
+ 
+
+            
+            
+            
+            
+    
+  
