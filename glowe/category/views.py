@@ -11,19 +11,25 @@ from django.core.paginator import Paginator
 def category_management(request):   
     
     q = request.GET.get('q','').strip()
-    status=request.GET.get('status','')
+    active_status=request.GET.get('active_status','')
+    status=request.GET.get('status','live')
     
-    qs= Category.objects.filter(is_deleted=False) #.annotate(poduct_count=Count('products'))
+    qs= Category.objects.filter(is_deleted=False).annotate(product_count=Count('products'))
     
     if q:
         qs=qs.filter(name__icontains=q)
         
-    if status =="active":
+    if active_status =="active":
         qs =qs.filter(is_active=True)
-    elif status =='inactive':
-        qs=qs.filter(is_active=False)      
+    elif active_status =='inactive':
+        qs=qs.filter(is_active=False)
         
-          
+    if status == 'archived' :
+        qs=qs.filter(is_deleted=True)
+    else :
+        qs=qs.filter(is_deleted=False)
+    
+    #sort
     qs=qs.order_by('-created_at')
     
     paginator=Paginator(qs,5)
@@ -34,13 +40,16 @@ def category_management(request):
     total=Category.objects.filter(is_deleted=False).count()
     active=Category.objects.filter(is_active=True, is_deleted=False).count()
     inactive=Category.objects.filter(is_active=False, is_deleted=False).count()
+    archived_count = Category.objects.filter(is_deleted=True).count()
     context={
         'query': q,
         'categories':categories,
         'status': status,
+        'active_status':active_status,
         'total_categories':total,
         'active_categories':active,
         'inactive_categories':inactive,
+        'archived_count':archived_count
     }
     
     return render(request,'category_management.html',context)
@@ -87,20 +96,25 @@ def toggle_category(request, id):
     if request.method!='POST':
         return redirect('category_management')
     
-    category=get_object_or_404(Category, id=id, is_deleted=False)
+    category=get_object_or_404(Category, id=id)
+    
+    if category.is_deleted:
+        messages.error(request,"Cannot modify archived category")
+        return redirect('category_management')
+    
     category.is_active=not category.is_active
     category.save()
-    
-    messages.success(request,f'{category.name}   has been {status}.')
+    active_status = 'activated' if category.is_active else 'deactivated'
+    messages.success(request,f'{category.name}  has been {active_status}.')
     return redirect('category_management')
 
-def delete_category(request,id):
+def soft_delete_category(request,id):
     if request.method =="POST":
         category=get_object_or_404(Category,id=id,is_deleted=False)
         category.is_deleted=True
         category.save()
         
-        messages.success(request,f'{category.name}  has been deleted.')
+        messages.success(request,f'{category.name}  has been archived. ')
         return redirect('category_management')
     return redirect('category_management')
 
