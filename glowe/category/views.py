@@ -14,7 +14,7 @@ def category_management(request):
     active_status=request.GET.get('active_status','')
     status=request.GET.get('status','live')
     
-    qs= Category.objects.filter(is_deleted=False).annotate(product_count=Count('products'))
+    qs= Category.objects.all().annotate(product_count=Count('products'))
     
     if q:
         qs=qs.filter(name__icontains=q)
@@ -110,7 +110,11 @@ def toggle_category(request, id):
 
 def soft_delete_category(request,id):
     if request.method =="POST":
-        category=get_object_or_404(Category,id=id,is_deleted=False)
+        category=get_object_or_404(Category,id=id,)
+        if category.is_deleted:
+            messages.error(request, "Category already archived")
+            return redirect('category_management')
+        
         category.is_deleted=True
         category.save()
         
@@ -123,12 +127,27 @@ def restore_category(request,id):
         category=get_object_or_404(Category,id=id,is_deleted=True)
         category.is_deleted = False 
         category.save()
-        messages.success(request,f'{category.name}  has  succussfully restored')
+        messages.success(request,f'{category.name}  has been successfully restored')
         return redirect('category_management')
-    
+
     return redirect("category_management")
         
+def permanent_delete_category(request, id):
+    if request.method =="POST":
+        category =get_object_or_404(Category, id=id)
         
+        if not category.is_deleted == True:
+            messages.error(request,"Please soft delete the category first then only allow")
+            return redirect('category_management')
+        
+        if category.products.exists():
+            messages.error(request, "Cannot delete category with products")
+            return redirect('category_management')
+
+        category.delete() # permanent deleete
+
+        messages.success(request,"category permanently deleted")
+        return redirect('category_management')       
         
 
 # Create your views here.

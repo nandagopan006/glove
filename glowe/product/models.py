@@ -8,7 +8,7 @@ class Product(models.Model):
     name=models.CharField(max_length=200)
     slug=models.SlugField(unique=True)
 
-    category=models.ForeignKey(Category, on_delete=models.CASCADE)
+    category=models.ForeignKey(Category, on_delete=models.CASCADE,related_name='products')
 
     description=models.TextField()
     ingredients=models.TextField()
