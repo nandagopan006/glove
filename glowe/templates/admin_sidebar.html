@@ -31,7 +31,7 @@
   <!-- Navigation -->
   <nav class="flex-1 px-3 py-4 overflow-y-auto">
     <div class="space-y-1">
-      
+
       <!-- Dashboard -->
       <a href="{% url 'admin_dashboard' %}" 
          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {% if request.resolver_match.url_name == 'admin_dashboard' %}bg-sage-50 text-sage-700 shadow-sm{% else %}text-gray-600 hover:bg-gray-50 hover:text-gray-900{% endif %}">
@@ -53,15 +53,49 @@
         <span>Orders</span>
       </a>
 
-      <!-- Products -->
-      <a href="" 
-         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 text-gray-600 hover:bg-gray-50 hover:text-gray-900">
-        <svg class="w-[18px] h-[18px] flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <rect x="2" y="3" width="20" height="14" rx="2"/>
-          <path stroke-linecap="round" d="M8 21h8M12 17v4"/>
-        </svg>
-        <span>Products</span>
-      </a>
+      <!-- Products (with dropdown) -->
+      <div>
+        <div id="products-toggle"
+             onclick="toggleProductsMenu()"
+             class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer {% if request.resolver_match.url_name in 'product_list,add_product' %}bg-sage-50 text-sage-700 shadow-sm{% else %}text-gray-600 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+          <svg class="w-[18px] h-[18px] flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path stroke-linecap="round" d="M8 21h8M12 17v4"/>
+          </svg>
+          <span class="flex-1">Products</span>
+          <svg id="products-chevron" class="w-3.5 h-3.5 transition-transform duration-200 flex-shrink-0"
+               fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+
+        <!-- Dropdown -->
+        <div id="products-dropdown" class="overflow-hidden transition-all duration-250 ease-in-out" style="max-height: 0;">
+          <div class="pl-[38px] py-1 flex flex-col gap-0.5">
+
+            <!-- All Products -->
+            <a href="{% url 'product_management' %}"
+               class="flex items-center gap-2 px-3 py-[7px] rounded-lg text-[13px] transition-all duration-150
+                      {% if request.resolver_match.url_name == 'product_management' %}bg-sage-50 text-sage-700 font-medium{% else %}text-gray-500 hover:bg-gray-50 hover:text-gray-800{% endif %}">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+              </svg>
+              All Products
+            </a>
+
+            <!-- Add Product -->
+            <a href="{% url 'add_product' %}"
+               class="flex items-center gap-2 px-3 py-[7px] rounded-lg text-[13px] transition-all duration-150
+                      {% if request.resolver_match.url_name == 'add_product' %}bg-sage-50 text-sage-700 font-medium{% else %}text-gray-500 hover:bg-gray-50 hover:text-gray-800{% endif %}">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add Product
+            </a>
+
+          </div>
+        </div>
+      </div>
 
       <!-- Categories -->
       <a href="{% url 'category_management' %}" 
@@ -146,7 +180,7 @@
 
 </aside>
 
-<!-- JavaScript for Sidebar Toggle -->
+<!-- JavaScript -->
 <script>
 function toggleAdminSidebar() {
   const sidebar = document.getElementById('adminSidebar');
@@ -166,6 +200,20 @@ function toggleAdminSidebar() {
     document.body.style.overflow = 'hidden';
   }
 }
+
+function toggleProductsMenu() {
+  const dropdown = document.getElementById('products-dropdown');
+  const chevron = document.getElementById('products-chevron');
+  const isOpen = dropdown.style.maxHeight && dropdown.style.maxHeight !== '0px';
+  if (isOpen) {
+    dropdown.style.maxHeight = '0px';
+    chevron.style.transform = 'rotate(0deg)';
+  } else {
+    dropdown.style.maxHeight = dropdown.scrollHeight + 'px';
+    chevron.style.transform = 'rotate(90deg)';
+  }
+}
+
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     const sidebar = document.getElementById('adminSidebar');
@@ -174,7 +222,17 @@ document.addEventListener('keydown', function(e) {
     }
   }
 });
+
 document.addEventListener('DOMContentLoaded', function() {
+  // Auto-open products dropdown if on a products page
+  {% if request.resolver_match.url_name in 'product_list,add_product' %}
+    const dropdown = document.getElementById('products-dropdown');
+    const chevron = document.getElementById('products-chevron');
+    dropdown.style.maxHeight = dropdown.scrollHeight + 'px';
+    chevron.style.transform = 'rotate(90deg)';
+  {% endif %}
+
+  // Close sidebar on mobile nav link click
   if (window.innerWidth < 1024) {
     const navLinks = document.querySelectorAll('#adminSidebar nav a');
     navLinks.forEach(link => {

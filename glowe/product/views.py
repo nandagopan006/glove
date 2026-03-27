@@ -221,6 +221,12 @@ def product_management(request):
     page=request.GET.get('page')
     products =paginator.get_page(page)
     
+    all_products =Product.objects.all()
+    
+    total_products=all_products.count()
+    active_products=all_products.filter(is_active=True, is_deleted=False).count()
+    archived_products=all_products.filter(is_deleted=True).count()
+    
     for p in products :
         default_variant=p.variants.filter(is_default=True).first()
         p.display_price=default_variant.price if default_variant else 0
@@ -233,12 +239,16 @@ def product_management(request):
     categories=Category.objects.all()
     
     return render(request,'admin/product_management.html',{
+        'total_products':total_products,
+        'active_products':active_products,
+        'archived_products':archived_products,
         'products':products,
         'categories':categories,
         'query':q,
         'selected_category':category,
         'status':status,
         'active_status': active_status,
+        
     })
     
 def add_variant(request,product_id):
