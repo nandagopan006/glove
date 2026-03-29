@@ -626,9 +626,21 @@ def product_listing(request):
         'skin_types':skin_types,
     })
         
+
+def product_detail_view(request,slug):
+   
+    product = get_object_or_404(Product, slug=slug, is_deleted=False)
     
+    if not product.is_active:
+        return redirect("product_listing")
     
-            
-            
+    variant_id= request.GET.get('variant')
     
-  
+    if variant_id :
+        selected_variant = product.variants.filter(id=variant_id).first()
+    else:
+        selected_variant = product.variants.first()
+
+    in_stock = selected_variant.stock > 0 if selected_variant else False
+    
+    images = product.images.all()
