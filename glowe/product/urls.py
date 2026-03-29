@@ -18,10 +18,12 @@ urlpatterns = [
     path('adminpanel/products/image/delete/<int:id>/',views.delete_product_image,name='delete_product_image'),
     path('adminpanel/products/image/set-primary/<int:id>/',views.set_primary_image,name='set_primary_image'),
 
-    path('adminpanel/products/<int:product_id>/variants/',views.variant_management,name='variant_management'),
+       path('adminpanel/products/<int:product_id>/variants/', views.variant_management, name='variant_management'),
 
-    path('adminpanel/variants/add/<int:product_id>/',views.add_variant,name='add_variant'),
-    path('adminpanel/variants/edit/<int:id>/',views.edit_variant,name='edit_variant'),
-    path('adminpanel/variants/delete/<int:id>/',views.delete_variant,name='delete_variant'),
-    
+   
+    path('adminpanel/products/variants/add/<int:product_id>/', views.add_variant, name='add_variant'),
+    path('adminpanel/products/variants/edit/<int:id>/', views.edit_variant, name='edit_variant'),
+    path('adminpanel/products/variants/delete/<int:id>/', views.delete_variant, name='delete_variant'),
+    path('adminpanel/products/variants/toggle-status/<int:id>/', views.toggle_variant_status, name='toggle_variant_status'),
+    path('adminpanel/products/variants/set-default/<int:id>/', views.set_default_variant, name='set_default_variant'),
 ]

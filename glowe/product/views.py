@@ -343,17 +343,19 @@ def add_variant(request,product_id):
     product = get_object_or_404(Product,id=product_id,is_deleted=False)
     
     if request.method =="POST":
-        form=VariantForm(request.POST)
+        form=VariantForm(request.POST,initial={'product': product})
         
         if form.is_valid():
             variant=form.save(commit=False)
             variant.product = product
             
-            #if stock zero is inactive ok the vrint
+            
+            user_active = request.POST.get('is_active') == 'True'
             if variant.stock == 0:
-                variant.is_active= False
-            else :
-                variant.is_active=True
+                variant.is_active = False
+            else:
+                variant.is_active = user_active
+            
             
             #if select as default true  and change pervies default false 
             if variant.is_default:
@@ -367,6 +369,7 @@ def add_variant(request,product_id):
 
             messages.success(request, "Variant added successfully")
             return redirect('variant_management',product_id=product.id)
+            
         else :
             # If invalid  show errors
             variants=product.variants.all().order_by('id')
@@ -387,11 +390,15 @@ def edit_variant(request,id):
         if form.is_valid():
             updated_variant = form.save(commit=False)
             
+            user_active = request.POST.get('is_active') == 'True'
             if updated_variant.stock == 0:
-                updated_variant.is_active= False
-            else :
-                updated_variant.is_active=True
+                updated_variant.is_active = False
+            else:
+                updated_variant.is_active = user_active
             
+            
+            if variant.is_default:
+                updated_variant.is_active = True
            #  if user select default remove other defaults
             if updated_variant.is_default :
                 product.variants.exclude(id=variant.id).filter(is_default=True).update(is_default=False)
@@ -403,7 +410,7 @@ def edit_variant(request,id):
             updated_variant.save()
             
             messages.success(request, "Variant updated successfully")
-            return redirect('variant_management', product_id=product.id)
+            return redirect('variant_management',product_id=product.id)
 
         variants =product.variants.all().order_by('id')
         return render(request,'admin/variant_management.html',{
@@ -440,12 +447,54 @@ def delete_variant(request,id):
 
     return redirect('product_management')
 
+def toggle_variant_status(request, id):
+    if request.method == "POST":
+        variant = get_object_or_404(Variant, id=id)
+
+        if variant.is_default:
+            messages.error(request, 'Default variant cannot be disabled')
+        else:
+            # Prevent activating a variant with zero stock
+            if not variant.is_active and variant.stock == 0:
+                messages.error(request, 'Cannot activate a variant with zero stock.')
+            else:
+                variant.is_active = not variant.is_active
+                variant.save()
+                messages.success(request, "Variant status updated successfully.")
+
+    return redirect('variant_management', product_id=variant.product.id)
+
+def set_default_variant(request, id):
+    variant = get_object_or_404(Variant, id=id)
+    product = variant.product
+
+    if request.method == "POST":
+
+        if not variant.is_active:
+            messages.error(request, "Cannot set inactive variant as default.")
+            return redirect('variant_management', product_id=product.id)
+
+        if variant.is_default:
+            messages.info(request, "This is already the default variant.")
+            return redirect('variant_management', product_id=product.id)
+
+        product.variants.exclude(id=variant.id).update(is_default=False)
+
+        variant.is_default = True
+        variant.save()
+
+        messages.success(request, f"{variant.size} set as default")
+
+    return redirect('variant_management', product_id=product.id)
+
 def variant_management(request,product_id):
     product=get_object_or_404(Product,id=product_id,is_deleted=False)
     status=request.GET.get('status','')
     #searchh
     q =request.GET.get('q','').strip()
     variants=product.variants.all()
+    primary_image = product.images.filter(is_primary=True).first() or product.images.first()
+   
     
     if q :
         variants =variants.filter(
@@ -457,7 +506,7 @@ def variant_management(request,product_id):
         variants=variants.filter(is_active=False) 
     
     variants=variants.order_by('id')
-    paginator =Paginator(variants,5)
+    paginator =Paginator(variants,4)
     page_number=request.GET.get('page')
     variants=paginator.get_page(page_number)       
     
@@ -477,7 +526,8 @@ def variant_management(request,product_id):
         'default_variant':default_variant,
         'total_stock':total_stock,
         'total_value':total_value,
-        'query':q
+        'query':q,
+        'primary_image':primary_image,
     })
  
 

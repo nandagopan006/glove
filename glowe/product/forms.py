@@ -77,7 +77,14 @@ class VariantForm(forms.ModelForm):
         pattern =r'^\d+(ml|g)$'  
         if not re.match(pattern, size):
             raise forms.ValidationError("Size must be like 30ml or 50g")
+        
+        product = self.instance.product if self.instance.pk else self.initial.get('product')
+
+        if Variant.objects.filter(product=product, size=size).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError("Variant with this size already exists.")
+        
         return size.lower()
+        
     
     def clean_price(self):
         price=self.cleaned_data.get('price')
