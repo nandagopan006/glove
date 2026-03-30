@@ -601,7 +601,7 @@ def product_listing(request):
     total_count = products.count()
         
     products =products.prefetch_related(
-        Prefetch('images',queryset=ProductImage.objects.filter(is_primary=True)),#load only images  is is_primary=True
+        Prefetch('images', queryset=ProductImage.objects.order_by('id')),
         Prefetch('variants',queryset=Variant.objects.filter(is_default=True)) # only the default true   appo load less fast kiitum 
     )
 
@@ -744,16 +744,26 @@ def add_to_cart(request):
     key=str(variant_id)
     
     if key in cart:
+        current_qty = cart[key]
+        
+        if current_qty >= max_qty:
+            messages.warning(request, f"You already have the maximum {max_qty} items in your cart.")
+            return redirect('cart')
+        
         new_qty=cart[key] + quantity
         
         if new_qty > max_qty:      
             new_qty=max_qty
             messages.warning(request, f"Max {max_qty} items per order")
     
-        if new_qty > stock:
-                messages.error(request, f"Only {stock} items available")
-                return redirect('product_detail_view', slug=product.slug)
-    
+        elif new_qty > stock:
+            
+            messages.error(request, f"Only {stock} items available")
+            return redirect('product_detail_view', slug=product.slug)
+        else:
+            messages.success(request, f"Cart updated ({new_qty} items)")
+            
+            
         cart[key]=new_qty
         messages.success(request,f"Cart updated ({new_qty} items)")
     else:

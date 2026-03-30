@@ -132,9 +132,13 @@ body { background: var(--cream); font-family: 'Jost', sans-serif; color: var(--i
 }
 .pcard-img-wrap img {
   width: 100%; height: 100%; object-fit: cover; display: block;
-  transition: transform .7s cubic-bezier(.25,.46,.45,.94);
+  position: absolute; top: 0; left: 0;
+  transition: opacity 1.2s ease;
 }
-.pcard:hover .pcard-img-wrap img { transform: scale(1.06); }
+.pcard-img-wrap img.img-primary   { opacity: 1; z-index: 1; }
+.pcard-img-wrap img.img-secondary { opacity: 0; z-index: 2; }
+.pcard-img-wrap:hover img.img-primary   { opacity: 0; }
+.pcard-img-wrap:hover img.img-secondary { opacity: 1; }
 .img-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--mist); }
 .oos-veil { position: absolute; inset: 0; z-index: 2; background: rgba(245,241,234,.46); display: flex; align-items: center; justify-content: center; pointer-events: none; }
 .oos-label { background: var(--terra); color: #fff; font-size: .52rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; padding: 5px 12px; }
@@ -153,10 +157,12 @@ body { background: var(--cream); font-family: 'Jost', sans-serif; color: var(--i
   position: absolute; bottom: 0; left: 0; right: 0; z-index: 3;
   background: rgba(26,22,18,.88); color: var(--cream); text-align: center;
   font-size: .56rem; font-weight: 500; letter-spacing: .28em; text-transform: uppercase;
-  padding: 12px 0; cursor: pointer; transform: translateY(100%); transition: transform .32s ease;
+  padding: 12px 0; cursor: pointer;
+  transform: translateY(100%); transition: transform .32s ease;
   border: none; width: 100%; font-family: 'Jost', sans-serif;
 }
-.pcard:hover .qa-bar { transform: translateY(0); }
+
+.pcard-img-wrap:hover .qa-bar { transform: translateY(0); }
 .qa-bar:hover { background: var(--stone); }
 .qa-bar:disabled { background: rgba(139,111,78,.35); cursor: not-allowed; color: var(--dust); }
 
@@ -475,56 +481,59 @@ body { background: var(--cream); font-family: 'Jost', sans-serif; color: var(--i
       {% with avg=product.avg_rating|default:0 rev=product.review_count|default:0 %}
       <article class="pcard">
 
-        <a class="pcard-img-wrap" href="{% url 'product_detail_view' product.slug %}">
-          {% if image %}
-            <img src="{{ image.image.url }}" alt="{{ product.name }}" loading="lazy">
-          {% else %}
-            <div class="img-ph">
-              <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width=".8" viewBox="0 0 64 64">
-                <rect x="8" y="8" width="48" height="48" rx="1"/>
-                <circle cx="23" cy="23" r="6"/>
-                <path d="M8 44l14-14 10 10 8-8 14 12"/>
-              </svg>
-            </div>
-          {% endif %}
-          {% if stock == 0 %}<div class="oos-veil"><span class="oos-label">Sold Out</span></div>{% endif %}
-          <button class="wish-btn" onclick="event.preventDefault();toggleWish(this,{{ product.id }})" type="button">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </button>
-          <button class="qa-bar" {% if stock == 0 %}disabled{% endif %} onclick="event.preventDefault();addToCart({{ product.id }},{{ variant.id }})">
-            {% if stock == 0 %}Unavailable{% else %}+ Add to Cart{% endif %}
-          </button>
-        </a>
+  <a class="pcard-img-wrap" href="{% url 'product_detail_view' product.slug %}">
+    {% with imgs=product.images.all %}
+  {% if imgs.0 %}
+    <img class="img-primary"   src="{{ imgs.0.image.url }}" alt="{{ product.name }}" loading="lazy">
+    {% if imgs.1 %}
+    <img class="img-secondary" src="{{ imgs.1.image.url }}" alt="{{ product.name }}" loading="lazy">
+    {% endif %}
+  {% else %}
+    <div class="img-ph" style="position:absolute;inset:0;z-index:1;">
+      <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width=".8" viewBox="0 0 64 64">
+        <rect x="8" y="8" width="48" height="48" rx="1"/>
+        <circle cx="23" cy="23" r="6"/>
+        <path d="M8 44l14-14 10 10 8-8 14 12"/>
+      </svg>
+    </div>
+  {% endif %}
+{% endwith %}
 
-        <!-- ── PREMIUM CARD INFO ── -->
-        <div class="pcard-info">
+    {% if stock == 0 %}<div class="oos-veil"><span class="oos-label">Sold Out</span></div>{% endif %}
 
-          {% if product.category %}
-          <div class="pcard-cat">{{ product.category.name }}</div>
-          {% endif %}
+    <button class="wish-btn" onclick="event.preventDefault();toggleWish(this,{{ product.id }})" type="button">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </button>
 
-          <a class="pcard-name" href="{% url 'product_detail_view' product.slug %}">{{ product.name }}</a>
+    {% if stock == 0 %}
+    <span class="qa-bar" style="pointer-events:none;opacity:.55;">Unavailable</span>
+    {% else %}
+    <span class="qa-bar" onclick="window.location.href='{% url 'product_detail_view' product.slug %}'">View Product →</span>
+    {% endif %}
 
-          <div class="pcard-rule"></div>
+  </a>  {# ← qa-bar MUST be inside this closing tag #}
 
-          <div class="pcard-price-row">
-            <span class="pcard-from">from</span>
-            <span class="pcard-price">₹{{ variant.price|floatformat:0 }}</span>
-          </div>
+  <div class="pcard-info">
+    {% if product.category %}<div class="pcard-cat">{{ product.category.name }}</div>{% endif %}
+    <a class="pcard-name" href="{% url 'product_detail_view' product.slug %}">{{ product.name }}</a>
+    <div class="pcard-rule"></div>
+    <div class="pcard-price-row">
+      <span class="pcard-from">from</span>
+      <span class="pcard-price">₹{{ variant.price|floatformat:0 }}</span>
+    </div>
+    {% if rev > 0 %}
+    <div class="pcard-rating">
+      <div class="stars-wrap">
+        <div class="stars-base">{% for i in "12345" %}<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>{% endfor %}</div>
+        <div class="stars-fill" style="width:{{ avg|floatformat:0 }}0%;">{% for i in "12345" %}<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>{% endfor %}</div>
+      </div>
+      <span class="rating-val">{{ avg|floatformat:1 }}</span>
+      <span class="rating-count">({{ rev }})</span>
+    </div>
+    {% endif %}
+  </div>
 
-          {% if rev > 0 %}
-          <div class="pcard-rating">
-            <div class="stars-wrap">
-              <div class="stars-base">{% for i in "12345" %}<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>{% endfor %}</div>
-              <div class="stars-fill" style="width:{{ avg|floatformat:0 }}0%;">{% for i in "12345" %}<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>{% endfor %}</div>
-            </div>
-            <span class="rating-val">{{ avg|floatformat:1 }}</span>
-            <span class="rating-count">({{ rev }})</span>
-          </div>
-          {% endif %}
-
-        </div>
-      </article>
+</article>
       {% endwith %}{% endwith %}{% endwith %}
     {% endfor %}
   </div>

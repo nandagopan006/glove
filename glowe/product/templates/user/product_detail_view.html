@@ -23,7 +23,7 @@
     }
     
     /* Brand Buttons */
-    .btn-dark-brown { background-color: #3b2e2a; }
+    .btn-dark-brown { background-color: #3b2e2a; transition: all 0.3s ease; }
     .btn-dark-brown:hover { background-color: #271e1c; }
     
     /* Hide Scrollbar for tabs */
@@ -44,9 +44,9 @@
     <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-3 pointer-events-none">
         {% for message in messages %}
         <div class="toast-notification transform translate-x-[120%] transition-transform duration-500 ease-out flex items-center w-[350px] px-5 py-4 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 font-montserrat text-[13px] tracking-wide font-semibold
-            {% if message.tags == 'error' %} text-red-600
-            {% elif message.tags == 'warning' %} text-orange-500
-            {% else %} text-green-600 {% endif %}">
+            {% if message.tags == 'error' %} text-red-600 toast-error
+            {% elif message.tags == 'warning' %} text-orange-500 toast-warning
+            {% else %} text-green-600 toast-success {% endif %}">
             
             {% if message.tags == 'error' %}
                 <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -131,7 +131,7 @@
                 {% endif %}
             </div>
 
-            <form method="POST" action="{% url 'add_to_cart' %}" class="flex flex-col">
+            <form id="add-to-cart-form" method="POST" action="{% url 'add_to_cart' %}" class="flex flex-col">
                 {% csrf_token %}
                 <input type="hidden" name="variant_id" value="{{ selected_variant.id }}">
 
@@ -165,7 +165,7 @@
                 </div>
 
                 <div class="flex items-center gap-3 mb-10">
-                    <button type="submit" 
+                    <button id="add-to-cart-btn" type="submit" 
                             {% if all_out_of_stock or stock == 0 %}disabled{% endif %}
                             class="flex-1 btn-dark-brown text-white rounded-lg h-12 font-montserrat text-[10px] font-bold tracking-[0.2em] uppercase transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md">
                         Add to Cart
@@ -276,54 +276,54 @@
             <button onclick="switchTab('tab-use', this)" class="tab-btn pb-3 font-cormorant text-[19px] font-medium text-gray-400 border-b-[3px] border-transparent hover:text-[#1a1208] transition-colors whitespace-nowrap">How to Use</button>
         </div>
 
-  <div id="tab-desc" class="tab-content font-cormorant italic font-bold text-center mt-4 text-[20px] text-[#5a4f43] leading-[1.2] fade-in">
-    {{ description|safe }}
-</div>
-
-<div id="tab-ingr" class="tab-content font-cormorant italic font-bold text-center mt-4 text-[20px] text-[#5a4f43] leading-[1.2] hidden fade-in">
-    {{ ingredients|safe }}
-</div>
-           <div id="tab-use" class="tab-content hidden mt-8 px-5 pb-10">
-    <div class="max-w-md mx-auto">
-        <div class="relative">
-            <div class="absolute left-[17px] top-2 bottom-6 w-[1px] bg-gradient-to-b from-[#4A604F] via-[#e5e7eb] to-transparent"></div>
-
-            {% if how_to_use_steps %}
-                <div class="space-y-8">
-                    {% for step in how_to_use_steps %}
-                    <div class="relative flex gap-6 items-start group opacity-0 translate-y-4 transition-all duration-700 ease-out step-animate" 
-                         style="transition-delay: {{ forloop.counter0|add:forloop.counter0 }}00ms;">
-                        
-                        <div class="relative z-10 flex-shrink-0">
-                            <div class="w-9 h-9 rounded-full bg-[#4A604F] text-white flex items-center justify-center font-cormorant text-sm font-bold shadow-md group-hover:scale-110 transition-transform duration-500">
-                                {{ forloop.counter }}
-                            </div>
-                            <div class="absolute -inset-1 border border-[#4A604F] rounded-full opacity-10 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500"></div>
-                        </div>
-                        
-                        <div class="pt-1 text-left">
-                            <h4 class="font-cormorant text-[19px] font-bold text-[#1a1208] mb-1.5 leading-tight tracking-wide">
-                                {{ step.title|safe }}
-                            </h4>
-                            <p class="font-montserrat text-[12.5px] text-[#5a4f43] leading-relaxed font-light">
-                                {{ step.description|default:step.desc|safe }}
-                            </p>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% elif how_to_use %}
-                <div class="font-cormorant italic text-center text-[22px] text-[#5a4f43] leading-[1.5] px-6 animate-fade-in">
-                    {{ how_to_use|safe }}
-                </div>
-            {% else %}
-                <div class="text-center py-10">
-                    <p class="font-cormorant italic text-gray-400 text-lg">Instructions coming soon...</p>
-                </div>
-            {% endif %}
+        <div id="tab-desc" class="tab-content font-cormorant italic font-bold text-center mt-4 text-[20px] text-[#5a4f43] leading-[1.2] fade-in">
+            {{ description|safe }}
         </div>
-    </div>
-</div>
+
+        <div id="tab-ingr" class="tab-content font-cormorant italic font-bold text-center mt-4 text-[20px] text-[#5a4f43] leading-[1.2] hidden fade-in">
+            {{ ingredients|safe }}
+        </div>
+        
+        <div id="tab-use" class="tab-content hidden mt-8 px-5 pb-10">
+            <div class="max-w-md mx-auto">
+                <div class="relative">
+                    <div class="absolute left-[17px] top-2 bottom-6 w-[1px] bg-gradient-to-b from-[#4A604F] via-[#e5e7eb] to-transparent"></div>
+
+                    {% if how_to_use_steps %}
+                        <div class="space-y-8">
+                            {% for step in how_to_use_steps %}
+                            <div class="relative flex gap-6 items-start group opacity-0 translate-y-4 transition-all duration-700 ease-out step-animate" 
+                                 style="transition-delay: {{ forloop.counter0|add:forloop.counter0 }}00ms;">
+                                
+                                <div class="relative z-10 flex-shrink-0">
+                                    <div class="w-9 h-9 rounded-full bg-[#4A604F] text-white flex items-center justify-center font-cormorant text-sm font-bold shadow-md group-hover:scale-110 transition-transform duration-500">
+                                        {{ forloop.counter }}
+                                    </div>
+                                    <div class="absolute -inset-1 border border-[#4A604F] rounded-full opacity-10 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500"></div>
+                                </div>
+                                
+                                <div class="pt-1 text-left">
+                                    <h4 class="font-cormorant text-[19px] font-bold text-[#1a1208] mb-1.5 leading-tight tracking-wide">
+                                        {{ step.title|safe }}
+                                    </h4>
+                                    <p class="font-montserrat text-[12.5px] text-[#5a4f43] leading-relaxed font-light">
+                                        {{ step.description|default:step.desc|safe }}
+                                    </p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% elif how_to_use %}
+                        <div class="font-cormorant italic text-center text-[22px] text-[#5a4f43] leading-[1.5] px-6 animate-fade-in">
+                            {{ how_to_use|safe }}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-10">
+                            <p class="font-cormorant italic text-gray-400 text-lg">Instructions coming soon...</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 
@@ -509,21 +509,67 @@
             });
         }
 
+        // Add to Cart Smart UI Logic
+        const addToCartForm = document.getElementById('add-to-cart-form');
+        const addToCartBtn = document.getElementById('add-to-cart-btn');
+        const variantInput = document.querySelector('input[name="variant_id"]');
+
+        if (addToCartForm && addToCartBtn && variantInput) {
+            addToCartForm.addEventListener('submit', () => {
+                sessionStorage.setItem('last_added_variant', variantInput.value);
+            });
+
+            const lastAdded = sessionStorage.getItem('last_added_variant');
+            const hasSuccessToast = document.querySelector('.toast-success');
+            const hasWarningToast = document.querySelector('.toast-warning'); // Added this
+            const hasErrorToast = document.querySelector('.toast-error');
+
+            if (hasErrorToast) {
+                sessionStorage.removeItem('last_added_variant');
+            } else if (lastAdded === variantInput.value && (hasSuccessToast || hasWarningToast)) {
+                // Now it changes to "Go to Cart" even if they hit the 5 limit warning!
+                setGoToCartState();
+            }
+        }
+
+        function setGoToCartState() {
+            addToCartBtn.innerHTML = `
+                Go to Cart
+                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            `;
+            addToCartBtn.classList.remove('btn-dark-brown');
+            addToCartBtn.classList.add('bg-[#4A604F]', 'hover:bg-[#3b4d3f]');
+            addToCartBtn.type = 'button';
+            addToCartBtn.onclick = (e) => {
+                e.preventDefault();
+                window.location.href = '/cart/'; // Make sure this matches your actual cart URL!
+            };
+        }
+
+        // Expose reset function globally so updateQuantity can use it
+        window.resetAddToCartState = function() {
+            if (addToCartBtn && addToCartBtn.type === 'button') {
+                addToCartBtn.innerHTML = `
+                    Add to Cart
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                `;
+                addToCartBtn.classList.add('btn-dark-brown');
+                addToCartBtn.classList.remove('bg-[#4A604F]', 'hover:bg-[#3b4d3f]');
+                addToCartBtn.type = 'submit';
+                addToCartBtn.onclick = null;
+                sessionStorage.removeItem('last_added_variant');
+            }
+        }
+
+        // Size sorting
         const variantContainer = document.getElementById('variant-container');
-        
         if (variantContainer) {
-            // Get all the variant buttons into an array
             const variantsList = Array.from(variantContainer.children);
-            
-            // Sort them by extracting the number from the text (e.g., "50g" -> 50)
             variantsList.sort((a, b) => {
-                // regex /\D/g removes all non-numeric characters so "100ml" becomes "100"
                 const sizeA = parseInt(a.textContent.replace(/\D/g, '')) || 0;
                 const sizeB = parseInt(b.textContent.replace(/\D/g, '')) || 0;
-                return sizeA - sizeB; // Sorts lowest to highest
+                return sizeA - sizeB;
             });
-            
-            // Re-append the sorted buttons back into the container
             variantsList.forEach(variant => variantContainer.appendChild(variant));
         }
     });
@@ -561,6 +607,8 @@
         
         if (newVal >= 1 && newVal <= limit) {
             input.value = newVal;
+            // Restore "Add to Cart" button if quantity is changed
+            if (window.resetAddToCartState) window.resetAddToCartState();
         }
     }
 
