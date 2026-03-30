@@ -7,6 +7,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q,Sum,Min
 from django.db.models import Prefetch
 import json
+from cart.models import CartItem
+from cart.utils import get_user_cart
 
 def add_product(request):
     
@@ -701,8 +703,13 @@ def product_detail_view(request,slug):
     
 
 def add_to_cart(request):
+    
+    if not request.user.is_authenticated:
+        return redirect('signin')
+    
     if request.method != 'POST':
         return redirect('product_listing')
+    
     variant_id =request.POST.get('variant_id')
     
     max_qty=5
@@ -730,46 +737,32 @@ def add_to_cart(request):
         messages.error(request,"Variant not available")
         return redirect('product_detail_view',slug=product.slug)
     
-    stock = variant.stock
-    #out of stock
-    if stock == 0 :
-        messages.error(request,"Out of stock")
-        return redirect('product_detail_view',slug=product.slug)
-    
-    if quantity > stock:
-        messages.error(request,f"Only {stock} items available")
-        return redirect('product_detail_view',slug=product.slug)
-    
-    cart=request.session.get('cart',{})
-    key=str(variant_id)
-    
-    if key in cart:
-        current_qty = cart[key]
-        
-        if current_qty >= max_qty:
-            messages.warning(request, f"You already have the maximum {max_qty} items in your cart.")
-            return redirect('cart')
-        
-        new_qty=cart[key] + quantity
-        
-        if new_qty > max_qty:      
-            new_qty=max_qty
-            messages.warning(request, f"Max {max_qty} items per order")
-    
-        elif new_qty > stock:
-            
-            messages.error(request, f"Only {stock} items available")
-            return redirect('product_detail_view', slug=product.slug)
-        else:
-            messages.success(request, f"Cart updated ({new_qty} items)")
-            
-            
-        cart[key]=new_qty
-        messages.success(request,f"Cart updated ({new_qty} items)")
-    else:
-        cart[key]=quantity
-        messages.success(request, "Added to cart")
-        
-    request.session['cart'] =cart
+    stock =variant.stock
+
+    if stock == 0:
+        messages.error(request, "Out of stock")
+        return redirect('product_detail_view', slug=product.slug)
+
+    cart = get_user_cart(request.user)
+
+    cart_item, created = CartItem.objects.get_or_create(
+        cart=cart,
+        variant=variant
+    )
+
+    new_qty =cart_item.quantity +quantity if not created else quantity
+
+    if new_qty > stock:
+        messages.error(request,f"Only {stock} available")
+        return redirect('product_detail_view', slug=product.slug)
+
+    if new_qty > max_qty:
+        new_qty=max_qty
+        messages.warning(request,f"Max {max_qty} items allowed")
+
+    cart_item.quantity=new_qty
+    cart_item.save()
+
+    messages.success(request,"Cart updated")
 
     return redirect('product_detail_view',slug=product.slug)
