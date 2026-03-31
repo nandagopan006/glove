@@ -2,6 +2,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from product.models import Variant,Product
 from .utils import get_user_cart
+from .models import CartItem
+from django.contrib import messages
+
 
 def cart(request):
     if not request.user.is_authenticated:
@@ -35,12 +38,13 @@ def cart(request):
                     'low_stock':False,
                 })
             else:
+            
+                # if selected more than stock
+                if item.quantity > stock:
+                    item.quantity = stock
+                    item.save()
                 
                 qty =item.quantity
-                
-                # if selected more than stock
-                if qty > stock:
-                    qty =stock
             
                 subtotal =variant.price * qty
                 total +=subtotal
@@ -65,3 +69,50 @@ def cart(request):
         'total':total,
         'is_empty':is_empty,
     })
+
+def update_cart(request):
+    if request.method == "POST":
+        item_id=request.POST.get('item_id')
+        
+        try:
+            quantity=int(request.POST.get('quantity',1))
+        except:
+            quantity =1
+        #prevent 0 and neg
+        if quantity <=0 :
+            quantity=1
+        
+        item=get_object_or_404(CartItem,id=item_id,cart__user=request.user)
+        variant = item.variant
+        stock =variant.stock
+        
+        max_qty = 5
+        
+        if stock ==0 :
+            item.quantity=0
+            item.save()
+            return redirect('cart')
+        
+        if quantity <= 0:
+            item.delete()
+            return redirect('cart')
+        
+        #if more than 
+        if quantity > stock:
+            quantity=stock
+        
+        if quantity > max_qty:
+            quantity = max_qty
+            
+        item.quantity = quantity
+        item.save()
+    
+    return redirect('cart') 
+
+def remove_from_cart(request,item_id):
+    if request.method =="POST":
+        item = get_object_or_404(
+            CartItem,id=item_id,cart__user=request.user)
+        item.delete()
+        messages.success(request, "Item removed from cart")
+    return redirect('cart')
