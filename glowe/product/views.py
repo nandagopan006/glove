@@ -352,9 +352,6 @@ def add_variant(request,product_id):
             variant=form.save(commit=False)
             variant.product = product
             
-            
-            variant.is_active = request.POST.get('is_active') == 'True'
-            
             #if select as default true  and change pervies default false 
             if variant.is_default:
                 product.variants.filter(is_default=True).update(is_default=False)
@@ -388,21 +385,21 @@ def edit_variant(request,id):
         if form.is_valid():
             updated_variant = form.save(commit=False)
             
-            updated_variant.is_active = request.POST.get('is_active') == 'True'
+            updated_variant.is_active = 'is_active' in request.POST
             
-            if variant.is_default:
-                updated_variant.is_active = True
+            if updated_variant.is_default:
+                updated_variant.is_active =True
            #  if user select default remove other defaults
             if updated_variant.is_default :
                 product.variants.exclude(id=variant.id).filter(is_default=True).update(is_default=False)
                           
              #if no default exists so that make this default
             if not product.variants.exclude(id=variant.id).filter(is_default=True).exists():
-                updated_variant.is_default = True
+                updated_variant.is_default =True
 
             updated_variant.save()
             
-            messages.success(request, "Variant updated successfully")
+            messages.success(request,"Variant updated successfully")
             return redirect('variant_management',product_id=product.id)
 
         variants =product.variants.all().order_by('id')

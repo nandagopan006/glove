@@ -66,7 +66,7 @@ class ProductForm(forms.ModelForm):
 class VariantForm(forms.ModelForm):
     class Meta:
         model=Variant
-        fields= ['size','price','stock','is_default']
+        fields= ['size','price','stock','is_default','is_active']
     
     def clean_size(self):
         size=self.cleaned_data.get('size','').strip().lower().replace(' ','')
@@ -112,6 +112,8 @@ class VariantForm(forms.ModelForm):
         
         cleaned_data =super().clean()
         size=cleaned_data.get('size')
+        is_default = cleaned_data.get('is_default')
+        is_active = cleaned_data.get('is_active')
 
         if size and getattr(self.instance,"product",None):
             exists=Variant.objects.filter(product=self.instance.product,size=size
@@ -119,6 +121,9 @@ class VariantForm(forms.ModelForm):
 
             if exists:
                 raise forms.ValidationError("This size already exists for this product")
+            
+        if is_default and not is_active:
+            raise forms.ValidationError("Default variant must be active")
 
         return cleaned_data
             

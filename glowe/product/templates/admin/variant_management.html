@@ -125,49 +125,54 @@
 
         // 🔥 UPDATED EDIT LOGIC: Locks the status toggle if variant is default
         function triggerEdit(id, size, price, stock, isActive, isDefault) {
-            const form = document.getElementById('edit-variant-form');
-            form.action = `/adminpanel/products/variants/edit/${id}/`;
-            
-            let sizeVal = size;
-            let sizeUnit = 'ml';
-            const match = size.match(/^(\d+(?:\.\d+)?)\s*(ml|g)$/i);
-            if (match) {
-                sizeVal = match[1];
-                sizeUnit = match[2].toLowerCase();
-            }
+    const form = document.getElementById('edit-variant-form');
+    form.action = `/adminpanel/products/variants/edit/${id}/`;
 
-            document.getElementById('edit-size-val').value = sizeVal;
-            document.getElementById('edit-size-unit').value = sizeUnit;
-            form.querySelector('[name="price"]').value = price;
-            form.querySelector('[name="stock"]').value = stock;
-            
-            const activeToggle = form.querySelector('[name="is_active"]');
-            const toggleLabel = document.getElementById('edit-active-toggle-label');
-            const statusHelperText = document.getElementById('edit-status-helper-text');
-            
-            // LOCK TOGGLE IF DEFAULT
-            if (isDefault === 'True') {
-                activeToggle.checked = true;
-                activeToggle.disabled = true; // prevents changing
-                toggleLabel.classList.add('opacity-50', 'cursor-not-allowed');
-                toggleLabel.classList.remove('cursor-pointer', 'active:scale-95', 'group');
-                toggleLabel.title = "Default variants cannot be disabled";
-                statusHelperText.textContent = "Default variants must remain active.";
-                statusHelperText.classList.add("text-orange-500");
-            } else {
-                activeToggle.checked = (isActive === 'True');
-                activeToggle.disabled = false;
-                toggleLabel.classList.remove('opacity-50', 'cursor-not-allowed');
-                toggleLabel.classList.add('cursor-pointer', 'active:scale-95', 'group');
-                toggleLabel.title = "Toggle variant visibility";
-                statusHelperText.textContent = "Toggle variant visibility";
-                statusHelperText.classList.remove("text-orange-500");
-            }
-            
-            document.getElementById('editModalDeleteBtn').onclick = () => { closeModal('editModal'); setTimeout(() => triggerDelete(id), 300); };
-            
-            openModal('editModal');
-        }
+    // --- SIZE SPLIT ---
+    let sizeVal = size;
+    let sizeUnit = 'ml';
+    const match = size.match(/^(\d+(?:\.\d+)?)\s*(ml|g)$/i);
+    if (match) {
+        sizeVal = match[1];
+        sizeUnit = match[2].toLowerCase();
+    }
+
+    document.getElementById('edit-size-val').value = sizeVal;
+    document.getElementById('edit-size-unit').value = sizeUnit;
+
+    form.querySelector('[name="price"]').value = price;
+    form.querySelector('[name="stock"]').value = stock;
+
+    const activeToggle = form.querySelector('input[name="is_active"][type="checkbox"]');
+    const toggleLabel = document.getElementById('edit-active-toggle-label');
+    const statusHelperText = document.getElementById('edit-status-helper-text');
+
+    // 🔥 FORCE BOOLEAN
+    isActive = Boolean(isActive);
+    isDefault = Boolean(isDefault);
+
+    // --- DEFAULT LOCK ---
+    if (isDefault) {
+        activeToggle.checked = true;
+        activeToggle.disabled = true;
+
+        toggleLabel.classList.add('opacity-50', 'cursor-not-allowed');
+        statusHelperText.textContent = "Default variant must remain active.";
+    } else {
+        activeToggle.checked = isActive;
+        activeToggle.disabled = false;
+
+        toggleLabel.classList.remove('opacity-50', 'cursor-not-allowed');
+        statusHelperText.textContent = "Toggle variant visibility";
+    }
+
+    document.getElementById('editModalDeleteBtn').onclick = () => {
+        closeModal('editModal');
+        setTimeout(() => triggerDelete(id), 300);
+    };
+
+    openModal('editModal');
+}
 
         function submitStatusToggle(input) {
             const form = input.closest('form');
@@ -354,7 +359,11 @@
                                         <form action="{% url 'toggle_variant_status' variant.id %}" method="POST" class="m-0 p-0 inline-flex items-center">
                                             {% csrf_token %}
                                             <label class="flex items-center gap-3 {% if variant.is_default %}cursor-not-allowed opacity-50{% else %}cursor-pointer group active:scale-95{% endif %} transition-transform w-fit" {% if variant.is_default %}title="Default variant cannot be disabled"{% endif %}>
-                                                <input type="checkbox" onChange="{% if not variant.is_default %}submitStatusToggle(this){% endif %}" class="sr-only peer" {% if variant.is_active %}checked{% endif %} {% if variant.is_default %}disabled{% endif %}>
+                                                <input type="checkbox" name="is_active"
+       onChange="{% if not variant.is_default %}submitStatusToggle(this){% endif %}"
+       class="sr-only peer"
+       {% if variant.is_active %}checked{% endif %}
+       {% if variant.is_default %}disabled{% endif %}>
                                                 <div class="relative w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-[#2F5233] transition-colors duration-300 ease-in-out {% if not variant.is_default %}group-hover:ring-2 group-hover:ring-gray-200 peer-checked:group-hover:ring-[#2F5233]/40{% endif %}">
                                                     <div class="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-300 ease-in-out peer-checked:translate-x-5 flex items-center justify-center toggle-knob"></div>
                                                 </div>
@@ -368,7 +377,14 @@
                                         <div class="flex items-center justify-end gap-2 relative z-0">
                                             <button onclick="triggerView('{{ variant.size }}', '{{ variant.sku }}', '{{ variant.price }}', '{{ variant.stock }}', '{{ variant.is_active }}', '{{ variant.is_default }}')" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-200 transition-colors relative z-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
                                             
-                                            <button onclick="triggerEdit('{{ variant.id }}', '{{ variant.size }}', '{{ variant.price }}', '{{ variant.stock }}', '{{ variant.is_active }}', '{{ variant.is_default }}')" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-[#2F5233]/10 hover:text-[#2F5233] transition-colors relative z-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                                            <button onclick="triggerEdit(
+    '{{ variant.id }}',
+    '{{ variant.size }}',
+    '{{ variant.price }}',
+    '{{ variant.stock }}',
+    {{ variant.is_active|yesno:'true,false' }},
+    {{ variant.is_default|yesno:'true,false' }}
+)" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-[#2F5233]/10 hover:text-[#2F5233] transition-colors relative z-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
                                             
                                             <button onclick="triggerDelete('{{ variant.id }}')" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors relative z-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                                         </div>
@@ -538,7 +554,8 @@
                         <p class="text-xs text-gray-400">Toggle variant visibility</p>
                     </div>
                     <label class="flex items-center cursor-pointer gap-3 group active:scale-95 transition-transform w-fit">
-                        <input type="checkbox" name="is_active" value="True" class="sr-only peer" checked>
+                       <input type="hidden" name="is_active" value="False">
+<input type="checkbox" name="is_active" value="True" class="sr-only peer" checked>
                         <div class="relative w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-[#2F5233] transition-colors duration-300 ease-in-out group-hover:ring-2 group-hover:ring-gray-200 peer-checked:group-hover:ring-[#2F5233]/40">
                             <div class="absolute top-[2px] left-[2px] bg-white w-5 h-5 rounded-full shadow transition-transform duration-300 ease-in-out peer-checked:translate-x-5"></div>
                         </div>
@@ -617,8 +634,9 @@
                         <p class="text-xs text-gray-400 transition-colors duration-300" id="edit-status-helper-text">Toggle variant visibility</p>
                     </div>
                     <label id="edit-active-toggle-label" class="flex items-center cursor-pointer gap-3 group active:scale-95 transition-transform w-fit">
-                        <input type="checkbox" name="is_active" value="True" class="sr-only peer">
-                        <div class="relative w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-[#2F5233] transition-colors duration-300 ease-in-out group-hover:ring-2 group-hover:ring-gray-200 peer-checked:group-hover:ring-[#2F5233]/40 peer-disabled:bg-[#2F5233]/70 peer-disabled:group-hover:ring-0">
+                    <input type="hidden" name="is_active" value="False">
+                    <input type="checkbox" name="is_active" value="True" class="sr-only peer">
+<div class="relative w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-[#2F5233] transition-colors duration-300 ease-in-out group-hover:ring-2 group-hover:ring-gray-200 peer-checked:group-hover:ring-[#2F5233]/40 peer-disabled:bg-[#2F5233]/70 peer-disabled:group-hover:ring-0">
                             <div class="absolute top-[2px] left-[2px] bg-white w-5 h-5 rounded-full shadow transition-transform duration-300 ease-in-out peer-checked:translate-x-5"></div>
                         </div>
                         <span class="text-sm font-medium text-gray-500 peer-checked:hidden">Inactive</span>
