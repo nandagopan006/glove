@@ -148,7 +148,7 @@
     const statusHelperText = document.getElementById('edit-status-helper-text');
 
     // 🔥 FORCE BOOLEAN
-    isActive = Boolean(isActive);
+   isActive = (isActive === true || isActive === 'true');
     isDefault = Boolean(isDefault);
 
     // --- DEFAULT LOCK ---
@@ -634,7 +634,7 @@
                         <p class="text-xs text-gray-400 transition-colors duration-300" id="edit-status-helper-text">Toggle variant visibility</p>
                     </div>
                     <label id="edit-active-toggle-label" class="flex items-center cursor-pointer gap-3 group active:scale-95 transition-transform w-fit">
-                    <input type="hidden" name="is_active" value="False">
+                  
                     <input type="checkbox" name="is_active" value="True" class="sr-only peer">
 <div class="relative w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-[#2F5233] transition-colors duration-300 ease-in-out group-hover:ring-2 group-hover:ring-gray-200 peer-checked:group-hover:ring-[#2F5233]/40 peer-disabled:bg-[#2F5233]/70 peer-disabled:group-hover:ring-0">
                             <div class="absolute top-[2px] left-[2px] bg-white w-5 h-5 rounded-full shadow transition-transform duration-300 ease-in-out peer-checked:translate-x-5"></div>
