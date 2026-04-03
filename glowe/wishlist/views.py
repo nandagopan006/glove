@@ -86,6 +86,10 @@ def clear_wishlist(request) :
 @login_required
 def move_to_cart(request,variant_id):
     
+    if request.method != "POST":
+        return redirect('wishlist')
+    
+    
     variant =get_object_or_404(Variant,id=variant_id,is_active=True)
     
     # just checking product active false or delete ayo inn nokkuumm 
@@ -103,7 +107,18 @@ def move_to_cart(request,variant_id):
         cart=cart,variant=variant
     ).first()
     
-    if cart_item:#if already increase the qty 
+    max_limit=5
+    
+    if cart_item:#if already increase the qty & and only if not morethan the maxqty
+        
+        if cart_item.quantity >= max_limit:# if already have 5 qty to allow
+            messages.warning(request, f"You can only add {max_limit} items . You Already Have The Max Quantity Items")
+            return redirect('wishlist')
+            
+        if cart_item.quantity >= variant.stock :
+            messages.warning(request,'Maximum stock reached ')
+            return redirect('wishlist')
+        
         cart_item.quantity+=1
         cart_item.save()
     else:# to crerate new item
