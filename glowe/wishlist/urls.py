@@ -3,5 +3,8 @@ from . import views
 
 urlpatterns = [
     path("wishlist/", views.wishlist_page, name="wishlist"),
-    path("wishlist/add/<int:variant_id>/", views.add_to_wishlist, name="add_to_wishlist"),
+    path('wishlist/toggle/<int:variant_id>/', views.toggle_wishlist, name='toggle_wishlist'),
+    
+    
+    
 ]

@@ -1,26 +1,25 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render,redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from .models import Wishlist
 from product.models import Variant
 
+@login_required
+def toggle_wishlist(request, variant_id):
+    variant = get_object_or_404(Variant,id=variant_id,is_active=True)
 
-def add_to_wishlist(request, variant_id):
-    variant = get_object_or_404(Variant, id=variant_id, is_active=True)
+    wishlist_item =Wishlist.objects.filter(user=request.user,variant=variant)
 
-    if Wishlist.objects.filter(user=request.user, variant=variant).exist():
-        messages.warning(request, "Already in wishlist")
-
+    if wishlist_item.exists():
+        wishlist_item.delete()
+        messages.info(request, "Removed from wishlist ❌")
     else:
-        Wishlist.objects.create(user=request.user, variant=variant)
-        messages.success(request, "Added to wishlist")
-
-    wishlist_items = Wishlist.objects.filter(user=request.user).select_related(
-        "variant", "variant__product"
-    )
-
-    return render(request, "wishlist/wishlist.html",{"wishlist_items": wishlist_items})
+        Wishlist.objects.create(user=request.user,variant=variant)
+        messages.success(request,"Added to Wishlist")
+    
+    #for stay the same page(product detial/listing) thaneeahnn
+    return redirect(request.META.get('HTTP_REFERER', 'wishlist_view'))
 
 def wishlist_page(request):
-    return render(request, "wishlist/wishlist.html")
+    return render(request,"wishlist/wishlist.html")
