@@ -9,10 +9,14 @@ from product.models import Variant
 def toggle_wishlist(request, variant_id):
     
     if request.method != "POST":
-        return redirect(request.META.get('HTTP_REFERER', 'wishlist_view'))
+        return redirect(request.META.get('HTTP_REFERER', 'wishlist'))
     
     variant = get_object_or_404(Variant,id=variant_id,is_active=True)
-
+    
+    if not variant.product.is_active or variant.product.is_deleted:
+        messages.error(request, "Product not available")
+        return redirect(request.META.get('HTTP_REFERER', 'wishlist'))
+    
     wishlist_item =Wishlist.objects.filter(user=request.user,variant=variant)
 
     if wishlist_item.exists():
@@ -23,7 +27,7 @@ def toggle_wishlist(request, variant_id):
         messages.success(request,"Added to Wishlist")
     
     #for stay the same page(product detial/listing) thaneeahnn
-    return redirect(request.META.get('HTTP_REFERER','wishlist_view'))
+    return redirect(request.META.get('HTTP_REFERER','wishlist'))
 
 def wishlist_page(request):
-    return render(request,"wishlist/wishlist.html")
+    return render(request,"wishlist/wishlist_page.html")
