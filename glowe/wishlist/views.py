@@ -6,6 +6,7 @@ from .models import Wishlist
 from product.models import Variant
 from cart.models import Cart,CartItem
 from cart.utils import get_user_cart
+from .models import StockNotification
 
 @login_required
 def toggle_wishlist(request, variant_id):
@@ -128,10 +129,27 @@ def move_to_cart(request,variant_id):
     
     messages.success(request,"Added to cart")
     return redirect('wishlist')
+
+@login_required
+def notify_me(request,variant_id):
+    if request.method !="POST":
+        return redirect('wishlist')
     
+    variant = get_object_or_404(Variant,id=variant_id)
     
+    if variant.stock > 0 :
+        messages.info(request,"Product already in stock")
+        return redirect('wishlist')
         
+    obj, created=StockNotification.objects.get_or_create(
+        user=request.user,variant=variant)
     
+    if created :
+        messages.success(request, "You will be notified when product is back ")
+    else:
+        messages.info(request, "You already requested notification")
+        
+    return redirect('wishlist')
     
     
     
