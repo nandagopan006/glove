@@ -20,7 +20,7 @@ def notify_user_when_in_stock(sender,instance,**kwargs) :
         subject = "Your Wishlist Item is Back in Stock! 🎉"
 
         message = (
-                f"Hi {user.username},\n\n"
+                f"Hi {user.full_name},\n\n"
                 f"Good news! The product \"{instance.product.name}\" is now back in stock.\n\n"
                 f"You can now add it to your cart and purchase it.\n\n"
                 f"Visit the website and grab it before it runs out again!\n\n"
@@ -35,6 +35,6 @@ def notify_user_when_in_stock(sender,instance,**kwargs) :
                 fail_silently=False,
             )
         
-        # ✅ Mark as notified (prevent duplicate emails)
+        #Mark as notified prevent duplicate emails
         n.is_notified = True
         n.save()
