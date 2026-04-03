@@ -7,6 +7,6 @@ urlpatterns = [
     path('wishlist/remove/<int:variant_id>/',views.remove_from_wishlist,name='remove_from_wishlist'),
     path('wishlist/clear/',views.clear_wishlist, name='clear_wishlist'),
      path('wishlist/move-to-cart/<int:variant_id>/',views.move_to_cart,name='move_to_cart'),
-     
+     path('wishlist/notify/<int:variant_id>/',views.notify_me, name='notify_me'),
     
 ]
