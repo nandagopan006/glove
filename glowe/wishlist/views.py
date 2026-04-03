@@ -29,5 +29,27 @@ def toggle_wishlist(request, variant_id):
     #for stay the same page(product detial/listing) thaneeahnn
     return redirect(request.META.get('HTTP_REFERER','wishlist'))
 
+
+@login_required
+def remove_from_wishlist(request, variant_id):
+    
+    if request.method != "POST":
+        return redirect('wishlist')
+    
+    variant=get_object_or_404(Variant,id=variant_id)
+    
+    wishlist_item=Wishlist.objects.filter(user=request.user,variant=variant)
+    
+    if wishlist_item.exists():
+        wishlist_item.delete()
+        messages.success(request,"Item removed from wishlist")
+        
+    return redirect("wishlist")
+        
+    
+
+
+
+
 def wishlist_page(request):
-    return render(request,"wishlist/wishlist_page.html")
+    return render(request,"wishlist/wishlist.html")
