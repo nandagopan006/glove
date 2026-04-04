@@ -17,60 +17,121 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 }
 .nav-link:hover::after { width:100%; }
 
-/* ─── Product card ─── */
-.product-card { transition:transform 0.4s ease,box-shadow 0.4s ease; }
-@media(hover:hover){
-  .product-card:hover { transform:translateY(-8px); box-shadow:0 12px 40px rgba(74,55,40,0.10); }
-  .product-card:hover .product-image { transform:scale(1.05); }
-}
-.product-image { transition:transform 0.5s ease; }
-
-/* ─── Primary button ─── */
-.btn-primary {
-  position:relative; overflow:hidden;
-  transition:all 0.3s ease; min-height:44px;
-}
-.btn-primary::before {
-  content:''; position:absolute; top:0; left:-100%;
-  width:100%; height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);
-  transition:left 0.5s ease;
+/* ══ PRODUCT CARD – PREMIUM REDESIGN ══ */
+.product-card {
+  position:relative;
+  border-radius:20px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:0 2px 12px rgba(74,55,40,0.06);
+  transition:transform 0.45s cubic-bezier(0.34,1.26,0.64,1), box-shadow 0.45s ease;
+  cursor:pointer;
 }
 @media(hover:hover){
-  .btn-primary:hover::before { left:100%; }
-  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(74,55,40,0.3); }
+  .product-card:hover {
+    transform:translateY(-10px) scale(1.015);
+    box-shadow:0 20px 52px rgba(74,55,40,0.14);
+  }
+  .product-card:hover .img-primary  { opacity:0 !important; }
+  .product-card:hover .img-secondary { opacity:1 !important; }
+  .product-card:hover .card-cta      { transform:translateY(0); opacity:1; }
+  .product-card:hover .remove-btn    { opacity:1; transform:scale(1); }
 }
-.btn-primary:active { transform:scale(0.98); }
 
-/* ─── Outline button ─── */
-.btn-outline { transition:all 0.3s ease; min-height:44px; }
-@media(hover:hover){
-  .btn-outline:hover { background-color:#4A3728; color:white; transform:translateY(-2px); }
+/* Image transition */
+.img-primary, .img-secondary {
+  position:absolute; inset:0;
+  width:100%; height:100%; object-fit:cover;
+  transition:opacity 0.55s ease;
 }
-.btn-outline:active { transform:scale(0.98); }
+.img-primary  { opacity:1; z-index:1; }
+.img-secondary{ opacity:0; z-index:2; }
 
-/* ─── Remove button ─── */
-.remove-btn { transition:all 0.3s ease; min-width:32px; min-height:32px; }
-@media(hover:hover){
-  .remove-btn { opacity:0; }
-  .product-card:hover .remove-btn { opacity:1; }
-  .remove-btn:hover { transform:scale(1.1) rotate(90deg); background-color:#4A3728; color:white; }
+/* Bottom gradient info panel */
+.card-info-panel {
+  position:absolute; bottom:0; left:0; right:0; z-index:4;
+  background:linear-gradient(to top, rgba(26,18,8,0.88) 0%, rgba(26,18,8,0.55) 55%, transparent 100%);
+  padding:40px 14px 14px;
+  pointer-events:none;
 }
-@media(hover:none){ .remove-btn { opacity:1; } }
 
-/* ─── Badge pulse ─── */
-.badge { animation:pulse-subtle 2s infinite; }
-@keyframes pulse-subtle{ 0%,100%{opacity:1} 50%{opacity:0.85} }
+/* CTA slides up on hover */
+.card-cta {
+  transform:translateY(8px);
+  opacity:0;
+  transition:transform 0.35s cubic-bezier(0.34,1.26,0.64,1), opacity 0.3s ease;
+  position:relative; z-index:5; pointer-events:all;
+}
+@media(hover:none){ .card-cta { transform:translateY(0); opacity:1; } }
 
-/* ─── Icon button ─── */
-.icon-btn {
-  transition:all 0.3s ease; min-width:44px; min-height:44px;
+/* Remove button */
+.remove-btn {
+  position:absolute; top:12px; right:12px; z-index:10;
+  width:30px; height:30px;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(6px);
+  border-radius:50%;
   display:flex; align-items:center; justify-content:center;
+  color:#4A3728; border:none;
+  opacity:0; transform:scale(0.8);
+  transition:opacity 0.25s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1), background 0.2s;
+  cursor:pointer;
 }
-@media(hover:hover){ .icon-btn:hover { transform:scale(1.15); color:#4A3728; } }
-.icon-btn:active { transform:scale(0.95); }
+@media(hover:none){ .remove-btn { opacity:1; transform:scale(1); } }
+.remove-btn:hover { background:#4A3728; color:#fff; }
 
-/* ─── Action link ─── */
+/* Badge */
+.card-badge {
+  position:absolute; top:12px; left:12px; z-index:10;
+  background:rgba(74,55,40,0.85); backdrop-filter:blur(4px);
+  color:#F5F0EB; font-family:'Montserrat',sans-serif;
+  font-size:8px; font-weight:700; letter-spacing:0.18em;
+  padding:4px 10px; border-radius:6px;
+}
+
+/* Tag */
+.tag-badge {
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:8px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
+  padding:3px 8px; border-radius:9999px;
+  background:rgba(255,255,255,0.18); color:#fff; border:1px solid rgba(255,255,255,0.3);
+  backdrop-filter:blur(4px);
+  transition:all 0.2s ease; cursor:default;
+}
+.tag-badge .tag-remove {
+  cursor:pointer; opacity:0.6; transition:opacity 0.2s;
+  font-size:9px; line-height:1; margin-left:2px;
+}
+.tag-badge .tag-remove:hover { opacity:1; }
+.tag-menu {
+  position:absolute; bottom:calc(100% + 6px); left:0; z-index:30;
+  background:#fff; border-radius:14px; padding:6px;
+  box-shadow:0 10px 36px rgba(74,55,40,0.16); border:1px solid #f0ebe2;
+  opacity:0; pointer-events:none; transform:translateY(4px);
+  transition:all 0.2s ease; min-width:140px;
+}
+.tag-menu.open { opacity:1; pointer-events:all; transform:translateY(0); }
+.tag-menu button {
+  display:flex; align-items:center; gap:8px; width:100%; text-align:left; padding:8px 12px;
+  font-size:10px; font-weight:500; color:#4A3728; border:none;
+  background:none; cursor:pointer; border-radius:8px; transition:background 0.15s;
+  font-family:'Montserrat',sans-serif; letter-spacing:0.05em;
+}
+.tag-menu button:hover { background:#F5F0EB; }
+
+/* OOS overlay — only blurs the image, sits BEHIND the info panel */
+.out-of-stock-overlay {
+  position:absolute; inset:0; z-index:2;
+  background:rgba(255,255,255,0.38); backdrop-filter:blur(4px) saturate(0.7);
+}
+/* Always show CTA for OOS cards (no hover needed) */
+.product-card.is-oos .card-cta {
+  transform:translateY(0) !important;
+  opacity:1 !important;
+}
+
+
+/* Action link */
 .action-link {
   position:relative; transition:color 0.3s ease;
   padding:8px 4px; min-height:44px; display:inline-flex; align-items:center;
@@ -84,7 +145,7 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   .action-link:hover::after { width:calc(100% - 8px); }
 }
 
-/* ─── Recommended card ─── */
+/* Recommended card */
 .recommended-card { transition:all 0.4s ease; }
 @media(hover:hover){
   .recommended-card:hover { transform:translateY(-6px); }
@@ -92,13 +153,10 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 }
 .rec-image { transition:transform 0.5s ease; }
 
-/* ─── OOS overlay ─── */
-.out-of-stock-overlay { backdrop-filter:blur(1px); }
-
-/* ─── Carousel ─── */
+/* Carousel */
 #rec-carousel { transition:transform 0.5s cubic-bezier(0.4,0,0.2,1); }
 
-/* ─── Confirmation Modal ─── */
+/* Modal */
 .wl-modal-overlay {
   position:fixed; inset:0; z-index:9000;
   background:rgba(253,252,251,0.82); backdrop-filter:blur(8px);
@@ -116,42 +174,12 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 }
 .wl-modal-overlay.open .wl-modal { transform:scale(1) translateY(0); }
 
-/* ─── Tag system ─── */
-.tag-badge {
-  display:inline-flex; align-items:center; gap:3px;
-  font-size:8px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
-  padding:3px 8px; border-radius:9999px;
-  background:#F5F0EB; color:#4A3728; border:1px solid #E8DED4;
-  transition:all 0.2s ease; cursor:default;
-}
-.tag-badge .tag-remove {
-  cursor:pointer; opacity:0.5; transition:opacity 0.2s;
-  font-size:9px; line-height:1; margin-left:2px;
-}
-.tag-badge .tag-remove:hover { opacity:1; }
-.tag-menu {
-  position:absolute; bottom:calc(100% + 6px); right:0; z-index:30;
-  background:#fff; border-radius:12px; padding:6px;
-  box-shadow:0 8px 32px rgba(74,55,40,0.15); border:1px solid #f0ebe2;
-  opacity:0; pointer-events:none; transform:translateY(4px);
-  transition:all 0.2s ease; min-width:130px;
-}
-.tag-menu.open { opacity:1; pointer-events:all; transform:translateY(0); }
-.tag-menu button {
-  display:block; width:100%; text-align:left; padding:7px 12px;
-  font-size:10px; font-weight:500; color:#4A3728; border:none;
-  background:none; cursor:pointer; border-radius:6px; transition:background 0.15s;
-  font-family:'Montserrat',sans-serif; letter-spacing:0.05em;
-}
-.tag-menu button:hover { background:#F5F0EB; }
-
-/* ─── Drag indicator ─── */
+/* Drag */
 .drag-handle { cursor:grab; }
 .drag-handle:active { cursor:grabbing; }
-[draggable="true"].dragging { opacity:0.4; transform:scale(0.96); }
-.drag-over { box-shadow:0 0 0 2px #4A3728 !important; border-radius:12px; }
+[draggable="true"].dragging { opacity:0.35; transform:scale(0.95) rotate(-1deg); }
+.drag-over { outline:2px dashed #4A3728; outline-offset:4px; border-radius:20px; }
 
-/* ─── Safe area ─── */
 @supports(padding:max(0px)){
   .safe-area-padding {
     padding-left:max(1rem,env(safe-area-inset-left));
@@ -185,8 +213,6 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       {{ wishlist_items|length }} ITEM{% if wishlist_items|length != 1 %}S{% endif %} SAVED
     </span>
     <div class="flex items-center space-x-4 sm:space-x-6">
-      <button class="action-link text-[11px] sm:text-xs text-gray-500 font-normal"
-              onclick="handleShare()" aria-label="Share wishlist">Share Wishlist</button>
       {% if wishlist_items %}
       <button class="action-link text-[11px] sm:text-xs text-gray-500 font-normal"
               onclick="openClearModal()" aria-label="Clear all">Clear All</button>
@@ -196,125 +222,99 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
   <!-- Product grid -->
   {% if wishlist_items %}
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6"
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6"
        id="wishlist-grid">
 
     {% for item in wishlist_items %}
     {% with variant=item.variant product=item.variant.product imgs=item.variant.product.images.all %}
-    <div class="product-card group relative"
+    <div class="product-card group relative{% if variant.stock == 0 %} is-oos{% endif %}"
          id="wl-card-{{ item.id }}"
          data-item-id="{{ item.id }}"
          draggable="true">
 
-      <!-- Image area -->
-      <div class="relative bg-gradient-to-br from-[#E8DED4] to-[#D4C4B5] rounded-xl overflow-hidden aspect-square mb-3 sm:mb-4">
+      <!-- ── Full-bleed image area ── -->
+      <div class="relative w-full" style="aspect-ratio:3/4;">
 
-        <!-- Badges -->
-        {% if variant.stock == 0 %}
-        <div class="out-of-stock-overlay absolute inset-0 bg-black/25 flex items-center justify-center z-10">
-          <span class="bg-white text-[#4A3728] text-[8px] sm:text-[10px] font-medium px-3 sm:px-4 py-1.5 sm:py-2 rounded-sm tracking-wider shadow-sm">
-            OUT OF STOCK
-          </span>
-        </div>
-        {% elif forloop.first %}
-        <span class="badge absolute top-2 sm:top-3 left-2 sm:left-3 bg-[#4A3728] text-white text-[8px] sm:text-[10px] px-2 sm:px-3 py-1 sm:py-1.5 rounded-sm font-medium tracking-wider z-10">
-          BEST SELLER
-        </span>
+        <!-- Images -->
+        {% if imgs %}
+          <img class="img-primary" src="{{ imgs.0.image.url }}" alt="{{ product.name }}" loading="lazy">
+          {% if imgs|length > 1 %}
+          <img class="img-secondary" src="{{ imgs.1.image.url }}" alt="{{ product.name }}" loading="lazy">
+          {% endif %}
+        {% else %}
+          <div class="absolute inset-0 bg-gradient-to-br from-[#f0ebe2] to-[#d4c4b0] flex items-center justify-center z-1">
+            <span class="font-cormorant text-7xl font-light text-[#4A3728]/15 select-none">{{ product.name|first|upper }}</span>
+          </div>
         {% endif %}
 
-        <!-- Remove button (triggers modal) -->
-        <button class="remove-btn absolute top-2 sm:top-3 right-2 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-400 shadow-sm z-20 focus:outline-none focus:ring-2 focus:ring-[#4A3728]/30"
+        <!-- OOS — just a frosted blur veil over the image (no text here) -->
+        {% if variant.stock == 0 %}
+        <div class="out-of-stock-overlay"></div>
+        {% endif %}
+
+        <!-- Transparent link to product detail -->
+        <a href="{% url 'product_detail_view' product.slug %}"
+           class="absolute inset-0 z-[3]"
+           aria-label="View {{ product.name }}"></a>
+
+        <!-- Remove × -->
+        <button class="remove-btn"
                 onclick="openRemoveModal({{ item.id }}, {{ variant.id }})"
                 aria-label="Remove {{ product.name }} from wishlist">
-          <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
 
-        <!-- Product image (primary + hover secondary) -->
-        {% if imgs %}
-          <img class="product-image w-full h-full object-cover img-primary absolute inset-0"
-               src="{{ imgs.0.image.url }}"
-               alt="{{ product.name }}"
-               loading="lazy"
-               style="opacity:1;z-index:1;transition:opacity 0.6s ease,transform 0.5s ease;"/>
-          {% if imgs|length > 1 %}
-          <img class="product-image w-full h-full object-cover img-secondary absolute inset-0"
-               src="{{ imgs.1.image.url }}"
-               alt="{{ product.name }}"
-               loading="lazy"
-               style="opacity:0;z-index:2;transition:opacity 0.6s ease,transform 0.5s ease;"/>
-          {% endif %}
-        {% else %}
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="font-cormorant text-6xl font-light text-[#4A3728]/20 select-none">
-              {{ product.name|first|upper }}
-            </span>
+        <!-- ── Gradient info panel ── -->
+        <div class="card-info-panel">
+
+          <!-- Name + price + OOS pill -->
+          <div class="flex items-start justify-between gap-2 mb-1.5">
+            <h3 class="font-cormorant text-white text-base sm:text-lg leading-tight line-clamp-2">{{ product.name }}</h3>
+            <div class="flex flex-col items-end gap-1 flex-shrink-0">
+              <span class="font-montserrat text-[11px] font-bold text-white/80">₹{{ variant.price }}</span>
+              {% if variant.stock == 0 %}
+              <span class="font-montserrat text-[7px] font-bold tracking-[0.18em] uppercase text-red-300 bg-red-900/60 backdrop-blur-sm px-2 py-0.5 rounded-full border border-red-400/30">Out of Stock</span>
+              {% endif %}
+            </div>
           </div>
-        {% endif %}
+
+          <!-- Skin type -->
+          {% if product.skin_type %}
+          <p class="font-montserrat text-[9px] text-white/50 tracking-[0.12em] uppercase mb-3 truncate">{{ product.skin_type|truncatechars:28 }}</p>
+          {% endif %}
+
+          <!-- CTA -->
+          <div class="card-cta">
+            {% if variant.stock == 0 %}
+              <form method="POST" action="{% url 'notify_me' variant.id %}" id="notify-form-{{ item.id }}">
+                {% csrf_token %}
+                <button type="button"
+                        onclick="submitNotifyForm({{ item.id }}, '{{ product.name|escapejs }}')"
+                        class="w-full flex items-center justify-center gap-2 border border-white/50 text-white font-montserrat text-[9px] font-bold tracking-[0.2em] uppercase py-2.5 rounded-xl backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all">
+                  Notify Me
+                </button>
+              </form>
+            {% else %}
+              <form method="POST" action="{% url 'move_to_cart' variant.id %}" id="cart-form-{{ variant.id }}">
+                {% csrf_token %}
+                <button type="button"
+                        onclick="submitCartForm({{ variant.id }}, '{{ product.name|escapejs }}')"
+                        class="w-full flex items-center justify-center gap-2 bg-white text-[#3D2B1F] font-montserrat text-[9px] font-bold tracking-[0.2em] uppercase py-2.5 rounded-xl shadow-lg hover:bg-[#f5f0eb] active:scale-95 transition-all">
+                  <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                  Add to Cart
+                </button>
+              </form>
+            {% endif %}
+          </div>
+
+        </div><!-- /info panel -->
+
+        <!-- Hidden remove form -->
+        <form method="POST" action="{% url 'remove_from_wishlist' variant.id %}" id="remove-form-{{ item.id }}" style="display:none;">{% csrf_token %}</form>
+
       </div><!-- /image area -->
-
-      <!-- Card info -->
-      <div class="flex items-start justify-between mb-0.5 gap-2">
-        <h3 class="font-cormorant text-sm sm:text-base md:text-lg text-[#4A3728] font-normal leading-tight">
-          {{ product.name }}
-        </h3>
-        <span class="text-[#4A3728] font-medium text-xs sm:text-sm flex-shrink-0">${{ variant.price }}</span>
-      </div>
-      <p class="text-[10px] sm:text-[11px] text-gray-400 mb-2 font-light">
-        {{ product.skin_type|default:product.description|truncatechars:32 }}
-      </p>
-
-      <!-- Tag area -->
-      <div class="flex items-center gap-1.5 mb-2.5 sm:mb-3 min-h-[20px] flex-wrap" id="tag-area-{{ item.id }}">
-        <!-- Tags injected by JS -->
-      </div>
-
-      <!-- Tag add button -->
-      <div class="relative inline-block mb-2" id="tag-wrapper-{{ item.id }}">
-        <button class="text-[9px] text-gray-400 hover:text-[#4A3728] transition-colors font-medium tracking-wide flex items-center gap-1"
-                onclick="toggleTagMenu({{ item.id }})" aria-label="Add tag to {{ product.name }}">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          TAG
-        </button>
-        <div class="tag-menu" id="tag-menu-{{ item.id }}">
-          <button onclick="addTag({{ item.id }}, 'Favorite')">&#9829; Favorite</button>
-          <button onclick="addTag({{ item.id }}, 'Gift')">&#127873; Gift</button>
-          <button onclick="addTag({{ item.id }}, 'Later')">&#128337; Later</button>
-          <button onclick="addTag({{ item.id }}, 'Must Have')">&#11088; Must Have</button>
-        </div>
-      </div>
-
-      <!-- Action button -->
-      {% if variant.stock == 0 %}
-        <form method="POST" action="{% url 'notify_me' variant.id %}" id="notify-form-{{ item.id }}">
-          {% csrf_token %}
-          <button type="button"
-                  class="btn-outline w-full border border-[#4A3728] text-[#4A3728] text-[9px] sm:text-[10px] font-semibold py-2.5 sm:py-3 rounded-sm tracking-[0.15em] focus:outline-none focus:ring-2 focus:ring-[#4A3728]/30"
-                  onclick="submitNotifyForm({{ item.id }}, '{{ product.name }}')"
-                  aria-label="Notify me when {{ product.name }} is back in stock">
-            Notify Me
-          </button>
-        </form>
-      {% else %}
-        <form method="POST" action="{% url 'move_to_cart' variant.id %}" id="cart-form-{{ variant.id }}">
-          {% csrf_token %}
-          <button type="button"
-                  class="btn-primary w-full bg-[#4A3728] text-white text-[9px] sm:text-[10px] font-semibold py-2.5 sm:py-3 rounded-sm tracking-[0.15em] focus:outline-none focus:ring-2 focus:ring-[#4A3728]/50"
-                  onclick="submitCartForm({{ variant.id }}, '{{ product.name }}')"
-                  aria-label="Add {{ product.name }} to cart">
-            ADD TO CART
-          </button>
-        </form>
-      {% endif %}
-
-      <!-- Hidden remove form (submitted by modal) -->
-      <form method="POST"
-            action="{% url 'remove_from_wishlist' variant.id %}"
-            id="remove-form-{{ item.id }}"
-            style="display:none;">
-        {% csrf_token %}
-      </form>
 
     </div><!-- /product-card -->
     {% endwith %}
