@@ -70,6 +70,7 @@ def cart(request):
         'cart_items':cart_items,
         'total':total,
         'is_empty':is_empty,
+        'cart_count':cart_count,
     })
 
 def update_cart(request):

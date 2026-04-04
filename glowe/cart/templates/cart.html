@@ -258,10 +258,10 @@
   <div class="flex flex-col lg:flex-row gap-8 items-start">
 
     <!-- ── LEFT : CART ITEMS ── -->
-    <div class="w-full lg:w-[68%] flex flex-col gap-4 fade-up delay-1">
+    <div class="w-full lg:w-[68%] flex flex-col gap-4">
 
       {% for entry in cart_items %}
-      <div class="cart-card p-5 sm:p-6"
+      <div class="cart-card p-5 sm:p-6 fade-up" style="animation-delay: 0.{{ forloop.counter }}s;"
            data-item-id="{{ entry.item.id }}"
            data-oos="{{ entry.is_out_of_stock|yesno:'true,false' }}"
            data-price="{{ entry.price }}">
@@ -375,6 +375,11 @@
 
     <!-- ── RIGHT : ORDER SUMMARY ── -->
     <div class="w-full lg:w-[32%] fade-up delay-2">
+      <div class="mb-4 text-right px-2">
+        <span class="font-body text-sm tracking-widest text-[var(--brown-lt)] uppercase">
+          Total Items: <strong class="text-[var(--brown)] text-base ml-1">{{ cart_count }}</strong>
+        </span>
+      </div>
       <div class="summary-card p-7">
         <h2 class="font-display text-2xl font-medium text-[var(--brown)] mb-6">Order Summary</h2>
 
@@ -396,10 +401,6 @@
             </span>
             <span class="font-body text-sm text-[var(--brown)]">TBD</span>
           </div>
-          <div class="flex justify-between items-center">
-            <span class="font-body text-sm text-[var(--brown-lt)]">Estimated Tax</span>
-            <span class="font-body text-sm text-[var(--brown-lt)] italic">TBD</span>
-          </div>
         </div>
 
         <div class="divider my-5"></div>
@@ -407,7 +408,7 @@
         <div class="flex justify-between items-end mb-1">
           <span class="font-body text-xs tracking-widest text-[var(--brown)] uppercase">Total</span>
           <span class="font-display text-4xl font-medium text-[var(--brown)]"
-                id="summary-total">₹{{ total|add:0 }}</span>
+                id="summary-total">₹{{ total|add:0 }}</span>  
         </div>
         <p class="font-body text-[10px] tracking-widest uppercase text-[var(--brown-lt)] text-right mb-6">
           Price in INR
