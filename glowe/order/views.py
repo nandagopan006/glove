@@ -2,7 +2,7 @@ from django.shortcuts import redirect, get_object_or_404,render
 from django.contrib import messages
 from django.db import transaction
 from django.utils.crypto import get_random_string
-
+from product.models import Variant
 from cart.models import Cart
 from user.models import Address
 from models import Order, OrderItem, ShippingAddress, Payment, OrderStatusHistory
@@ -12,6 +12,11 @@ from models import Order, OrderItem, ShippingAddress, Payment, OrderStatusHistor
 def place_order(request):
     if request.method != "POST":
         return redirect('checkout')
+    
+    # prevent double order --   not allow dulpi oder
+    if request.session.get('order_processing'):
+        return redirect('cart')
+    request.session['order_processing'] =True
      
     try :
         cart=request.user.cart
@@ -20,14 +25,23 @@ def place_order(request):
         messages.error(request, "Cart not found")
         return redirect('cart')
     
-    address_id = request.POST.get('address_id')
+    if not cart_items.exists():
+        messages.error(request, "Cart is empty")
+        return redirect('cart')
+    
+    address_id =request.POST.get('address_id')
+    if not address_id:
+        messages.error(request, "Please select an address")
+        return redirect('checkout')
+    
     address =get_object_or_404(Address,id =address_id,user=request.user)
     
     subtotal =0
     
     with transaction.atomic():
         for item in cart_items:
-            variant=item.variant
+            #lock variant ,,if one user bbuy same other USER aslo nedd lock  --oveerselling block
+            variant = Variant.objects.select_for_update().get(id=item.variant.id)
             product=variant.product
             
             if not product.is_active:
@@ -40,10 +54,6 @@ def place_order(request):
             
             if variant.stock == 0:
                 messages.error(request,f"{product.name} is out of stock")
-                return redirect('cart')
-            
-            if item.quantity == 0:
-                messages.error(request,f"Only {variant.stock} left for {product.name}")
                 return redirect('cart')
             
             if item.quantity > variant.stock:
@@ -63,7 +73,7 @@ def place_order(request):
                                      delivery_charge=shipping,
                                      discount_amount=0,
                                      total_amount=total,
-                                    order_status="CONFIRMED"
+                                    order_status=Order.Status.CONFIRMED
                                      )
         
          #create order items + reduce stock
@@ -102,11 +112,12 @@ def place_order(request):
         
         OrderStatusHistory.objects.create(
         order=order,
-        status="CONFIRMED")
+        status=Order.Status.CONFIRMED)
         
-        
+        #dlt all item, frm crt
         cart_items.delete()
     
+    request.session['order_processing'] = False
     messages.success(request,"Order placed successfully!")
     return redirect("order_success",order_id=order.id)
     
