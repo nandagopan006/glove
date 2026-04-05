@@ -35,3 +35,25 @@ class Order(models.Model):
 
     def __str__(self):
         return self.order_number
+    
+class OrderItem(models.Model):
+    class Status(models.TextChoices):
+        PENDING="PENDING","Pending"
+        SHIPPED ="SHIPPED","Shipped"
+        DELIVERED= "DELIVERED","Delivered"
+        CANCELLED="CANCELLED","Cancelled"
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
+    variant = models.ForeignKey(Variant, on_delete=models.CASCADE)
+
+    price_at_time = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField()
+
+    item_status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING
+    )
+
+    def __str__(self):
+        return f"{self.variant} - {self.quantity}"
