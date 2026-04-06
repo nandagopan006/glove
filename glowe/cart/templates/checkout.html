@@ -307,7 +307,7 @@ body { background: var(--bg); }
 
 <!-- Main grid -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-20">
-  <form id="checkout-form" action="{% url 'place_order' %}" method="POST" class="grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-x-16 xl:gap-x-24 items-start">
+  <form action="{% url 'place_order' %}" method="POST" class="grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-x-16 xl:gap-x-24 items-start">
     {% csrf_token %}
 
       <!-- ── SHIPPING ADDRESS ── -->

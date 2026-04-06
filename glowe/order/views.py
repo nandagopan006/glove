@@ -8,129 +8,141 @@ from cart.models import Cart
 from user.models import Address
 from django.contrib.auth.decorators import login_required
 from datetime import date, timedelta
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 
 
+@login_required
 def place_order(request):
     if request.method != "POST":
         return redirect('checkout')
-    
+
     # prevent double order --   not allow dulpi oder
     if request.session.get('order_processing'):
         return redirect('cart')
     request.session['order_processing'] =True
-     
+
     try :
         cart=request.user.cart
         cart_items=cart.items.select_related('variant','variant__product')
     except Cart.DoesNotExist:
+        request.session['order_processing'] = False
         messages.error(request, "Cart not found")
         return redirect('cart')
-    
+
     if not cart_items.exists():
+        request.session['order_processing'] = False
         messages.error(request, "Cart is empty")
         return redirect('cart')
-    
+
     address_id =request.POST.get('address_id')
     if not address_id:
-        messages.error(request, "Please select an address")
+        request.session['order_processing'] = False
+        messages.error(request, "Please select a delivery address")
         return redirect('checkout')
-    
+
     address =get_object_or_404(Address,id =address_id,user=request.user)
-    
+
     subtotal =0
-    
+
     with transaction.atomic():
         for item in cart_items:
             #lock variant ,,if one user bbuy same other USER aslo nedd lock  --oveerselling block
             variant = Variant.objects.select_for_update().get(id=item.variant.id)
             product=variant.product
-            
+
             if not product.is_active:
-                messages.error(request,f"{product.name} is unavailable")
+                request.session['order_processing'] = False
+                messages.error(request, f"{product.name} is unavailable")
                 return redirect('cart')
-            
+
             if not variant.is_active:
-                messages.error(request,f"{product.name} is not available")
+                request.session['order_processing'] = False
+                messages.error(request, f"{product.name} is not available")
                 return redirect('cart')
-            
+
             if variant.stock == 0:
-                messages.error(request,f"{product.name} is out of stock")
+                request.session['order_processing'] = False
+                messages.error(request, f"{product.name} is out of stock")
                 return redirect('cart')
-            
+
             if item.quantity > variant.stock:
-                messages.error(request,f"{product.name} only {variant.stock} left")
+                request.session['order_processing'] = False
+                messages.error(request, f"{product.name}: only {variant.stock} left")
                 return redirect('cart')
-            
-            item.item_total = item.quantity * variant.price
+
+            item.item_total =item.quantity * variant.price
             subtotal += item.item_total
-            
-        shipping = 0 if subtotal > 799 else 100
-        total = subtotal + shipping
-        
-        order = Order.objects.create(user=request.user,
-                                     order_number='ORD' + get_random_string(10).upper(),
-                                     address=address,
-                                     subtotal=subtotal,
-                                     delivery_charge=shipping,
-                                     discount_amount=0,
-                                     total_amount=total,
-                                    order_status=Order.Status.CONFIRMED
-                                     )
-        
+
+        shipping = 0 if subtotal > 999 else 100
+        total =subtotal + shipping
+
+        order =Order.objects.create(user=request.user,
+            order_number='ORD-' + get_random_string(10).upper(),
+            address=address,
+            subtotal=subtotal,
+            delivery_charge=shipping,
+            discount_amount=0,
+            total_amount=total,
+            order_status=Order.Status.CONFIRMED
+        )
+
          #create order items + reduce stock
         for item in cart_items:
             variant=item.variant
-            
+
             OrderItem.objects.create(
-            order=order,
-            variant=variant,
-            price_at_time=variant.price,
+                order=order,
+                variant=variant,
+                price_at_time=variant.price,
             quantity=item.quantity)
-            
+
             #reduce the stock
             variant.stock -= item.quantity
             variant.save()
-        
+
         #save the ordered address
         ShippingAddress.objects.create(
-        order=order,
-        user=request.user,
-        full_name=address.full_name,
-        phone=address.phone_number,
-        address_line1=address.street_address,
-        city=address.city,
-        district=address.district,
-        state=address.state,
-        country=address.country,
-        pincode=address.pincode)
-        
+            order=order,
+            user=request.user,
+            full_name=address.full_name,
+            phone=address.phone_number,
+            address_line1=address.street_address,
+            city=address.city,
+            district=address.district,
+            state=address.state,
+            country=address.country,
+            pincode=address.pincode)
+
         #now only cod
         Payment.objects.create(
-        order=order,
-        payment_method="COD",
-        amount=total,
+            order=order,
+            payment_method="COD",
+            amount=total,
         payment_status="PENDING")
-        
+
         OrderStatusHistory.objects.create(
-        order=order,
+            order=order,
         status=Order.Status.CONFIRMED)
-        
+
         #dlt all item, frm crt
         cart_items.delete()
+
     #for geting the current
     request.session['last_order_id'] = order.id
-    
+
     request.session['order_processing'] = False
     messages.success(request,"Order placed successfully!")
-    return redirect("order_success",order_id=order.id)
+    return redirect('order_success',order_id=order.id)
 
 @login_required
 def order_success(request,order_id):
     #get order the user
     order= get_object_or_404(Order,id=order_id,user=request.user)
     
+    #onlyy the now done order
     last_order_id =request.session.get('last_order_id')
     if last_order_id !=order.id:
         return redirect('home')
@@ -146,9 +158,17 @@ def order_success(request,order_id):
     delivery_start=order_date + timedelta(days=3)
     delivery_end=order_date + timedelta(days=7)
     
+    # get payment info
+    try:
+        payment = order.payment
+    except Payment.DoesNotExist:
+        return redirect('home')
+
     return render(request,'user/order_success.html',{
         "order":order,
         "order_items":order_items,
         "delivery_start":delivery_start,
-        "delivery_end":delivery_end,})
+        "delivery_end":delivery_end,
+        "payment":payment,
+    })
     
