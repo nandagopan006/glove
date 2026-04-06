@@ -288,3 +288,47 @@ def order_detial(request,order_id):
         'total_count':total_count
         
     })
+    
+@login_required
+def cancel_order(request,order_id):
+    
+    if request.method != "POST":
+        return redirect('order_detail', order_id=order_id)
+    
+    order=get_object_or_404(Order,id=order_id,user=request.user)
+    
+    # chck allowed only
+    if order.order_status not in [
+                Order.Status.PENDING,
+                Order.Status.CONFIRMED,
+                Order.Status.PROCESSING]:
+
+        messages.error(request,"Order cannot be cancelled")
+        return redirect('order_detail',order_id=order.id)
+    
+    if order.order_status == Order.Status.CANCELLED:
+        messages.error(request,"Already cancelled")
+        return redirect('order_detail',order.id)
+        
+    reason =request.POST.get('reason','')
+    #restock
+    for item in order.items.all():
+        variant=item.variant
+        variant.stock +=item.quantity
+        variant.save()
+        
+        item.item_status=OrderItem.Status.CANCELLED
+        item.cancel_reason=reason 
+        item.save()
+        
+        #updte ordr
+    order.order_status=Order.Status.CANCELLED
+    order.save()
+    #histy
+    OrderStatusHistory.objects.create(
+            order=order,
+            status=Order.Status.CANCELLED
+        )
+    
+    messages.success(request, "Order cancelled successfully")
+    return redirect('order_detail', order_id=order.id)
