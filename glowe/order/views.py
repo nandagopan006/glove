@@ -330,5 +330,60 @@ def cancel_order(request,order_id):
             status=Order.Status.CANCELLED
         )
     
-    messages.success(request, "Order cancelled successfully")
+    messages.success(request,"Order cancelled successfully")
     return redirect('order_detail', order_id=order.id)
+
+
+@login_required
+def cancel_order_item(request,item_id):
+    
+    if request.method != "POST":
+        return redirect('home')
+    
+    item=get_object_or_404(OrderItem,id=item_id,order__user=request.user)
+    
+    order=item.order
+
+    if order.order_status not in [
+                Order.Status.PENDING,
+                Order.Status.CONFIRMED,
+                Order.Status.PROCESSING ]:
+
+        messages.error(request,"cannot cancel this item")
+        return redirect('order_detail',order_id=order.id)
+    
+    if item.item_status ==OrderItem.Status.CANCELLED:
+        messages.error(request,"Item Already cancelled")
+        return redirect('order_detail',order.id)
+        
+    reason =request.POST.get('reason','')
+    
+    #restore stk
+    variant=item.variant
+    variant.stock = max(0, variant.stock + item.quantity)
+    variant.save()
+    
+    #upte itm
+    item.item_status=OrderItem.Status.CANCELLED
+    item.cancel_reason=reason
+    item.save()
+    
+    # update order total
+    order.total_amount -=item.price_at_time * item.quantity
+    order.save()
+    
+    OrderStatusHistory.objects.create(order=order,status='ITEM_CANCELLED')
+    
+    # check all items cancelled
+    all_cancelled=True
+    for i in order.items.all():
+        if i.item_status != OrderItem.Status.CANCELLED :
+            all_cancelled=False
+            break
+        
+    if all_cancelled :
+        order.order_status = Order.Status.CANCELLED
+        order.save()
+        
+    messages.success(request,"Item cancelled succussfully")
+    return redirect('order_detail',order.id)
