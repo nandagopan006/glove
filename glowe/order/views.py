@@ -7,6 +7,7 @@ from product.models import Variant
 from cart.models import Cart
 from user.models import Address
 from django.contrib.auth.decorators import login_required
+from datetime import date, timedelta
 
 
 
@@ -118,10 +119,36 @@ def place_order(request):
         
         #dlt all item, frm crt
         cart_items.delete()
+    #for geting the current
+    request.session['last_order_id'] = order.id
     
     request.session['order_processing'] = False
     messages.success(request,"Order placed successfully!")
     return redirect("order_success",order_id=order.id)
+
+@login_required
+def order_success(request,order_id):
+    #get order the user
+    order= get_object_or_404(Order,id=order_id,user=request.user)
     
-def order_success(request):
-    return render(request,'order_success.html')
+    last_order_id =request.session.get('last_order_id')
+    if last_order_id !=order.id:
+        return redirect('home')
+    
+    #get all items this order
+    order_items = order.items.select_related('variant','variant__product')
+    
+    # direct access not not alllow  like not place order
+    if not order_items.exists():
+        return redirect('home')
+    
+    order_date = order.created_at.date()
+    delivery_start=order_date + timedelta(days=3)
+    delivery_end=order_date + timedelta(days=7)
+    
+    return render(request,'order_success.html',{
+        "order":order,
+        "order_items":order_items,
+        "delivery_start":delivery_start,
+        "delivery_end":delivery_end,})
+    
