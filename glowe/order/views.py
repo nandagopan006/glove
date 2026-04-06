@@ -126,6 +126,37 @@ def place_order(request):
         OrderStatusHistory.objects.create(
             order=order,
         status=Order.Status.CONFIRMED)
+        
+       
+        send_mail(
+            subject="Order Confirmed 🛍️",
+            
+            message=f"""
+        Hi {request.user.username},
+
+        Your order has been placed successfully!
+
+        Order ID: {order.order_number}
+        Total Amount: ₹{order.total_amount}
+
+        We will deliver your order soon 🚚
+        
+        ━━━━━━━━━━━━━━━━━━━━━━━
+        What Happens Next?
+        ━━━━━━━━━━━━━━━━━━━━━━━
+        • Your order is being processed  
+        • It will be carefully packed and shipped  
+        • Delivery will be completed within 3–7 business days  
+
+        You will receive further updates as your order progresses.
+
+                Thank you for shopping with us ❤️
+                """,
+
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[request.user.email],
+            fail_silently=True,
+        )
 
         #dlt all item, frm crt
         cart_items.delete()
