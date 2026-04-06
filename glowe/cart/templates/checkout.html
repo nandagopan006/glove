@@ -307,7 +307,8 @@ body { background: var(--bg); }
 
 <!-- Main grid -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-20">
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-x-16 xl:gap-x-24 items-start">
+  <form id="checkout-form" action="{% url 'place_order' %}" method="POST" class="grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-x-16 xl:gap-x-24 items-start">
+    {% csrf_token %}
 
       <!-- ── SHIPPING ADDRESS ── -->
       <div class="lg:col-span-7 lg:col-start-1 lg:row-start-1 order-1 fade-up d1 w-full">
@@ -319,9 +320,9 @@ body { background: var(--bg); }
           </div>
           {% endif %}
         </div>
-
+        
         {% if default_address %}
-        <input type="hidden" name="selected_address_id" id="selected_address_id" value="{{ default_address.id }}">
+        <input type="hidden" name="address_id" id="selected_address_id" value="{{ default_address.id }}">
         <div style="background:var(--white); border:1px solid rgba(196,168,130,.25); border-radius:18px; padding:28px 32px; position:relative; box-shadow:0 8px 30px rgba(44,31,20,.04); transition: transform 0.3s ease, box-shadow 0.3s ease;" class="hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(44,31,20,.08)]">
           <div class="flex items-start justify-between mb-3">
             <p id="display_addr_fullname" style="font-family:'Montserrat',sans-serif; font-size:1.05rem; font-weight:700; color:var(--ink); margin:0;">{{ default_address.full_name }}</p>
@@ -495,7 +496,7 @@ body { background: var(--bg); }
 
         <!-- CTA BUTTON (DESKTOP) -->
         <div class="hidden lg:block space-y-4">
-          <button type="submit" form="checkout-form" class="btn-checkout">
+          <button type="submit" class="btn-checkout">
             <span>Complete Order <span class="price-sep">•</span> ₹{{ final_total }}</span>
           </button>
           <div class="flex items-center justify-center gap-1.5">
@@ -532,7 +533,7 @@ body { background: var(--bg); }
     <!-- ── MOBILE CTA BUTTON ── -->
     <div class="lg:hidden order-4 w-full fade-up d4 mt-4 mb-8">
       <div class="space-y-4">
-        <button type="submit" form="checkout-form" class="btn-checkout py-[16px] w-full text-center" style="font-size:12.5px; border-radius:12px;">
+        <button type="submit" class="btn-checkout py-[16px] w-full text-center" style="font-size:12.5px; border-radius:12px;">
           <span>Complete Order <span class="price-sep">•</span> ₹{{ final_total }}</span>
         </button>
         <div class="flex items-center justify-center gap-1.5">
@@ -542,7 +543,7 @@ body { background: var(--bg); }
       </div>
     </div>
 
-  </div>
+  </form>
 </div>
 
 <!-- ── SIDE DRAWER FOR ADDRESS ── -->
