@@ -654,7 +654,7 @@ def admin_order_list(request):
     elif filter_by == 'shipped':
         orders=orders.filter(order_status=Order.Status.SHIPPED)
     
-    elif filter_by == 'out of delivery':
+    elif filter_by == 'out_of_delivery':
         orders=orders.filter(order_status=Order.Status.OUT_FOR_DELIVERY)
     
     elif filter_by == 'delivered':
@@ -689,3 +689,31 @@ def admin_order_list(request):
         
     })
 
+@login_required
+def  admin_order_detail(request,order_id):
+    
+    order=get_object_or_404(Order,id=order_id)
+    
+    items =order.items.select_related('variant__product')
+    
+    address =getattr(order,'shipping_address',None)
+    
+    total_items=items.count()
+    
+    history =order.status_history.all().order_by('-updated_at')
+    payment=getattr(order,'payment',None)
+    
+    can_update =order.order_status not in [
+        Order.Status.CANCELLED,
+        Order.Status.DELIVERED
+    ]
+
+    return render(request, 'admin/order_detail.html', {
+        'order':order,
+        'items':items,
+        'history':history,
+        'payment':payment,
+        'address':address,
+        'total_items':total_items,
+        'can_update':can_update,
+    })
