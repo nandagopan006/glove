@@ -1,6 +1,6 @@
-from django.shortcuts import redirect, get_object_or_404,render
+from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib import messages
-from .models import Order,OrderItem, ShippingAddress,Payment,OrderStatusHistory
+from order.models import Order, OrderItem, ShippingAddress, Payment, OrderStatusHistory
 from django.db import transaction
 from django.utils.crypto import get_random_string
 from product.models import Variant
@@ -15,99 +15,98 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 
 
-
-
-
 @login_required
 def place_order(request):
     if request.method != "POST":
-        return redirect('checkout')
+        return redirect("checkout")
 
     # prevent double order --   not allow dulpi oder
-    if request.session.get('order_processing'):
-        return redirect('cart')
-    request.session['order_processing'] =True
+    if request.session.get("order_processing"):
+        return redirect("cart")
+    request.session["order_processing"] = True
 
-    try :
-        cart=request.user.cart
-        cart_items=cart.items.select_related('variant','variant__product')
+    try:
+        cart = request.user.cart
+        cart_items = cart.items.select_related("variant", "variant__product")
     except Cart.DoesNotExist:
-        request.session['order_processing'] = False
+        request.session["order_processing"] = False
         messages.error(request, "Cart not found")
-        return redirect('cart')
+        return redirect("cart")
 
     if not cart_items.exists():
-        request.session['order_processing'] = False
+        request.session["order_processing"] = False
         messages.error(request, "Cart is empty")
-        return redirect('cart')
+        return redirect("cart")
 
-    address_id =request.POST.get('address_id')
+    address_id = request.POST.get("address_id")
     if not address_id:
-        request.session['order_processing'] = False
+        request.session["order_processing"] = False
         messages.error(request, "Please select a delivery address")
-        return redirect('checkout')
+        return redirect("checkout")
 
-    address =get_object_or_404(Address,id =address_id,user=request.user)
+    address = get_object_or_404(Address, id=address_id, user=request.user)
 
-    subtotal =0
+    subtotal = 0
 
     with transaction.atomic():
         for item in cart_items:
-            #lock variant ,,if one user bbuy same other USER aslo nedd lock  --oveerselling block
+            # lock variant ,,if one user bbuy same other USER aslo nedd lock  --oveerselling block
             variant = Variant.objects.select_for_update().get(id=item.variant.id)
-            product=variant.product
+            product = variant.product
 
             if not product.is_active:
-                request.session['order_processing'] = False
+                request.session["order_processing"] = False
                 messages.error(request, f"{product.name} is unavailable")
-                return redirect('cart')
+                return redirect("cart")
 
             if not variant.is_active:
-                request.session['order_processing'] = False
+                request.session["order_processing"] = False
                 messages.error(request, f"{product.name} is not available")
-                return redirect('cart')
+                return redirect("cart")
 
             if variant.stock == 0:
-                request.session['order_processing'] = False
+                request.session["order_processing"] = False
                 messages.error(request, f"{product.name} is out of stock")
-                return redirect('cart')
+                return redirect("cart")
 
             if item.quantity > variant.stock:
-                request.session['order_processing'] = False
+                request.session["order_processing"] = False
                 messages.error(request, f"{product.name}: only {variant.stock} left")
-                return redirect('cart')
+                return redirect("cart")
 
-            item.item_total =item.quantity * variant.price
+            item.item_total = item.quantity * variant.price
             subtotal += item.item_total
 
         shipping = 0 if subtotal > 999 else 100
-        total =subtotal + shipping
+        total = subtotal + shipping
 
-        order =Order.objects.create(user=request.user,
-            order_number='ORD-' + get_random_string(10).upper(),
+        order = Order.objects.create(
+            user=request.user,
+            order_number="ORD-" + get_random_string(10).upper(),
             address=address,
             subtotal=subtotal,
             delivery_charge=shipping,
             discount_amount=0,
             total_amount=total,
-            order_status=Order.Status.CONFIRMED
+            order_status=Order.Status.CONFIRMED,
         )
 
-         #create order items + reduce stock
+        # create order items + reduce stock
         for item in cart_items:
-            variant=item.variant
+            variant = item.variant
 
             OrderItem.objects.create(
                 order=order,
                 variant=variant,
                 price_at_time=variant.price,
-            quantity=item.quantity)
+                quantity=item.quantity,
+            )
 
-            #reduce the stock
+            # reduce the stock
             variant.stock -= item.quantity
             variant.save()
 
-        #save the ordered address
+        # save the ordered address
         ShippingAddress.objects.create(
             order=order,
             user=request.user,
@@ -118,23 +117,18 @@ def place_order(request):
             district=address.district,
             state=address.state,
             country=address.country,
-            pincode=address.pincode)
+            pincode=address.pincode,
+        )
 
-        #now only cod
+        # now only cod
         Payment.objects.create(
-            order=order,
-            payment_method="COD",
-            amount=total,
-        payment_status="PENDING")
+            order=order, payment_method="COD", amount=total, payment_status="PENDING"
+        )
 
-        OrderStatusHistory.objects.create(
-            order=order,
-        status=Order.Status.CONFIRMED)
-        
-       
+        OrderStatusHistory.objects.create(order=order, status=Order.Status.CONFIRMED)
+
         send_mail(
             subject="Order Confirmed 🛍️",
-            
             message=f"""
         Hi {request.user.username},
 
@@ -156,184 +150,225 @@ def place_order(request):
 
                 Thank you for shopping with us ❤️
                 """,
-
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=[request.user.email],
             fail_silently=True,
         )
 
-        #dlt all item, frm crt
+        # dlt all item, frm crt
         cart_items.delete()
 
-    #for geting the current
-    request.session['last_order_id'] = order.id
+    # for geting the current
+    request.session["last_order_id"] = order.id
 
-    request.session['order_processing'] = False
-    messages.success(request,"Order placed successfully!")
-    return redirect('order_success',order_id=order.id)
+    request.session["order_processing"] = False
+    messages.success(request, "Order placed successfully!")
+    return redirect("order_success", order_id=order.id)
+
 
 @login_required
-def order_success(request,order_id):
-    #get order the user
-    order= get_object_or_404(Order,id=order_id,user=request.user)
-    
-    #onlyy the now done order
-    last_order_id =request.session.get('last_order_id')
-    if last_order_id !=order.id:
-        return redirect('home')
-    
-    #get all items this order
-    order_items = order.items.select_related('variant','variant__product')
-    
+def order_success(request, order_id):
+    # get order the user
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # onlyy the now done order
+    last_order_id = request.session.get("last_order_id")
+    if last_order_id != order.id:
+        return redirect("home")
+
+    # get all items this order
+    order_items = order.items.select_related("variant", "variant__product")
+
     # direct access not not alllow  like not place order
     if not order_items.exists():
-        return redirect('home')
-    
+        return redirect("home")
+
     order_date = order.created_at.date()
-    delivery_start=order_date + timedelta(days=3)
-    delivery_end=order_date + timedelta(days=7)
-    
+    delivery_start = order_date + timedelta(days=3)
+    delivery_end = order_date + timedelta(days=7)
+
     # get payment info
     try:
         payment = order.payment
     except Payment.DoesNotExist:
-        return redirect('home')
+        return redirect("home")
 
-    return render(request,'user/order_success.html',{
-        "order":order,
-        "order_items":order_items,
-        "delivery_start":delivery_start,
-        "delivery_end":delivery_end,
-        "payment":payment,
-    })
-    
-@login_required 
-def order_listing(request):
-    orders=Order.objects.filter(user=request.user).prefetch_related('items__variant__product__images')
-    
-    orders=orders.order_by('-created_at')
-    
-    search=request.GET.get('search','').strip()
-    if search :
-        orders=orders.filter( Q(order_number__icontains=search) |
-         Q(items__variant__product__name__icontains=search)).distinct()
-    
-    filter_by=request.GET.get('filter','6m')
-    
-    now =timezone.now()
-    
-    if filter_by =='1w':
-        orders=orders.filter(created_at__gte=now -timedelta(weeks=1))
-    elif filter_by =='1m' :
-        orders=orders.filter(created_at__gte=now -timedelta(days=30))
-    elif filter_by == '3m':
-        orders=orders.filter(created_at__gte=now-timedelta(days=90))
-    elif filter_by == '6m':
-        orders=orders.filter(created_at__gte=now- timedelta(days=180))
-    elif filter_by == '1y':
-        orders=orders.filter(created_at__gte=now- timedelta(days=365))
-    
-    for order in orders :
-        order.delivery_start =order.created_at +timedelta(days=3)
-        order.delivery_end =order.created_at +timedelta(days=7)
-        
-    total_orders=orders.count()
-    paginator=Paginator(orders,5)
-    page=request.GET.get('page')
-    orders=paginator.get_page(page)    
-        
-    return render(request,'user/order_listing.html',{
-        'orders':orders,
-        'search':search,
-        'filter_by':filter_by,
-        'total_orders':total_orders,
-    })
-    
-        
+    return render(
+        request,
+        "user/order_success.html",
+        {
+            "order": order,
+            "order_items": order_items,
+            "delivery_start": delivery_start,
+            "delivery_end": delivery_end,
+            "payment": payment,
+        },
+    )
+
+
 @login_required
-def order_detial(request,order_id):
-    order=get_object_or_404(Order,id=order_id,user=request.user)
-    order_items =order.items.select_related('variant__product')
+def order_listing(request):
+    orders = Order.objects.filter(user=request.user).prefetch_related(
+        "items__variant__product__images"
+    )
+
+    orders = orders.order_by("-created_at")
+
+    search = request.GET.get("search", "").strip()
+    if search:
+        orders = orders.filter(
+            Q(order_number__icontains=search)
+            | Q(items__variant__product__name__icontains=search)
+        ).distinct()
+
+    filter_by = request.GET.get("filter", "6m")
+
+    now = timezone.now()
+
+    if filter_by == "1w":
+        orders = orders.filter(created_at__gte=now - timedelta(weeks=1))
+    elif filter_by == "1m":
+        orders = orders.filter(created_at__gte=now - timedelta(days=30))
+    elif filter_by == "3m":
+        orders = orders.filter(created_at__gte=now - timedelta(days=90))
+    elif filter_by == "6m":
+        orders = orders.filter(created_at__gte=now - timedelta(days=180))
+    elif filter_by == "1y":
+        orders = orders.filter(created_at__gte=now - timedelta(days=365))
+
+    for order in orders:
+        order.delivery_start = order.created_at + timedelta(days=3)
+        order.delivery_end = order.created_at + timedelta(days=7)
+        
+        # cancelled items  the item count or create duplicate images
+        active = [item for item in order.items.all() if item.item_status != 'CANCELLED']
+        order.display_items = active if active else list(order.items.all())
+        
+    total_orders = orders.count()
+    paginator = Paginator(orders, 5)
+    page = request.GET.get("page")
+    orders = paginator.get_page(page)
+
+    return render(
+        request,
+        "user/order_listing.html",
+        {
+            "orders": orders,
+            "search": search,
+            "filter_by": filter_by,
+            "total_orders": total_orders,
+        },
+    )
+
+
+@login_required
+def order_detial(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # not cancelled item
+    active_items =order.items.exclude(item_status=OrderItem.Status.CANCELLED).select_related("variant__product").prefetch_related("variant__product__images")
+
+    cancelled_items =order.items.filter(item_status=OrderItem.Status.CANCELLED).select_related("variant__product").prefetch_related("variant__product__images")
+
     
-    order.delivery_start=order.created_at + timedelta(days=3)
+    grouped = {}
+    for item in cancelled_items:
+        variant_id = item.variant_id
+
+        if variant_id not in grouped:
+            
+            grouped[variant_id] = {
+                'variant': item.variant,
+                'price_at_time': item.price_at_time,
+                'quantity': item.quantity,
+                'cancel_reason': item.cancel_reason,
+            }
+        else:
+            # Same variant + new
+            grouped[variant_id]['quantity'] += item.quantity
+
+    # Convert to a simple list
+    cancelled_items = list(grouped.values())
+
+    # Step 5: Check if ALL items are cancelled
+    all_cancelled = not active_items.exists()
+
+    order.delivery_start = order.created_at + timedelta(days=3)
     order.delivery_end = order.created_at + timedelta(days=7)
 
-    # Tracking history
-    history =order.status_history.all().order_by('-updated_at')
+    history = order.status_history.all().order_by("-updated_at")
 
-    #cancel not in this
-    can_cancel=order.order_status in [
+    can_cancel = order.order_status in [
         Order.Status.PENDING,
         Order.Status.CONFIRMED,
         Order.Status.PROCESSING,
     ]
-    #return allowed
     can_return = order.order_status == Order.Status.DELIVERED
-    
-    # payment
-    payment = getattr(order,'payment',None)
-    
-    total_count=order_items.count()
-    
-    
-    return render(request,'user/order_detail.html', {
-        'order':order,
-        'order_items':order_items,
-        'history':history,
-        'delivery_start':order.delivery_start,
-        'delivery_end':order.delivery_end,
-        'can_cancel':can_cancel,
-        'can_return':can_return,
-        'payment':payment,
-        'total_count':total_count
-        
+    payment = getattr(order, "payment", None)
+  
+    # cancelled_items is a Python list so use len(), not .count()
+    if all_cancelled:
+        total_count = len(cancelled_items)
+    else:
+        total_count = active_items.count()
+
+
+    return render(request, "user/order_detail.html", {
+        "order": order,
+        "active_items": active_items,
+        "cancelled_items": cancelled_items,
+        "all_cancelled": all_cancelled,
+        "history": history,
+        "delivery_start": order.delivery_start,
+        "delivery_end": order.delivery_end,
+        "can_cancel": can_cancel,
+        "can_return": can_return,
+        "payment": payment,
+        "total_count": total_count,
     })
-    
+
+
+
 @login_required
-def cancel_order(request,order_id):
-    
+def cancel_order(request, order_id):
+
     if request.method != "POST":
-        return redirect('order_detail', order_id=order_id)
-    
-    order=get_object_or_404(Order,id=order_id,user=request.user)
-    
+        return redirect("order_detail", order_id=order_id)
+
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
     # chck allowed only
     if order.order_status not in [
-                Order.Status.PENDING,
-                Order.Status.CONFIRMED,
-                Order.Status.PROCESSING]:
+        Order.Status.PENDING,
+        Order.Status.CONFIRMED,
+        Order.Status.PROCESSING,
+    ]:
 
-        messages.error(request,"Order cannot be cancelled")
-        return redirect('order_detail',order_id=order.id)
-    
+        messages.error(request, "Order cannot be cancelled")
+        return redirect("order_detail", order_id=order.id)
+
     if order.order_status == Order.Status.CANCELLED:
-        messages.error(request,"Already cancelled")
-        return redirect('order_detail',order.id)
-        
-    reason =request.POST.get('reason','')
-    #restock
-    for item in order.items.all():
-        variant=item.variant
-        variant.stock +=item.quantity
-        variant.save()
-        
-        #reduce sub totlt
-        order.subtotal-= item.price_at_time * item.quantity
-        
-        item.item_status=OrderItem.Status.CANCELLED
-        item.cancel_reason=reason 
-        item.save()
-        
-        #updte ordr
-    order.total_amount-= order.subtotal + order.delivery_charge
-    order.order_status=Order.Status.CANCELLED
-    order.save()
-    
-    #histy
-    OrderStatusHistory.objects.create(
-            order=order,
-            status=Order.Status.CANCELLED
-        )
+        messages.error(request, "Already cancelled")
+        return redirect("order_detail", order.id)
+
+    reason = request.POST.get("reason", "")
+
+    with transaction.atomic():
+        for item in order.items.filter(~Q(item_status=OrderItem.Status.CANCELLED)):
+            variant = item.variant
+            variant.stock += item.quantity
+            variant.save()
+
+            item.item_status = OrderItem.Status.CANCELLED
+            item.cancel_reason = reason
+            item.save()
+
+        # Update order status but preserve the original total price for record-keeping
+        order.order_status = Order.Status.CANCELLED
+        order.save()
+
+    # histy
+    OrderStatusHistory.objects.create(order=order, status=Order.Status.CANCELLED)
     send_mail(
         subject="Order Cancelled ❌",
         message=f"""
@@ -351,64 +386,90 @@ Thank you ❤️
         recipient_list=[request.user.email],
         fail_silently=True,
     )
-    
-    messages.success(request,"Order cancelled successfully")
-    return redirect('order_detail', order_id=order.id)
+
+    messages.success(request, "Order cancelled successfully")
+    return redirect("order_cancelled_success", order_id=order.id)
 
 
 @login_required
-def cancel_order_item(request,item_id):
-    
+def cancel_order_item(request, item_id):
+
     if request.method != "POST":
-        return redirect('home')
-    
-    item=get_object_or_404(OrderItem,id=item_id,order__user=request.user)
-    
-    order=item.order
+        return redirect("home")
+
+    item = get_object_or_404(OrderItem, id=item_id, order__user=request.user)
+
+    order = item.order
 
     if order.order_status not in [
-                Order.Status.PENDING,
-                Order.Status.CONFIRMED,
-                Order.Status.PROCESSING ]:
+        Order.Status.PENDING,
+        Order.Status.CONFIRMED,
+        Order.Status.PROCESSING,
+    ]:
 
-        messages.error(request,"cannot cancel this item")
-        return redirect('order_detail',order_id=order.id)
-    
-    if item.item_status ==OrderItem.Status.CANCELLED:
-        messages.error(request,"Item Already cancelled")
-        return redirect('order_detail',order.id)
-        
-    reason =request.POST.get('reason','')
-    
-    #restore stk
-    variant=item.variant
-    variant.stock+= item.quantity
-    variant.save()
-    
-    order.sub_total-= item.price_at_time * item.quantity
-    
-    #upte itm
-    item.item_status=OrderItem.Status.CANCELLED
-    item.cancel_reason=reason
-    item.save()
-    
-    # update order total
-    order.total_amount -=order.sub_total + order.delivery_charge
-    order.save()
-    
-    OrderStatusHistory.objects.create(order=order,status='ITEM_CANCELLED')
-    
-    # check all items cancelled
-    all_cancelled=True
-    for i in order.items.all():
-        if i.item_status != OrderItem.Status.CANCELLED :
-            all_cancelled=False
-            break
-        
-    if all_cancelled :
-        order.order_status = Order.Status.CANCELLED
+        messages.error(request, "cannot cancel this item")
+        return redirect("order_detail", order_id=order.id)
+
+    if item.item_status == OrderItem.Status.CANCELLED:
+        messages.error(request, "Item Already cancelled")
+        return redirect("order_detail", order.id)
+
+    reason = request.POST.get("reason", "")
+    try:
+        quantity_to_cancel = int(request.POST.get("quantity", item.quantity))
+    except (ValueError, TypeError):
+        quantity_to_cancel = item.quantity
+
+    if quantity_to_cancel > item.quantity or quantity_to_cancel <= 0:
+        messages.error(request, "Invalid quantity")
+        return redirect("order_detail", order_id=order.id)
+
+    with transaction.atomic():
+        # Restore stock for the cancelled portion
+        variant = item.variant
+        variant.stock += quantity_to_cancel
+        variant.save()
+
+        # Update order subtotal
+        cancelled_amount = item.price_at_time * quantity_to_cancel
+        order.subtotal -= cancelled_amount
+
+        # If partial cancellation
+        if quantity_to_cancel < item.quantity:
+            # Reduce original item quantity
+            item.quantity -= quantity_to_cancel
+            item.save()
+
+            # Create a new record for the cancelled units
+            OrderItem.objects.create(
+                order=order,
+                variant=item.variant,
+                price_at_time=item.price_at_time,
+                quantity=quantity_to_cancel,
+                item_status=OrderItem.Status.CANCELLED,
+                cancel_reason=reason,
+            )
+        else:
+            # Full item cancellation
+            item.item_status = OrderItem.Status.CANCELLED
+            item.cancel_reason = reason
+            item.save()
+
+        # Correctly recalculate total
+        order.total_amount = order.subtotal + order.delivery_charge
         order.save()
-    
+
+        # Log history
+        OrderStatusHistory.objects.create(order=order, status="ITEM_CANCELLED")
+
+        # Check if all items in the order are now cancelled
+        all_cancelled = not order.items.filter(
+            ~Q(item_status=OrderItem.Status.CANCELLED)
+        ).exists()
+        if all_cancelled:
+            order.order_status = Order.Status.CANCELLED
+            order.save()
+
     send_mail(
         subject="Item Cancelled ❌",
         message=f"""
@@ -426,6 +487,36 @@ Thank you ❤️
         recipient_list=[request.user.email],
         fail_silently=True,
     )
-        
-    messages.success(request,"Item cancelled succussfully")
-    return redirect('order_detail',order.id)
+
+    messages.success(request, "Item cancelled succussfully")
+    return redirect("order_cancelled_success", order_id=order.id)
+
+
+@login_required
+def order_cancelled_success(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # Get all cancelled items for this order
+    cancelled_items = order.items.filter(item_status=OrderItem.Status.CANCELLED).select_related(
+        "variant__product"
+    )
+
+    if not cancelled_items.exists():
+        return redirect("order_detail", order_id=order_id)
+
+    # Determine if the entire order is cancelled
+    total_items = order.items.count()
+    full_cancelled = (cancelled_items.count() == total_items)
+    
+    cancellation_id = f"CNCL-{str(order.id).zfill(5)}"
+    
+    # Get payment method info
+    payment = getattr(order, 'payment', None)
+
+    return render(
+        request,
+        "user/order_cancelled.html",{
+            "order": order,
+            "cancelled_items": cancelled_items,
+            "cancellation_id": cancellation_id,
+            "payment": payment,})

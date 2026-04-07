@@ -414,7 +414,7 @@
 {% block content %}
 
 <div class="min-h-screen bg-[#f5f1eb]">
-  <div class="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-10 py-10 lg:py-16 ol-page">
+  <div class="max-w-[1440px] mx-auto px-5 md:px-8 lg:px-12 py-10 lg:py-16 ol-page">
 
     <!-- ── Mobile tabs ── -->
     <div class="flex md:hidden items-center gap-2 mb-6 overflow-x-auto pb-1" style="scrollbar-width:none;">
@@ -581,7 +581,7 @@
           {% for order in orders %}
 
           {# Cache all items for this order once #}
-          {% with all_items=order.items.all %}
+          {% with all_items=order.display_items|default:order.items.all %}
           {% with item_count=all_items|length %}
 
           <article class="ol-card" role="article" aria-label="Order {{ order.order_number }}">
@@ -691,8 +691,8 @@
                      class="font-cormorant text-[22px] sm:text-[26px] font-semibold text-[#1a1208] leading-tight hover:text-[#c8a96e] transition-colors no-underline block"
                      style="letter-spacing:-0.01em;">
                     {{ first_item.variant.product.name }}
-                    {% if first_item.quantity > 1 %}
-                      <span class="font-montserrat text-[14px] font-normal text-[#b0a498]"> ×{{ first_item.quantity }}</span>
+                    {% if first_item.display_quantity|default:first_item.quantity > 1 %}
+                      <span class="font-montserrat text-[14px] font-normal text-[#b0a498]"> ×{{ first_item.display_quantity|default:first_item.quantity }}</span>
                     {% endif %}
                   </a>
 
@@ -775,7 +775,7 @@
                                   {% if item.variant.size %}{{ item.variant.size }}{% endif %}
                                   {% if item.variant.size and item.variant.color %} | {% endif %}
                                   {% if item.variant.color %}{{ item.variant.color }}{% endif %}
-                                  • Qty: {{ item.quantity }}
+                                  • Qty: {{ item.display_quantity|default:item.quantity }}
                                 </p>
                               </div>
                               <div class="om-item-price flex items-center">
@@ -794,17 +794,22 @@
                     {% endif %}
 
                   {% elif order.order_status == 'CANCELLED' %}
-                    <!-- Cancelled: only View Detail -->
+                    <!-- Cancelled: Order Details AND View Details Popover -->
+                    <a href="{% url 'order_detail' order.id %}" class="btn-ghost w-full" id="view-order-details-{{ order.id }}">
+                      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                      Order Details
+                    </a>
+
                     {% if item_count > 1 %}
-                      <div class="om-popover-wrap">
-                        <button type="button" class="btn-ghost w-full" onclick="toggleOrderPopover(event, '{{ order.id }}')">
-                          View Details
+                      <div class="om-popover-wrap mt-2.5">
+                        <button type="button" class="btn-ghost w-full !border-[rgba(26,18,8,0.06)] hover:!border-[#1a1208]" onclick="toggleOrderPopover(event, 'cancelled-{{ order.id }}')">
+                          View Items
                         </button>
                         <!-- Popover -->
                         <div class="om-popover" id="popover-cancelled-{{ order.id }}" role="dialog">
                           <div class="om-header">
                             <div>
-                              <h3 class="om-title">Order Items</h3>
+                              <h3 class="om-title">Cancelled Items</h3>
                               <p class="om-subtitle">Order #{{ order.order_number }}</p>
                             </div>
                             <button type="button" class="om-close" onclick="closeOrderPopover('cancelled-{{ order.id }}')" aria-label="Close">
@@ -829,7 +834,7 @@
                                   {% if item.variant.size %}{{ item.variant.size }}{% endif %}
                                   {% if item.variant.size and item.variant.color %} | {% endif %}
                                   {% if item.variant.color %}{{ item.variant.color }}{% endif %}
-                                  • Qty: {{ item.quantity }}
+                                  • Qty: {{ item.display_quantity|default:item.quantity }}
                                 </p>
                               </div>
                               <div class="om-item-price flex items-center">
@@ -840,11 +845,6 @@
                           </div>
                         </div>
                       </div>
-                    {% else %}
-                      <a href="{% url 'product_detail_view' first_item.variant.product.slug %}"
-                         class="btn-ghost w-full" id="view-detail-order-{{ order.id }}">
-                        View Detail
-                      </a>
                     {% endif %}
 
                   {% else %}
