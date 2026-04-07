@@ -13,6 +13,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.http import HttpResponse
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 
 @login_required
@@ -520,3 +523,48 @@ def order_cancelled_success(request, order_id):
             "cancelled_items": cancelled_items,
             "cancellation_id": cancellation_id,
             "payment": payment,})
+
+@login_required
+def download_invoice(request, order_id):
+
+    order=get_object_or_404(Order, id=order_id, user=request.user)
+    order_items=order.items.all()
+
+    response=HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] =f'attachment; filename="invoice_{order.order_number}.pdf"'
+
+    doc=SimpleDocTemplate(response)
+    styles=getSampleStyleSheet()
+
+    elements =[]
+
+    # for title
+    elements.append(Paragraph("INVOICE", styles['Title']))
+    elements.append(Spacer(1, 10))
+
+    # user info
+    elements.append(Paragraph(f"Name:{request.user.username}",styles['Normal']))
+    elements.append(Paragraph(f"Order ID: {order.order_number}",styles['Normal']))
+    elements.append(Paragraph(f"Date:{order.created_at}",styles['Normal']))
+    elements.append(Spacer(1, 10))
+
+    # item
+    elements.append(Paragraph("Items:",styles['Heading2']))
+
+    for item in order_items:
+        elements.append(Paragraph(
+            f"{item.variant.product.name} -{item.quantity} x ₹{item.price_at_time}",
+            styles['Normal']
+        ))
+
+    elements.append(Spacer(1, 10))
+
+    # total
+    elements.append(Paragraph(f"Subtotal: ₹{order.subtotal}", styles['Normal']))
+    elements.append(Paragraph(f"Shipping: ₹{order.delivery_charge}", styles['Normal']))
+    elements.append(Paragraph(f"Total: ₹{order.total_amount}", styles['Heading2']))
+
+    # bulding pdf
+    doc.build(elements)
+
+    return response
