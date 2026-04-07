@@ -849,7 +849,7 @@
 
                   {% else %}
                     <!-- Active order: Track + View Detail -->
-                    <a href="#"
+                    <a href="{% url 'order_detail' order.id%}"
                        class="btn-primary w-full" id="track-order-{{ order.id }}">
                       <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                       Track Order
