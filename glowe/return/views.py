@@ -80,6 +80,7 @@ def request_return(request,item_id):
                 return_request=return_request,
                 image=img
             )
+            
         item.item_status =OrderItem.Status.RETURN_REQUESTED
         item.save()
 
