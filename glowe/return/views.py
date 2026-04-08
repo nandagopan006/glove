@@ -158,3 +158,27 @@ def admin_return_list(request):
     })
 
 
+def should_restock(reason, condition):
+
+    bad_reasons = [
+        "Product arrived damaged",
+        "Packaging was damaged or leaking",
+        "Caused skin irritation or allergy",
+        "Product expired or near expiry",
+    ]
+
+    bad_conditions = [
+        "Damaged on arrival",
+        "Leaking or broken packaging",
+        "Used a few times",
+    ]
+
+    if reason in bad_reasons:
+        return False
+
+    if condition in bad_conditions:
+        return False
+
+    return True
+
+
