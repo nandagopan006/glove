@@ -182,3 +182,15 @@ def should_restock(reason, condition):
     return True
 
 
+@login_required
+def admin_return_detail(request, return_id):
+
+    return_request = get_object_or_404(
+        ReturnRequest.objects.select_related('user','order_item__variant__product','order_item__order'),
+        id=return_id )
+
+    return render(request,'admin/return_detail.html', {
+        'return_request': return_request,
+        'item': return_request.order_item,
+        'images': return_request.images.all()
+    })
