@@ -159,14 +159,18 @@
               
               <!-- Customer -->
               <td class="py-4 px-6 whitespace-nowrap">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">
-                    {{ order.user.full_name|slice:":2"|upper|default:"GU" }}
+                <a href="{% url 'user_detail' order.user.id %}" class="flex items-center gap-3 group/user hover:opacity-80 transition-opacity">
+                  <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden border border-gray-100">
+                    {% if order.user.profile_image and order.user.profile_image.name != 'profile/default.png' %}
+                      <img src="{{ order.user.profile_image.url }}" alt="{{ order.user.username }}" class="w-full h-full object-cover"/>
+                    {% else %}
+                      {{ order.user.full_name|slice:":2"|upper|default:"GU" }}
+                    {% endif %}
                   </div>
                   <div>
-                    <p class="text-[13px] font-medium text-gray-900">{{ order.user.full_name|default:"Guest User" }}</p>
+                    <p class="text-[13px] font-medium text-gray-900 group-hover/user:text-blue-600 transition-colors">{{ order.user.full_name|default:"Guest User" }}</p>
                   </div>
-                </div>
+                </a>
               </td>
 
               <!-- Product -->
@@ -284,11 +288,15 @@
           </div>
           
           <div class="flex items-center gap-3 mb-4">
-            <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">
-              {{ order.user.full_name|slice:":2"|upper|default:"GU" }}
-            </div>
+            <a href="{% url 'user_detail' order.user.id %}" class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden border border-gray-100 block hover:opacity-80 transition-opacity">
+              {% if order.user.profile_image and order.user.profile_image.name != 'profile/default.png' %}
+                <img src="{{ order.user.profile_image.url }}" alt="{{ order.user.username }}" class="w-full h-full object-cover"/>
+              {% else %}
+                {{ order.user.full_name|slice:":2"|upper|default:"GU" }}
+              {% endif %}
+            </a>
             <div class="flex-1 min-w-0">
-              <p class="text-[13px] font-medium text-gray-900 truncate">{{ order.user.full_name|default:"Guest User" }}</p>
+              <a href="{% url 'user_detail' order.user.id %}" class="text-[13px] font-medium text-gray-900 truncate hover:text-blue-600 transition-colors block">{{ order.user.full_name|default:"Guest User" }}</a>
               <p class="text-[11px] text-gray-500">{{ order.created_at|date:"M d, Y" }}</p>
             </div>
             <div class="text-right shrink-0">
@@ -329,44 +337,36 @@
         {% endfor %}
       </div>
       
-      <!-- Footer Info -->
-      <div class="border-t border-gray-100 bg-gray-50/50 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        
-        <div class="text-sm text-gray-500">
-          Showing <span class="font-bold text-gray-900">{{ orders.start_index|default:"0" }}</span> to <span class="font-bold text-gray-900">{{ orders.end_index|default:"0" }}</span> of <span class="font-bold text-gray-900">{{ orders.paginator.count|default:"0" }}</span> results
-        </div>
-
-        {% if orders.paginator.num_pages > 1 %}
-        <nav class="flex items-center gap-1.5" aria-label="Order pages">
-          {% if orders.has_previous %}
-            <a href="?page={{ orders.previous_page_number }}{% if search %}&search={{ search|urlencode }}{% endif %}" class="pg-btn" aria-label="Previous">
-              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-            </a>
-          {% else %}
-            <span class="pg-btn disabled"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></span>
-          {% endif %}
-
-          {% for i in orders.paginator.page_range %}
-            {% if orders.number == i %}
-              <span class="pg-btn active" aria-current="page">{{ i }}</span>
-            {% elif i >= orders.number|add:"-2" and i <= orders.number|add:"2" %}
-              <a href="?page={{ i }}{% if search %}&search={{ search|urlencode }}{% endif %}" class="pg-btn">{{ i }}</a>
-            {% endif %}
-          {% endfor %}
-
-          {% if orders.has_next %}
-            <a href="?page={{ orders.next_page_number }}{% if search %}&search={{ search|urlencode }}{% endif %}" class="pg-btn" aria-label="Next">
-              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-            </a>
-          {% else %}
-            <span class="pg-btn disabled"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></span>
-          {% endif %}
-        </nav>
-        {% endif %}
-
-      </div>
-
     </div>
+
+    <!-- ── PAGINATION ── -->
+    {% if orders.paginator.num_pages > 1 %}
+    <nav class="flex items-center justify-center gap-2 mt-10 mb-6" aria-label="Order pages">
+      {% if orders.has_previous %}
+        <a href="?page={{ orders.previous_page_number }}{% if search %}&search={{ search|urlencode }}{% endif %}" class="pg-btn" aria-label="Previous">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        </a>
+      {% else %}
+        <span class="pg-btn disabled"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></span>
+      {% endif %}
+
+      {% for i in orders.paginator.page_range %}
+        {% if orders.number == i %}
+          <span class="pg-btn active" aria-current="page">{{ i }}</span>
+        {% elif i >= orders.number|add:"-2" and i <= orders.number|add:"2" %}
+          <a href="?page={{ i }}{% if search %}&search={{ search|urlencode }}{% endif %}" class="pg-btn">{{ i }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if orders.has_next %}
+        <a href="?page={{ orders.next_page_number }}{% if search %}&search={{ search|urlencode }}{% endif %}" class="pg-btn" aria-label="Next">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      {% else %}
+        <span class="pg-btn disabled"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></span>
+      {% endif %}
+    </nav>
+    {% endif %}
   </main>
 </div>
 {% endblock %}
