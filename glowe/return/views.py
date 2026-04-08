@@ -213,9 +213,6 @@ def approve_return(request, return_id):
 
 
 
-from django.utils import timezone
-
-
 def schedule_pickup(request, return_id):
 
     r = get_object_or_404(ReturnRequest, id=return_id)
@@ -229,4 +226,41 @@ def schedule_pickup(request, return_id):
     r.save()
 
     messages.success(request, "Pickup scheduled")
+    return redirect('admin_return_detail', return_id)
+
+
+def mark_picked(request, return_id):
+
+    r = get_object_or_404(ReturnRequest, id=return_id)
+    item = r.order_item
+    variant = item.variant
+
+    if r.return_status != ReturnRequest.Status.PICKUP_SCHEDULED:
+        messages.error(request, "Invalid pickup")
+        return redirect('admin_return_detail', return_id)
+
+    r.return_status = ReturnRequest.Status.PICKED_UP
+    r.picked_at = timezone.now()
+    r.save()
+
+
+    if should_restock(r.reason, r.item_condition):
+        variant.stock += r.quantity
+        variant.save()
+
+    messages.success(request, "Item picked and stock updated")
+    return redirect('admin_return_detail', return_id)
+
+def complete_return(request, return_id):
+
+    r = get_object_or_404(ReturnRequest, id=return_id)
+
+    if r.return_status != ReturnRequest.Status.PICKED_UP:
+        messages.error(request, "Cannot complete")
+        return redirect('admin_return_detail', return_id)
+
+    r.return_status = ReturnRequest.Status.COMPLETED
+    r.save()
+
+    messages.success(request, "Return completed")
     return redirect('admin_return_detail', return_id)
