@@ -195,7 +195,7 @@ def order_success(request, order_id):
     delivery_start = order_date + timedelta(days=3)
     delivery_end = order_date + timedelta(days=7)
 
-    # get payment info
+    # get payment
     try:
         payment = order.payment
     except Payment.DoesNotExist:
@@ -203,15 +203,12 @@ def order_success(request, order_id):
 
     return render(
         request,
-        "user/order_success.html",
-        {
+        "user/order_success.html",{
             "order": order,
             "order_items": order_items,
             "delivery_start": delivery_start,
             "delivery_end": delivery_end,
-            "payment": payment,
-        },
-    )
+            "payment": payment,})
 
 
 @login_required
@@ -295,16 +292,15 @@ def order_detial(request, order_id):
             # Same variant + new
             grouped[variant_id]['quantity'] += item.quantity
 
-    # Convert to a simple list
     cancelled_items = list(grouped.values())
 
-    # Step 5: Check if ALL items are cancelled
+    # Chck if all items are cancelled
     all_cancelled = not active_items.exists()
 
     order.delivery_start = order.created_at + timedelta(days=3)
     order.delivery_end = order.created_at + timedelta(days=7)
 
-    history = order.status_history.all().order_by("-updated_at")
+    history =order.status_history.all().order_by("-updated_at")
 
     can_cancel = order.order_status in [
         Order.Status.PENDING,
@@ -312,9 +308,9 @@ def order_detial(request, order_id):
         Order.Status.PROCESSING,
     ]
     can_return = order.order_status == Order.Status.DELIVERED
-    payment = getattr(order, "payment", None)
+    payment =getattr(order, "payment", None)
   
-    # cancelled_items is a Python list so use len(), not .count()
+    # cancelled_items
     if all_cancelled:
         total_count = len(cancelled_items)
     else:
@@ -371,8 +367,6 @@ def cancel_order(request, order_id):
             item.cancel_reason = reason
             item.save()
 
-        # Update order status but preserve the original total price for record-keeping
-        order.order_status = Order.Status.CANCELLED
         order.save()
 
     # histy
@@ -433,7 +427,7 @@ def cancel_order_item(request, item_id):
         return redirect("order_detail", order_id=order.id)
 
     with transaction.atomic():
-        # Restore stock for the cancelled portion
+        # Restore stock for cancelled portion
         variant = item.variant
         variant.stock += quantity_to_cancel
         variant.save()
@@ -442,13 +436,13 @@ def cancel_order_item(request, item_id):
         cancelled_amount = item.price_at_time * quantity_to_cancel
         order.subtotal -= cancelled_amount
 
-        # If partial cancellation
+        #partial cancellation
         if quantity_to_cancel < item.quantity:
             # Reduce original item quantity
             item.quantity -= quantity_to_cancel
             item.save()
 
-            # Create a new record for the cancelled units
+            # Createnew ecord for cancelled
             OrderItem.objects.create(
                 order=order,
                 variant=item.variant,
@@ -463,11 +457,11 @@ def cancel_order_item(request, item_id):
             item.cancel_reason = reason
             item.save()
 
-        # Correctly recalculate total
+        # total
         order.total_amount = order.subtotal + order.delivery_charge
         order.save()
 
-        # Log history
+        # history
         OrderStatusHistory.objects.create(order=order, status="ITEM_CANCELLED")
 
         # Check if all items in the order are now cancelled
@@ -623,13 +617,13 @@ def download_invoice(request, order_id):
 #--start ---admin side---- - - - - - -------
 
 
-@login_required
+
 def admin_order_list(request):
     
-    order=Order.objects.select_related('user').all()
-    order=order.order_by('-created_at')
+    orders=Order.objects.select_related('user').all()
+    orders=orders.order_by('-created_at')
     
-    search =request.GET.get('search','').strip()
+    search=request.GET.get('search','').strip()
     
     if search :
         orders=orders.filter(Q (order_number__icontains=search) | 
@@ -689,7 +683,7 @@ def admin_order_list(request):
         
     })
 
-@login_required
+
 def  admin_order_detail(request,order_id):
     
     order=get_object_or_404(Order,id=order_id)
@@ -708,7 +702,7 @@ def  admin_order_detail(request,order_id):
         Order.Status.DELIVERED
     ]
 
-    return render(request, 'admin/order_detail.html', {
+    return render(request, 'admin/order_detail.html',{
         'order':order,
         'items':items,
         'history':history,
@@ -718,7 +712,7 @@ def  admin_order_detail(request,order_id):
         'can_update':can_update,
     })
 
-@login_required
+
 def update_order_status(request,order_id):
     
     if request.method != "POST":
