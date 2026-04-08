@@ -254,8 +254,23 @@ def order_listing(request):
         active = [item for item in order.items.all() if item.item_status != "CANCELLED"]
         order.display_items = active if active else list(order.items.all())
         
-        order.has_returns = ReturnRequest.objects.filter(order_item__order=order).exists()
-
+        order.return_badge = None
+        returns = ReturnRequest.objects.filter(order_item__order=order)
+        
+        has_active = False
+        has_completed = False
+        
+        for r in returns:
+            if r.return_status == 'COMPLETED':
+                has_completed = True
+            elif r.return_status != 'REJECTED':
+                has_active = True
+                
+        if has_active:
+            order.return_badge = "Return Active"
+        elif has_completed:
+            order.return_badge = "Returned"
+            
     total_orders = orders.count()
     paginator = Paginator(orders, 5)
     page = request.GET.get("page")
@@ -274,7 +289,7 @@ def order_listing(request):
 
 
 @login_required
-def order_detial(request, order_id):
+def order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
     # not cancelled item

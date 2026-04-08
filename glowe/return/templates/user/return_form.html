@@ -288,7 +288,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <!-- Reason Custom Dropdown -->
         <div class="space-y-2">
-          <label class="block text-[10px] font-bold text-[#8a7e72] uppercase tracking-widest font-montserrat">Why are you returning this?</label>
+          <label class="block text-[10px] font-bold text-[#8a7e72] uppercase tracking-widest font-montserrat">Why are you returning this? <span class="text-red-500 text-[12px] leading-none">*</span></label>
           <div class="custom-select-wrapper" id="reasonSelect">
             <input type="hidden" name="reason" id="reasonInput" required>
             <div class="custom-select-trigger font-montserrat text-[12px] text-[#1a1208] !py-3">
@@ -305,7 +305,7 @@
 
         <!-- Condition Custom Dropdown -->
         <div class="space-y-2">
-          <label class="block text-[10px] font-bold text-[#8a7e72] uppercase tracking-widest font-montserrat">Condition of Item</label>
+          <label class="block text-[10px] font-bold text-[#8a7e72] uppercase tracking-widest font-montserrat">Condition of Item <span class="text-red-500 text-[12px] leading-none">*</span></label>
           <div class="custom-select-wrapper" id="conditionSelect">
             <input type="hidden" name="condition" id="conditionInput" required>
             <div class="custom-select-trigger font-montserrat text-[12px] text-[#1a1208] !py-3">
@@ -323,8 +323,11 @@
 
       <!-- Additional Comments -->
       <div class="space-y-2 mb-6">
-        <label class="block text-[10px] font-bold text-[#8a7e72] uppercase tracking-widest font-montserrat">Additional Comments (Optional)</label>
-        <textarea name="description" placeholder="Please provide any additional details about your return request..." class="w-full bg-white border border-[#e6e0d8] rounded-xl px-4 py-3 font-montserrat text-[12px] text-[#1a1208] focus:border-[#c8a96e] focus:ring-0 transition-all min-h-[100px] resize-none"></textarea>
+        <label class="flex justify-between items-center block text-[10px] font-bold text-[#8a7e72] uppercase tracking-widest font-montserrat">
+          <span>Additional Comments <span class="text-red-500 text-[12px] leading-none">*</span></span>
+          <span class="text-[9px] lowercase normal-case tracking-normal font-medium text-[#b0a498]">(min. 10 characters)</span>
+        </label>
+        <textarea name="description" id="descriptionInput" placeholder="Please provide any additional details about your return request (min. 10 characters)..." class="w-full bg-white border border-[#e6e0d8] rounded-xl px-4 py-3 font-montserrat text-[12px] text-[#1a1208] focus:border-[#c8a96e] focus:ring-0 transition-all min-h-[100px] resize-none"></textarea>
       </div>
 
       <!-- Photo Upload -->
@@ -353,7 +356,7 @@
             <span class="w-5 h-5 rounded-full bg-[#f3f0eb] text-[#8a7e72] flex items-center justify-center text-[9px] font-bold font-montserrat">3</span>
             <h2 class="text-[9px] font-bold text-[#b0a498] uppercase tracking-[0.2em] font-montserrat">Refund Method</h2>
         </div>
-        <span class="text-[8px] font-bold text-[#c8a96e] uppercase tracking-widest font-montserrat px-2 py-0.5 bg-[#fdfaf7] border border-[#e6e0d8] rounded-full">Coming Soon</span>
+  
       </div>
 
       <div class="space-y-3">
@@ -550,6 +553,78 @@ document.addEventListener('DOMContentLoaded', () => {
              radioCards[idx].classList.remove('opacity-70');
         });
     });
+    // Validation
+    const returnForm = document.getElementById('returnForm');
+    const reasonInput = document.getElementById('reasonInput');
+    const conditionInput = document.getElementById('conditionInput');
+    const descriptionInput = document.getElementById('descriptionInput');
+    
+    const reasonTrigger = document.querySelector('#reasonSelect .custom-select-trigger');
+    const conditionTrigger = document.querySelector('#conditionSelect .custom-select-trigger');
+
+    returnForm.addEventListener('submit', (e) => {
+        let isValid = true;
+
+        // Clear previous errors
+        document.querySelectorAll('.error-message').forEach(el => el.remove());
+        document.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500', 'focus:border-red-500'));
+
+        function showError(element, wrapperNode, message) {
+            isValid = false;
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message text-red-500 text-[10px] font-montserrat mt-1.5 fade-up font-medium tracking-wide';
+            errorDiv.textContent = message;
+            wrapperNode.appendChild(errorDiv);
+            element.classList.add('border-red-500');
+            if (element.tagName === 'TEXTAREA') {
+                element.classList.add('focus:border-red-500');
+                element.classList.remove('focus:border-[#c8a96e]');
+            }
+        }
+
+        if (!reasonInput.value) {
+            showError(reasonTrigger, document.querySelector('#reasonSelect').parentNode, 'Please select a reason for the return.');
+        }
+
+        if (!conditionInput.value) {
+            showError(conditionTrigger, document.querySelector('#conditionSelect').parentNode, 'Please select the condition of the item.');
+        }
+
+        const descriptionText = descriptionInput.value.trim();
+        
+        if (descriptionText.length < 10) {
+            showError(descriptionInput, descriptionInput.parentNode, 'Please provide a more detailed description (at least 10 characters).');
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            // Scroll to the first error
+            const firstError = document.querySelector('.error-message');
+            if (firstError) {
+                firstError.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+
+    // Remove errors on interaction
+    [reasonTrigger, conditionTrigger].forEach(trigger => {
+        trigger.addEventListener('click', () => {
+             const wrapper = trigger.closest('.space-y-2');
+             const error = wrapper.querySelector('.error-message');
+             if(error) error.remove();
+             trigger.classList.remove('border-red-500');
+        });
+    });
+
+    if (descriptionInput) {
+        descriptionInput.addEventListener('input', () => {
+             const wrapper = descriptionInput.parentNode;
+             const error = wrapper.querySelector('.error-message');
+             if(error) error.remove();
+             descriptionInput.classList.remove('border-red-500', 'focus:border-red-500');
+             descriptionInput.classList.add('focus:border-[#c8a96e]');
+        });
+    }
 });
 </script>
 {% endblock %}

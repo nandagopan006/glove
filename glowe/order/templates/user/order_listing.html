@@ -615,8 +615,8 @@
 
               <!-- Right: status badge -->
               <div class="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-                {% if order.has_returns %}
-                  <span class="badge badge-active badge-return"><span class="badge-dot"></span>Return Active</span>
+                {% if order.return_badge %}
+                  <span class="badge badge-active badge-return"><span class="badge-dot"></span>{{ order.return_badge }}</span>
                 {% endif %}
                 <!-- order.order_status choices: PENDING CONFIRMED PROCESSING SHIPPED OUT_FOR_DELIVERY DELIVERED CANCELLED -->
                 {% if order.order_status == 'PENDING' %}
