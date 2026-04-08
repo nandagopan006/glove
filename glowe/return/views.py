@@ -5,6 +5,11 @@ from django.contrib import messages
 from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Count
+from datetime import timedelta
+from django.db.models import Q
+
 
 
 def request_return(request, item_id):
@@ -101,3 +106,55 @@ def request_return(request, item_id):
             "ITEM_CONDITIONS": ITEM_CONDITIONS,
         },
     )
+
+
+
+
+
+
+def admin_return_list(request):
+
+    returns =ReturnRequest.objects.select_related(
+        'user',
+        'order_item__variant__product',
+        'order_item__order'
+    ).order_by('-created_at')
+
+    
+    search = request.GET.get('search', '').strip()
+
+    if search:
+        returns = returns.filter(
+            Q(user__full_name__icontains=search) |
+            Q(order_item__variant__product__name__icontains=search)
+        )
+
+    status = request.GET.get('status', '')
+
+    if status:
+        returns = returns.filter(return_status=status)
+
+    today = timezone.now().date()
+    all_returns = ReturnRequest.objects.all()
+
+    pending_count = ReturnRequest.objects.filter(return_status='PENDING').count()
+    approved_today = ReturnRequest.objects.filter(return_status='APPROVED',updated_at__date=today).count()
+    rejected_today = ReturnRequest.objects.filter(return_status='REJECTED',updated_at__date=today).count()
+    total_returns = ReturnRequest.objects.count()
+
+   
+    paginator = Paginator(returns, 5)
+    page = request.GET.get('page')
+    returns = paginator.get_page(page)
+
+    return render(request,'admin/return_list.html',{
+        'returns':returns,
+        'search':search,
+        'status':status,
+        'pending_count':pending_count,
+        'approved_today':approved_today,
+        'rejected_today':rejected_today,
+        'total_returns':total_returns,
+    })
+
+
