@@ -666,6 +666,23 @@ def admin_order_list(request):
     page=request.GET.get('page')
     orders=paginator.get_page(page)
     
+    # Group items  if exist need increase 
+    for order in orders:
+        items_grouped = {}
+        for item in order.items.all().select_related('variant__product'):
+            v_id = item.variant.id
+            if v_id not in items_grouped:
+                items_grouped[v_id] ={
+                    'product_id':item.variant.product.id,
+                    'name':item.variant.product.name,
+                    'image':item.variant.product.images.first().image.url if item.variant.product.images.first() else None,
+                    'quantity':item.quantity,
+                    'price':item.price_at_time}
+            else:
+                items_grouped[v_id]['quantity'] +=item.quantity
+        
+        order.display_items = list(items_grouped.values())
+    
      
     total_orders = Order.objects.count()
     pending_orders = Order.objects.filter(order_status=Order.Status.PENDING).count()
