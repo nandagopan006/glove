@@ -55,8 +55,19 @@
   <!-- Main Content Wrapper -->
   <div class="flex-1 flex flex-col min-w-0 transition-all duration-300 md:ml-64 w-full" id="mainContent">
     
-    <!-- Main Detail Content -->
+      <!-- Main Detail Content -->
     <main class="p-4 lg:p-8 max-w-[1400px] mx-auto w-full">
+      
+      <!-- Django Messages -->
+      {% if messages %}
+        <div class="mb-6 flex flex-col gap-3">
+          {% for message in messages %}
+            <div class="p-4 rounded-xl text-sm font-bold {% if message.tags == 'error' %}bg-red-50 text-red-600 border border-red-100{% else %}bg-sage-50 text-sage-600 border border-sage-100{% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
       
       <!-- PAGE HEADER -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -152,7 +163,9 @@
                   </div>
                   <div class="flex flex-col gap-1 text-right">
                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</span>
-                    <span class="font-bold text-[13px] uppercase tracking-wider {% if payment.payment_status == 'SUCCESS' %}text-green-600{% elif payment.payment_status == 'FAILED' %}text-red-500{% else %}text-orange-500{% endif %}">{{ payment.payment_status|default:"Pending" }}</span>
+                    <span class="font-bold text-[13px] uppercase tracking-wider {% if payment.payment_status == 'SUCCESS' or order.order_status == 'DELIVERED' %}text-green-600{% elif payment.payment_status == 'FAILED' %}text-red-500{% else %}text-orange-500{% endif %}">
+                      {% if order.order_status == 'DELIVERED' %}SUCCESS{% else %}{{ payment.payment_status|default:"Pending" }}{% endif %}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -214,7 +227,7 @@
                     <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                   </div>
                   {% endif %}
-                  {% if item.status == 'CANCELLED' %}<div class="absolute inset-0 bg-red-500/10"></div>{% endif %}
+                  {% if item.item_status == 'CANCELLED' %}<div class="absolute inset-0 bg-red-500/10"></div>{% endif %}
                 </div>
                 
                 <!-- Product Details -->
@@ -224,7 +237,7 @@
                     <span class="bg-gray-100 px-2 py-0.5 rounded border border-gray-200 text-[10px] font-bold text-gray-600 tracking-wider">SIZE: {{ item.variant.size|default:"OS" }}</span>
                     <span>Qty: {{ item.quantity }}</span>
                   </div>
-                  {% if item.status == 'CANCELLED' %}
+                  {% if item.item_status == 'CANCELLED' %}
                   <div class="mt-1"><span class="badge badge-cancelled px-2 py-0.5 text-[9px] drop-shadow-sm border border-red-100">Item Cancelled</span></div>
                   {% endif %}
                 </div>
@@ -233,7 +246,7 @@
                 <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto mt-4 sm:mt-0 gap-1 border-t sm:border-t-0 pt-4 sm:pt-0 border-gray-50">
                   <div class="text-xs text-gray-400 font-bold uppercase tracking-widest hidden sm:block">Item Total</div>
                   <div class="text-[11px] text-gray-400 font-medium">₹{{ item.price_at_time }} × {{ item.quantity }}</div>
-                  <div class="text-base font-bold {% if item.status == 'CANCELLED' %}text-gray-400 line-through{% else %}text-gray-900{% endif %}">₹{% widthratio item.price_at_time 1 item.quantity %}</div>
+                  <div class="text-base font-bold {% if item.item_status == 'CANCELLED' %}text-gray-400 line-through{% else %}text-gray-900{% endif %}">₹{% widthratio item.price_at_time 1 item.quantity %}</div>
                 </div>
               </div>
               {% endfor %}
@@ -293,7 +306,16 @@
                   
                   <!-- Info -->
                   <div class="flex flex-col gap-1.5 pb-2 min-w-0 flex-1 relative animate-[fadeInUp] duration-500 delay-{{ forloop.counter0 }}00">
-                    <p class="text-sm font-bold {% if forloop.first %}text-gray-900 text-base{% else %}text-gray-600{% endif %} truncate">{{ h.status|title }}</p>
+                    <p class="text-sm font-bold {% if forloop.first %}text-gray-900 text-base{% else %}text-gray-600{% endif %} truncate">
+                      {% if h.status == 'PENDING' %}Pending
+                      {% elif h.status == 'CONFIRMED' %}Confirmed
+                      {% elif h.status == 'PROCESSING' %}Processing
+                      {% elif h.status == 'SHIPPED' %}Shipped
+                      {% elif h.status == 'OUT_FOR_DELIVERY' %}Out for Delivery
+                      {% elif h.status == 'DELIVERED' %}Delivered
+                      {% elif h.status == 'CANCELLED' %}Cancelled
+                      {% else %}{{ h.status|title }}{% endif %}
+                    </p>
                     <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{{ h.updated_at|date:"M d, Y" }}</p>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ h.updated_at|date:"g:i a" }}</p>
                   </div>
