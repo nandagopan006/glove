@@ -741,57 +741,10 @@
                       Buy Again
                     </a>
                     
-                    {% if item_count > 1 %}
-                      <div class="om-popover-wrap">
-                        <button type="button" class="btn-ghost w-full" onclick="toggleOrderPopover(event, '{{ order.id }}')">
-                          View Details
-                        </button>
-                        <!-- Popover -->
-                        <div class="om-popover" id="popover-{{ order.id }}" role="dialog">
-                          <div class="om-header">
-                            <div>
-                              <h3 class="om-title">Order Items</h3>
-                              <p class="om-subtitle">Order #{{ order.order_number }}</p>
-                            </div>
-                            <button type="button" class="om-close" onclick="closeOrderPopover('{{ order.id }}')" aria-label="Close">
-                              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            </button>
-                          </div>
-                          <div class="om-product-list">
-                            {% for item in all_items %}
-                            <a href="{% url 'product_detail_view' item.variant.product.slug %}" class="om-item">
-                              <div class="om-item-img">
-                                {% if item.variant.product.images.first %}
-                                  <img src="{{ item.variant.product.images.first.image.url }}" alt="{{ item.variant.product.name }}">
-                                {% else %}
-                                  <div class="w-full h-full flex items-center justify-center">
-                                    <svg width="24" height="24" fill="none" stroke="rgba(26,18,8,0.18)" stroke-width="1.4" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                                  </div>
-                                {% endif %}
-                              </div>
-                              <div class="om-item-info">
-                                <p class="om-item-name">{{ item.variant.product.name }}</p>
-                                <p class="om-item-meta">
-                                  {% if item.variant.size %}{{ item.variant.size }}{% endif %}
-                                  {% if item.variant.size and item.variant.color %} | {% endif %}
-                                  {% if item.variant.color %}{{ item.variant.color }}{% endif %}
-                                  • Qty: {{ item.display_quantity|default:item.quantity }}
-                                </p>
-                              </div>
-                              <div class="om-item-price flex items-center">
-                                ₹{{ item.price_at_time }}
-                              </div>
-                            </a>
-                            {% endfor %}
-                          </div>
-                        </div>
-                      </div>
-                    {% else %}
-                      <a href="{% url 'product_detail_view' first_item.variant.product.slug %}"
-                         class="btn-ghost w-full" id="view-detail-order-{{ order.id }}">
-                        View Detail
-                      </a>
-                    {% endif %}
+                    <a href="{% url 'order_detail' order.id %}" class="btn-ghost w-full" id="view-order-details-{{ order.id }}">
+                      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                      Order Details
+                    </a>
 
                   {% elif order.order_status == 'CANCELLED' %}
                     <!-- Cancelled: Order Details AND View Details Popover -->

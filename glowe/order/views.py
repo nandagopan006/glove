@@ -378,10 +378,16 @@ def cancel_order(request, order_id):
             item.cancel_reason = reason
             item.save()
 
+        order.order_status = Order.Status.CANCELLED
         order.save()
+        
+        payment=getattr(order,'payment',None)
+        if payment and payment.payment_method == Payment.Method.COD:
+            payment.payment_status = Payment.Status.FAILED
+            payment.save()
 
     # histy
-    OrderStatusHistory.objects.create(order=order, status=Order.Status.CANCELLED)
+    OrderStatusHistory.objects.create(order=order,status=Order.Status.CANCELLED)
     send_mail(
         subject="Order Cancelled ❌",
         message=f"""
@@ -428,10 +434,12 @@ def cancel_order_item(request, item_id):
         return redirect("order_detail", order.id)
 
     reason = request.POST.get("reason", "")
+    
     try:
-        quantity_to_cancel = int(request.POST.get("quantity", item.quantity))
-    except (ValueError, TypeError):
-        quantity_to_cancel = item.quantity
+        quantity_to_cancel =int(request.POST.get("quantity", item.quantity))
+        
+    except (ValueError,TypeError):
+        quantity_to_cancel =item.quantity
 
     if quantity_to_cancel > item.quantity or quantity_to_cancel <= 0:
         messages.error(request, "Invalid quantity")
@@ -717,24 +725,22 @@ def admin_order_list(request):
 
         order.display_items = list(items_grouped.values())
 
-    total_orders = Order.objects.count()
-    pending_orders = Order.objects.filter(order_status=Order.Status.PENDING).count()
-    completed_orders = Order.objects.filter(order_status=Order.Status.DELIVERED).count()
+    total_orders=Order.objects.count()
+    pending_orders=Order.objects.filter(order_status=Order.Status.PENDING).count()
+    completed_orders=Order.objects.filter(order_status=Order.Status.DELIVERED).count()
 
     return render(
         request,
-        "admin/order_list.html",
-        {
-            "orders": orders,
-            "status": status,
-            "search": search,
-            "filter_by": filter_by,
-            "payment": payment,
-            "total_orders": total_orders,
-            "pending_orders": pending_orders,
-            "completed_orders": completed_orders,
-        },
-    )
+        "admin/order_list.html",{
+            "orders":orders,
+            "status":status,
+            "search":search,
+            "filter_by":filter_by,
+            "payment":payment,
+            "total_orders":total_orders,
+            "pending_orders":pending_orders,
+            "completed_orders":completed_orders,
+        })
 
 
 def admin_order_detail(request, order_id):
