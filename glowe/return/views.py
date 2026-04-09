@@ -178,6 +178,8 @@ def should_restock(reason, condition):
         "Leaking or broken packaging",
         "Used a few times",
     ]
+    
+    #not add other wise add the stock
     if reason in bad_reasons or condition in bad_conditions:
         
         return False
@@ -216,6 +218,7 @@ def approve_return(request, return_id):
 def schedule_pickup(request, return_id):
     
     r = get_object_or_404(ReturnRequest, id=return_id)
+    
     if r.return_status != ReturnRequest.Status.APPROVED:
         
         messages.error(request, "Pickup can only be scheduled after approval.")
