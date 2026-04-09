@@ -356,7 +356,62 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+/* ── Sign Out Modal ── */
+function openAdminSignoutModal() {
+  const o = document.getElementById('adminSignoutOverlay');
+  if (!o) return;
+  o.classList.remove('opacity-0','pointer-events-none');
+  o.classList.add('opacity-100','pointer-events-auto');
+  o.querySelector('div').classList.remove('scale-95','translate-y-2');
+  o.querySelector('div').classList.add('scale-100','translate-y-0');
+}
+
+function closeAdminSignoutModal() {
+  const o = document.getElementById('adminSignoutOverlay');
+  if (!o) return;
+  o.querySelector('div').classList.remove('scale-100','translate-y-0');
+  o.querySelector('div').classList.add('scale-95','translate-y-2');
+  setTimeout(() => {
+    o.classList.remove('opacity-100','pointer-events-auto');
+    o.classList.add('opacity-0','pointer-events-none');
+  }, 150);
+}
+
+// Close on escape or backdrop click
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeAdminSignoutModal();
+});
+document.addEventListener('DOMContentLoaded', () => {
+    const o = document.getElementById('adminSignoutOverlay');
+    if(o) {
+        o.addEventListener('click', (e) => {
+            if (e.target === o) closeAdminSignoutModal();
+        });
+    }
+});
 </script>
+
+<!-- Global Admin Signout Modal (Injected via Sidebar) -->
+<div id="adminSignoutOverlay" class="fixed inset-0 bg-black/25 backdrop-blur-sm z-[9999] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-250" role="dialog" aria-modal="true">
+  <div class="bg-white rounded-2xl p-9 w-[360px] max-w-[calc(100vw-32px)] flex flex-col items-center text-center transform scale-95 translate-y-2 transition-transform duration-280">
+    <div class="w-16 h-16 rounded-full bg-sage-50 flex items-center justify-center mb-5 border border-sage-100">
+      <svg class="w-7 h-7 text-sage-600" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12V7a2 2 0 012-2h6a2 2 0 012 2v1M3 12v5a2 2 0 002 2h6a2 2 0 002-2v-1"/>
+      </svg>
+    </div>
+    <h2 class="text-xl font-bold text-gray-900 mb-2.5 leading-tight">Are you sure you want to<br>Sign Out?</h2>
+    <p class="text-sm text-gray-600 mb-7 leading-relaxed max-w-[260px]">You will need to login again to access your admin dashboard.</p>
+    <div class="flex gap-3 w-full">
+      <button onclick="closeAdminSignoutModal()" class="flex-1 px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors">Cancel</button>
+      <form method="POST" action="{% url 'admin_signout' %}" class="flex-1">
+        {% csrf_token %}
+        <button type="submit" class="w-full px-4 py-3 border-none rounded-xl bg-red-500 text-white font-semibold text-sm hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 active:scale-95">Sign Out</button>
+      </form>
+    </div>
+  </div>
+</div>
 
 <style>
 /* Sidebar scrollbar */
