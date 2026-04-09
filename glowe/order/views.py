@@ -60,8 +60,8 @@ def place_order(request):
     with transaction.atomic():
         for item in cart_items:
             # lock variant ,,if one user bbuy same other USER aslo nedd lock  --oveerselling block
-            variant = Variant.objects.select_for_update().get(id=item.variant.id)
-            product = variant.product
+            variant =Variant.objects.select_for_update().get(id=item.variant.id)
+            product=variant.product
 
             if not product.is_active:
                 request.session["order_processing"] = False
