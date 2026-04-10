@@ -46,6 +46,8 @@ def place_order(request):
         return redirect("cart")
 
     address_id = request.POST.get("address_id")
+    payment_method = request.POST.get("payment_method")
+    
     if not address_id:
         request.session["order_processing"] = False
         messages.error(request, "Please select a delivery address")
@@ -95,7 +97,7 @@ def place_order(request):
             delivery_charge=shipping,
             discount_amount=0,
             total_amount=total,
-            order_status=Order.Status.CONFIRMED,
+            order_status=Order.Status.PENDING,
         )
 
         # create order items + reduce stock
@@ -108,10 +110,6 @@ def place_order(request):
                 price_at_time=variant.price,
                 quantity=item.quantity,
             )
-
-            # reduce the stock
-            variant.stock -= item.quantity
-            variant.save()
 
         # save the ordered address
         ShippingAddress.objects.create(
@@ -128,10 +126,15 @@ def place_order(request):
         )
 
         # now only cod
-        Payment.objects.create(
-            order=order, payment_method="COD", amount=total, payment_status="PENDING"
+        payment = Payment.objects.create(
+            order=order, payment_method=payment_method, amount=total, payment_status="PENDING"
         )
+        
+        if payment_method == Payment.Method.COD :
+            payment.payment_status = Payment.Status.SUCCESS
+            payment.save()
 
+        
         OrderStatusHistory.objects.create(order=order, status=Order.Status.CONFIRMED)
 
         send_mail(
