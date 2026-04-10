@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
  
 import os
 from pathlib import Path
+from decouple import config
 
 
 
@@ -112,7 +113,6 @@ DATABASES = {
 }
 
 
-
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
@@ -166,6 +166,9 @@ EMAIL_HOST_USER ='glowe639@gmail.com'               #MY GMAIL
 EMAIL_HOST_PASSWORD = 'ezxi bdzy uszx qmhq'           #MYY PASSWORD MAKED
 
 
+
+
+
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -189,3 +192,8 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
+# Razorpay Configuration
+RAZORPAY_KEY_ID = config("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = config("RAZORPAY_KEY_SECRET")
+
