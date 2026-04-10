@@ -79,6 +79,7 @@ class Payment(models.Model):
 
     class Method(models.TextChoices):
         COD ="COD", "Cash on Delivery"
+        RAZORPAY = "RAZORPAY", "Razorpay"
     class Status(models.TextChoices):
         PENDING="PENDING","Pending"
         SUCCESS="SUCCESS", "Success"
