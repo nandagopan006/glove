@@ -25,7 +25,7 @@ def coupon_list(request):
     elif status_filter == "inactive":
         coupons = coupons.filter(is_active=False, end_date__gte=today)
 
-    paginator = Paginator(coupons, 4)
+    paginator = Paginator(coupons,4)
     page =request.GET.get('page')
     coupons=paginator.get_page(page)
 
@@ -57,3 +57,21 @@ def coupon_list(request):
         'total_active':total_active,
         'total_used':total_used
     })
+    
+def create_coupon(request):
+    if request.method == "POST":
+        form = CouponForm(request.POST)
+
+        if form.is_valid():
+            coupon = form.save(commit=False)
+
+            coupon.code = coupon.code.upper().strip()
+            coupon.used_count = 0
+
+            coupon.save()
+
+            messages.success(request, f"Coupon '{coupon.code}' created ")
+        else:
+            messages.error(request, "Please fix form errors ")
+
+    return redirect('coupon_list')
