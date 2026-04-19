@@ -309,6 +309,7 @@ body { background: var(--bg); }
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-20">
   <form action="{% url 'place_order' %}" method="POST" class="grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-x-16 xl:gap-x-24 items-start">
     {% csrf_token %}
+    <input type="hidden" name="payment_method" id="selected_payment_method" value="COD">
 
       <!-- ── SHIPPING ADDRESS ── -->
       <div class="lg:col-span-7 lg:col-start-1 lg:row-start-1 order-1 fade-up d1 w-full">
@@ -387,7 +388,7 @@ body { background: var(--bg); }
           </div>
 
           <!-- Razorpay -->
-          <div class="option-card" style="opacity: 0.55; pointer-events: none;">
+          <div class="option-card" data-value="RAZORPAY" onclick="pickPayment(this)">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <div class="radio-outer"><div class="radio-inner"></div></div>
@@ -399,12 +400,11 @@ body { background: var(--bg); }
                   <p style="font-family:'Montserrat',sans-serif; font-size:9.5px; color:var(--brown-lt); margin:1px 0 0;">UPI, Netbanking</p>
                 </div>
               </div>
-              <span style="font-family:'Montserrat',sans-serif; font-size:8px; font-weight:700; background:#f0ebe2; color:var(--brown-md); padding:3px 6px; border-radius:4px; text-transform:uppercase;">Coming Soon</span>
             </div>
           </div>
 
           <!-- COD -->
-          <div class="option-card active" onclick="pickPayment(this)">
+          <div class="option-card active" data-value="COD" onclick="pickPayment(this)">
             <div class="flex items-center gap-3">
               <div class="radio-outer active"><div class="radio-inner"></div></div>
               <div class="w-8 h-8 rounded-lg bg-[#F0EBE2] flex items-center justify-center flex-shrink-0">
@@ -901,6 +901,10 @@ function pickPayment(card) {
   });
   card.classList.add('active');
   card.querySelector('.radio-outer').classList.add('active');
+  
+  // Sync with hidden input
+  const val = card.getAttribute('data-value');
+  document.getElementById('selected_payment_method').value = val;
 }
 </script>
 {% endblock %}

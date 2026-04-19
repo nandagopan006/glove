@@ -15,16 +15,10 @@
               shadow-xl lg:shadow-none">
 
   <!-- Logo -->
-  <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100 flex-shrink-0">
-    <div class="w-9 h-9 bg-gradient-to-br from-sage-600 to-sage-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 2C9 5.5 6 9 6 13a6 6 0 0012 0c0-4-3-7.5-6-11z"/>
-      </svg>
-    </div>
-    <div class="flex-1 min-w-0">
-      <div class="font-bold text-gray-900 text-base leading-tight truncate">Glowé</div>
-      <div class="text-[10px] text-gray-400 font-medium tracking-wide uppercase">Admin Console</div>
-    </div>
+  <div class="flex items-center justify-between gap-3 px-5 py-4 border-b border-gray-100 flex-shrink-0">
+    <a href="{% url 'admin_dashboard' %}" class="flex flex-col min-w-0 no-underline">
+      <img src="{{ logo_url }}" alt="{{ site_name }} Logo" class="w-[15f\\\8px] h-auto object-contain">
+    </a>
     <!-- Close — mobile/tablet only -->
     <button type="button" onclick="toggleAdminSidebar()"
             class="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0">
@@ -229,12 +223,8 @@
 
   <!-- Logo / page title -->
   <div class="flex items-center gap-2 flex-1 min-w-0">
-    <div class="w-7 h-7 bg-gradient-to-br from-sage-600 to-sage-500 rounded-lg flex items-center justify-center flex-shrink-0">
-      <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 2C9 5.5 6 9 6 13a6 6 0 0012 0c0-4-3-7.5-6-11z"/>
-      </svg>
-    </div>
-    <span class="font-bold text-gray-900 text-sm truncate">Glowé Admin</span>
+    <img src="{{ logo_url }}" alt="{{ site_name }} Logo" class="w-[126px] h-auto object-contain shrink-0">
+    <span class="text-[10px] font-semibold tracking-[0.18em] uppercase text-gray-400 truncate">Admin</span>
   </div>
 
   <!-- Right side: notification + avatar -->

@@ -128,30 +128,33 @@ def place_order(request):
             pincode=address.pincode,
         )
 
-        # now only cod
+        # Create Payment
         payment = Payment.objects.create(
-            order=order, payment_method=payment_method, amount=total, payment_status="PENDING"
+            order=order, 
+            payment_method=payment_method, 
+            amount=total, 
+            payment_status=Payment.Status.PENDING
         )
         
-        if payment_method == Payment.Method.COD :
-            payment.payment_status = Payment.Status.SUCCESS
-            payment.save()
-            
-            order.order_status=Order.Status.CONFIRMED
+        # Initial status history
+        OrderStatusHistory.objects.create(order=order, status=Order.Status.PENDING)
+        
+        # If COD, confirm immediately and reduce stock
+        if payment_method == Payment.Method.COD:
+            order.order_status = Order.Status.CONFIRMED
             order.save()
-            # sent order confirmation email
-            send_order_confirmation_email(request, order)
             
-            #reduce the stock 
+            OrderStatusHistory.objects.create(order=order, status=Order.Status.CONFIRMED)
+            
             for item in order.items.all():
                 variant = item.variant
                 variant.stock -= item.quantity
                 variant.save()
-        
-            OrderStatusHistory.objects.create(order=order, status=Order.Status.CONFIRMED)
-        
-        else :
-            OrderStatusHistory.objects.create(order=order,status=Order.Status.PENDING)
+            
+            try:
+                send_order_confirmation_email(request, order)
+            except Exception as e:
+                print("Email failed:", e)
 
         # dlt all item, frm crt
         cart_items.delete()
@@ -160,7 +163,6 @@ def place_order(request):
     request.session["last_order_id"] = order.id
 
     request.session["order_processing"] = False
-    messages.success(request, "Order placed successfully!")
     
     # redirect bases on pyment 
     if payment_method == Payment.Method.COD:
@@ -175,6 +177,11 @@ def place_order(request):
 def order_success(request, order_id):
     # get order the user
     order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # only confirmed order can see success page
+    if order.order_status != Order.Status.CONFIRMED:
+        messages.warning(request, "Your order is currently pending confirmation.")
+        return redirect("order_listing")
 
     # onlyy the now done order
     last_order_id = request.session.get("last_order_id")
@@ -324,12 +331,25 @@ def order_detail(request, order_id):
     history = order.status_history.all().order_by("-updated_at")
 
     can_cancel = order.order_status in [
-        Order.Status.PENDING,
         Order.Status.CONFIRMED,
         Order.Status.PROCESSING,
     ]
     can_return = order.order_status == Order.Status.DELIVERED
     payment = getattr(order, "payment", None)
+
+    expiration_time = order.created_at + timedelta(minutes=5)
+    time_left_seconds = max(0, int((expiration_time - timezone.now()).total_seconds()))
+    
+    # Auto-cancel if pending and time exceeded
+    if order.order_status == Order.Status.PENDING and time_left_seconds <= 0:
+        order.order_status = Order.Status.CANCELLED
+        order.save()
+        OrderStatusHistory.objects.create(order=order, status=Order.Status.CANCELLED)
+        if payment and payment.payment_status == Payment.Status.PENDING:
+            payment.payment_status = Payment.Status.FAILED
+            payment.save()
+            
+    retry_allowed = (order.order_status == Order.Status.PENDING and time_left_seconds > 0)
 
     # cancelled_items
     if all_cancelled:
@@ -357,6 +377,8 @@ def order_detail(request, order_id):
             "total_count":total_count,
             "returns":returns,
             "returned_item_ids": [r.order_item.id for r in returns],
+            "retry_allowed": retry_allowed,
+            "time_left_seconds": time_left_seconds,
         },
     )
 
@@ -371,7 +393,6 @@ def cancel_order(request, order_id):
 
     # chck allowed only
     if order.order_status not in [
-        Order.Status.PENDING,
         Order.Status.CONFIRMED,
         Order.Status.PROCESSING,
     ]:
@@ -423,7 +444,6 @@ def cancel_order_item(request, item_id):
     order = item.order
 
     if order.order_status not in [
-        Order.Status.PENDING,
         Order.Status.CONFIRMED,
         Order.Status.PROCESSING,
     ]:
