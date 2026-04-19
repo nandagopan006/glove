@@ -128,30 +128,16 @@ def place_order(request):
             pincode=address.pincode,
         )
 
-        # now only cod
+        # Create Payment object (Initially PENDING)
         payment = Payment.objects.create(
-            order=order, payment_method=payment_method, amount=total, payment_status="PENDING"
+            order=order, 
+            payment_method=payment_method, 
+            amount=total, 
+            payment_status=Payment.Status.PENDING
         )
         
-        if payment_method == Payment.Method.COD :
-            payment.payment_status = Payment.Status.SUCCESS
-            payment.save()
-            
-            order.order_status=Order.Status.CONFIRMED
-            order.save()
-            # sent order confirmation email
-            send_order_confirmation_email(request, order)
-            
-            #reduce the stock 
-            for item in order.items.all():
-                variant = item.variant
-                variant.stock -= item.quantity
-                variant.save()
-        
-            OrderStatusHistory.objects.create(order=order, status=Order.Status.CONFIRMED)
-        
-        else :
-            OrderStatusHistory.objects.create(order=order,status=Order.Status.PENDING)
+        # Initial status history
+        OrderStatusHistory.objects.create(order=order, status=Order.Status.PENDING)
 
         # dlt all item, frm crt
         cart_items.delete()
@@ -160,7 +146,6 @@ def place_order(request):
     request.session["last_order_id"] = order.id
 
     request.session["order_processing"] = False
-    messages.success(request, "Order placed successfully!")
     
     # redirect bases on pyment 
     if payment_method == Payment.Method.COD:
@@ -175,6 +160,11 @@ def place_order(request):
 def order_success(request, order_id):
     # get order the user
     order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # only confirmed order can see success page
+    if order.order_status != Order.Status.CONFIRMED:
+        messages.warning(request, "Your order is currently pending confirmation.")
+        return redirect("order_listing")
 
     # onlyy the now done order
     last_order_id = request.session.get("last_order_id")

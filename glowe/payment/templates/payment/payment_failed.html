@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment Encountered an Issue — Glowé{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <!-- DECORATIVE BG -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-red-50/30 rounded-full blur-3xl -z-10"></div>
+    
+    <div class="max-w-md w-full text-center space-y-10 animate-fade-in">
+        
+        <!-- ERROR ICON -->
+        <div class="flex justify-center">
+            <div class="relative">
+                <div class="w-24 h-24 rounded-3xl bg-white shadow-sm border border-red-50 flex items-center justify-center rotate-3">
+                    <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="space-y-4 px-4">
+            <h1 class="font-cormorant text-4xl text-gray-900 italic font-bold">Payment Unsuccessful</h1>
+            <p class="font-montserrat text-xs text-gray-400 leading-relaxed uppercase tracking-wider">
+                We couldn't process your transaction for Order <span class="text-gray-900 font-bold">#{{ order.order_number }}</span>. 
+            </p>
+            <div class="bg-gray-100/50 p-4 rounded-xl border border-gray-100">
+                <p class="font-montserrat text-[10px] text-gray-500 leading-normal">
+                    <span class="font-bold text-gray-700">Rest assured:</span> If any amount was debited, it will be automatically refunded by your bank within 5-7 business days.
+                </p>
+            </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="flex flex-col gap-3 px-6">
+            <a href="{% url 'payment_page' order.id %}" class="w-full bg-black text-white py-5 rounded-2xl font-montserrat text-[11px] font-bold uppercase tracking-[0.3em] transition-all hover:bg-gray-900 hover:shadow-xl active:scale-95">
+                Retry Payment
+            </a>
+            <a href="{% url 'checkout' %}" class="w-full bg-white text-gray-800 py-5 rounded-2xl font-montserrat text-[11px] font-bold uppercase tracking-[0.3em] border border-gray-200 transition-all hover:bg-gray-50 active:scale-95">
+                Change Method
+            </a>
+        </div>
+
+        <!-- HELP -->
+        <p class="font-montserrat text-[9px] text-gray-400 uppercase tracking-widest pt-4">
+            Need help? Contact our concierge at <span class="text-gray-900 font-bold">support@glowe.com</span>
+        </p>
+    </div>
+</div>
+
+<style>
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 0.7s ease-out forwards; }
+</style>
+{% endblock %}
