@@ -58,7 +58,7 @@ class OrderItem(models.Model):
     cancel_reason=models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.variant} - {self.quantity}"
+        return f"{self.variant.product.name} - {self.quantity}"
 
 class ShippingAddress(models.Model):
 

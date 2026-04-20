@@ -121,8 +121,11 @@
                     <p style="font-family:Arial, sans-serif; font-size:16px; font-weight:400; color:#1a1208; margin-bottom:8px;">
                       {{ item.variant.product.name }}
                     </p>
+                    <p style="font-family:Arial, sans-serif; font-size:14px; color:#555555; margin-bottom:4px;">
+                      Qty: {{ item.quantity }}
+                    </p>
                     <p style="font-family:Arial, sans-serif; font-size:16px; font-weight:400; color:#1a1208;">
-                      ₹{{ item.price_at_time }}
+                      ₹{{ item.price_at_time|floatformat:2 }}
                     </p>
                   </td>
                 </tr>
@@ -147,15 +150,15 @@
         <table cellpadding="0" cellspacing="0" role="presentation">
           <tr style="font-family:Arial, sans-serif; font-size:14px; color:#1a1208; letter-spacing:0.04em;">
             <td align="right" style="padding-bottom:12px; text-transform:uppercase;">SUBTOTAL:</td>
-            <td align="right" style="padding:0 0 12px 30px;">₹{{ order.subtotal }}</td>
+            <td align="right" style="padding:0 0 12px 30px;">₹{{ order.subtotal|floatformat:2 }}</td>
           </tr>
           <tr style="font-family:Arial, sans-serif; font-size:14px; color:#1a1208; letter-spacing:0.04em;">
             <td align="right" style="padding-bottom:12px; text-transform:uppercase;">SHIPPING:</td>
-            <td align="right" style="padding:0 0 12px 30px;">₹{{ order.delivery_charge }}</td>
+            <td align="right" style="padding:0 0 12px 30px;">₹{{ order.delivery_charge|floatformat:2 }}</td>
           </tr>
           <tr style="font-family:Arial, sans-serif; font-size:14px; font-weight:700; color:#1a1208; letter-spacing:0.04em;">
             <td align="right" style="padding-bottom:10px; text-transform:uppercase;">TOTAL:</td>
-            <td align="right" style="padding:0 0 10px 30px;">₹{{ order.total_amount }}</td>
+            <td align="right" style="padding:0 0 10px 30px;">₹{{ order.total_amount|floatformat:2 }}</td>
           </tr>
         </table>
       </td>

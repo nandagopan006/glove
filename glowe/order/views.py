@@ -22,6 +22,9 @@ import io
 from collections import defaultdict
 from django.apps import apps
 from order.email_util import send_order_confirmation_email, send_order_cancellation_email, send_order_delivered_email
+from coupons.views import calculate_discount
+from coupons.models import Coupon, CouponUsage
+from decimal import Decimal
 
 
 
@@ -58,7 +61,7 @@ def place_order(request):
 
     address = get_object_or_404(Address, id=address_id, user=request.user)
 
-    subtotal = 0
+    subtotal = Decimal('0.00')
 
     with transaction.atomic():
         for item in cart_items:
@@ -66,7 +69,7 @@ def place_order(request):
             variant =Variant.objects.select_for_update().get(id=item.variant.id)
             product=variant.product
 
-            if not product.is_active:
+            if not product.is_active or product.is_deleted:
                 request.session["order_processing"] = False
                 messages.error(request, f"{product.name} is unavailable")
                 return redirect("cart")
@@ -87,10 +90,14 @@ def place_order(request):
                 return redirect("cart")
 
             item.item_total = item.quantity * variant.price
-            subtotal += item.item_total
+            subtotal += Decimal(item.item_total)
 
-        shipping = 0 if subtotal > 999 else 100
-        total = subtotal + shipping
+        shipping = Decimal('0.00') if subtotal > Decimal('999') else Decimal('100.00')
+        
+        # Calculate discount
+        discount = calculate_discount(request, subtotal)
+        total = subtotal + shipping - discount
+        if total < 0: total = Decimal('0.00')
 
         order = Order.objects.create(
             user=request.user,
@@ -98,19 +105,17 @@ def place_order(request):
             address=address,
             subtotal=subtotal,
             delivery_charge=shipping,
-            discount_amount=0,
+            discount_amount=discount,
             total_amount=total,
             order_status=Order.Status.PENDING,
         )
 
         # create order items + reduce stock
         for item in cart_items:
-            variant = item.variant
-
             OrderItem.objects.create(
                 order=order,
-                variant=variant,
-                price_at_time=variant.price,
+                variant=item.variant,
+                price_at_time=item.variant.price,
                 quantity=item.quantity,
             )
 
@@ -128,13 +133,18 @@ def place_order(request):
             pincode=address.pincode,
         )
 
-        # Create Payment
-        payment = Payment.objects.create(
+        Payment.objects.create(
             order=order, 
-            payment_method=payment_method, 
             amount=total, 
+            payment_method=payment_method, 
             payment_status=Payment.Status.PENDING
         )
+        
+        # Store coupon ID specifically for THIS order to prevent multi-tab issues
+        coupon_id = request.session.get('coupon_id')
+        if coupon_id and discount > 0:
+            request.session[f'order_coupon_{order.id}'] = coupon_id
+
         
         # Initial status history
         OrderStatusHistory.objects.create(order=order, status=Order.Status.PENDING)
@@ -147,16 +157,15 @@ def place_order(request):
             OrderStatusHistory.objects.create(order=order, status=Order.Status.CONFIRMED)
             
             for item in order.items.all():
-                variant = item.variant
-                variant.stock -= item.quantity
-                variant.save()
+                v = item.variant
+                v.stock -= item.quantity
+                v.save()
             
             try:
                 send_order_confirmation_email(request, order)
-            except Exception as e:
-                print("Email failed:", e)
+            except:
+                pass
 
-        # dlt all item, frm crt
         cart_items.delete()
 
     # for geting the current
@@ -188,6 +197,36 @@ def order_success(request, order_id):
     if last_order_id != order.id:
         return redirect("home")
 
+   
+    # if coupon used increment count
+    # Check for order-specific coupon first, then fallback to current session
+    coupon_id = request.session.get(f'order_coupon_{order.id}') or request.session.get('coupon_id')
+    
+    if coupon_id and order.discount_amount > 0:
+        try:
+            with transaction.atomic():
+                coupon = Coupon.objects.select_for_update().get(id=coupon_id)
+                coupon.used_count += 1
+                coupon.save()
+                
+                usage, created = CouponUsage.objects.get_or_create(user=request.user, coupon=coupon)
+                usage.used_count += 1
+                usage.save()
+                
+                # Remove both specific and general session keys
+                if f'order_coupon_{order.id}' in request.session:
+                    del request.session[f'order_coupon_{order.id}']
+                
+                # Only clear general if it matches the one used
+                if request.session.get('coupon_id') == coupon_id:
+                    del request.session['coupon_id']
+                    if 'coupon_code' in request.session:
+                        del request.session['coupon_code']
+
+        except Coupon.DoesNotExist:
+            pass
+
+
     # get all items this order
     order_items = order.items.select_related("variant", "variant__product")
 
@@ -216,6 +255,7 @@ def order_success(request, order_id):
             "payment": payment,
         },
     )
+
 
 
 @login_required

@@ -267,7 +267,7 @@
                           </div>
                           <div class="min-w-0">
                             <p class="text-[11px] font-semibold text-gray-900 truncate">{{ item.name }}</p>
-                            <p class="text-[9px] text-gray-500">Qty: {{ item.quantity }} • ₹{{ item.price }}</p>
+                            <p class="text-[9px] text-gray-500">Qty: {{ item.quantity }} • ₹{{ item.price|floatformat:2 }}</p>
                           </div>
                         </a>
                         {% endfor %}
@@ -277,7 +277,7 @@
                   </div>
                 </td>
                 <td class="py-4 px-6 text-[11px] text-gray-500">{{ order.created_at|date:"M d, Y" }}</td>
-                <td class="py-4 px-6 text-right text-xs font-bold text-gray-900">₹{{ order.total_amount }}</td>
+                <td class="py-4 px-6 text-right text-xs font-bold text-gray-900">₹{{ order.total_amount|floatformat:2 }}</td>
                 <td class="py-4 px-6 text-[11px] font-semibold text-gray-700">
                   {% if order.payment %}{{ order.payment.payment_method }}{% else %}-{% endif %}
                 </td>
@@ -326,7 +326,7 @@
                 </div>
                 <span class="text-[11px] font-semibold text-gray-700 group-hover:text-sage-600 transition-colors">{{ order.user.full_name|default:order.user.username }}</span>
               </a>
-              <span class="text-xs font-bold text-gray-900">₹{{ order.total_amount }}</span>
+              <span class="text-xs font-bold text-gray-900">₹{{ order.total_amount|floatformat:2 }}</span>
             </div>
             <div class="flex items-center justify-between border-t border-gray-50 pt-3 mt-1">
                <div class="flex items-center gap-2">

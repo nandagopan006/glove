@@ -597,7 +597,7 @@
               {% if item.variant.color %}{{ item.variant.color }}{% endif %}
             </p>
           </div>
-          <p class="item-pr">₹{{ item.price_at_time }}</p>
+          <p class="item-pr">₹{{ item.price_at_time|floatformat:2 }}</p>
         </div>
         {% endfor %}
       </div>
@@ -608,12 +608,12 @@
         <!-- line items -->
         <div class="sum-row">
           <span class="s-lbl">Subtotal</span>
-          <span class="s-val">₹{{ order.subtotal }}</span>
+          <span class="s-val">₹{{ order.subtotal|floatformat:2 }}</span>
         </div>
         {% if order.discount_amount and order.discount_amount > 0 %}
         <div class="sum-row">
           <span class="s-lbl">Discount</span>
-          <span class="s-val red">−₹{{ order.discount_amount }}</span>
+          <span class="s-val red">−₹{{ order.discount_amount|floatformat:2 }}</span>
         </div>
         {% endif %}
         <div class="sum-row">
@@ -621,7 +621,7 @@
           {% if order.delivery_charge == 0 %}
             <span class="s-val green">Free</span>
           {% else %}
-            <span class="s-val">₹{{ order.delivery_charge }}</span>
+            <span class="s-val">₹{{ order.delivery_charge|floatformat:2 }}</span>
           {% endif %}
         </div>
 
@@ -631,7 +631,7 @@
         <div class="sum-total">
           <span class="sum-total-lbl">Total Paid</span>
           <div style="text-align: right;">
-            <div class="sum-total-val">₹{{ order.total_amount }}</div>
+            <div class="sum-total-val">₹{{ order.total_amount|floatformat:2 }}</div>
             {% if payment %}
             <div class="pay-line-txt" style="margin-top: 5px;">
               {% if payment.payment_method == 'COD' %}Cash on Delivery{% else %}{{ payment.get_payment_method_display }}{% endif %}

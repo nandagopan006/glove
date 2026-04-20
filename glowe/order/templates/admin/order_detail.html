@@ -143,7 +143,7 @@
               </div>
               <div class="flex justify-between items-center text-sm bg-gray-50/50 p-2 -mx-2 rounded-lg">
                 <span class="text-gray-500 font-medium px-2">Total Amount:</span>
-                <span class="font-bold text-sage-600 px-2">₹{{ order.total_amount }}</span>
+                <span class="font-bold text-sage-600 px-2">₹{{ order.total_amount|floatformat:2 }}</span>
               </div>
             </div>
 
@@ -286,8 +286,8 @@
                 <!-- Pricing -->
                 <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto mt-4 sm:mt-0 gap-1 border-t sm:border-t-0 pt-4 sm:pt-0 border-gray-50">
                   <div class="text-xs text-gray-400 font-bold uppercase tracking-widest hidden sm:block">Item Total</div>
-                  <div class="text-[11px] text-gray-400 font-medium">₹{{ item.price_at_time }} × {{ item.quantity }}</div>
-                  <div class="text-base font-bold {% if item.item_status == 'CANCELLED' %}text-gray-400 line-through{% else %}text-gray-900{% endif %}">₹{% widthratio item.price_at_time 1 item.quantity %}</div>
+                  <div class="text-[11px] text-gray-400 font-medium">₹{{ item.price_at_time|floatformat:2 }} × {{ item.quantity }}</div>
+                  <div class="text-base font-bold {% if item.item_status == 'CANCELLED' %}text-gray-400 line-through{% else %}text-gray-900{% endif %}">₹{{ item.subtotal|floatformat:2 }}</div>
                 </div>
               </div>
               {% endfor %}
@@ -297,20 +297,20 @@
             <div class="bg-gray-50 p-6 md:p-8 flex flex-col items-end gap-3.5 border-t border-gray-100">
               <div class="flex justify-between w-full sm:w-72 text-sm">
                 <span class="text-gray-500 font-medium">Subtotal</span>
-                <span class="font-bold text-gray-900">₹{{ order.subtotal|default:"0.00" }}</span>
+                <span class="font-bold text-gray-900">₹{{ order.subtotal|default:"0.00"|floatformat:2 }}</span>
               </div>
               <div class="flex justify-between w-full sm:w-72 text-sm">
                 <span class="text-gray-500 font-medium">Delivery</span>
-                <span class="font-bold text-gray-900">₹{{ order.delivery_charge|default:"0.00" }}</span>
+                <span class="font-bold text-gray-900">₹{{ order.delivery_charge|default:"0.00"|floatformat:2 }}</span>
               </div>
               <div class="flex justify-between w-full sm:w-72 text-sm">
                 <span class="text-gray-500 font-medium">Discount</span>
-                <span class="font-bold {% if order.discount_amount %}text-green-600{% else %}text-gray-900{% endif %}">-₹{{ order.discount_amount|default:"0.00" }}</span>
+                <span class="font-bold {% if order.discount_amount %}text-green-600{% else %}text-gray-900{% endif %}">-₹{{ order.discount_amount|default:"0.00"|floatformat:2 }}</span>
               </div>
               <div class="w-full sm:w-72 h-px bg-gray-200 my-2"></div>
               <div class="flex justify-between w-full sm:w-72 items-center">
                 <span class="text-base text-gray-900 font-bold uppercase tracking-widest">Total</span>
-                <span class="text-2xl font-bold text-sage-600">₹{{ order.total_amount }}</span>
+                <span class="text-2xl font-bold text-sage-600">₹{{ order.total_amount|floatformat:2 }}</span>
               </div>
             </div>
 

@@ -1,12 +1,13 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
-
 from .utils import get_user_cart
-from .models import CartItem,Cart
+from .models import CartItem, Cart
 from user.models import Address
 from django.contrib import messages
-
-
+from coupons.views import calculate_discount
+from coupons.models import Coupon
+from django.utils import timezone
+from decimal import Decimal
 
 def cart(request):
     if not request.user.is_authenticated:
@@ -64,9 +65,8 @@ def cart(request):
                     'is_out_of_stock':False,
                     'low_stock':low_stock,
                 })
-    is_empty= not cart_items
-    
-    cart_count=request.user.cart.items.count()
+    is_empty = not cart_items
+    cart_count = request.user.cart.items.count()
             
     return render(request, 'cart.html',{
         'cart_items':cart_items,
@@ -89,20 +89,14 @@ def update_cart(request):
         
         item=get_object_or_404(CartItem,id=item_id,cart__user=request.user)
         variant = item.variant
-        stock =variant.stock
-        
+        stock = variant.stock
         max_qty = 5
         
-        if stock ==0 :
-            item.quantity=0
+        if stock == 0:
+            item.quantity = 0
             item.save()
             return redirect('cart')
         
-        if quantity <= 0:
-            item.delete()
-            return redirect('cart')
-        
-        #if more than 
         if quantity > stock:
             quantity=stock
         
@@ -114,10 +108,9 @@ def update_cart(request):
     
     return redirect('cart') 
 
-def remove_from_cart(request,item_id):
-    if request.method =="POST":
-        item = get_object_or_404(
-            CartItem,id=item_id,cart__user=request.user)
+def remove_from_cart(request, item_id):
+    if request.method == "POST":
+        item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
         item.delete()
         messages.success(request, "Item removed from cart")
     return redirect('cart')
@@ -146,53 +139,59 @@ def checkout(request):
     if not default_address:
         default_address=addresses.first()
         
-    subtotal=0
-    
-    
+    subtotal = Decimal('0.00')
+    for item in cart_items:
+        variant = item.variant
+        product = variant.product
         
-    for item in cart_items :
-        variant=item.variant
-        product=variant.product
-        
-        if not product.is_active:
-            messages.error(request,f"{product.name} is unavailable")
+        if not product.is_active or product.is_deleted:
+            messages.error(request, f"{product.name} is unavailable")
             return redirect('cart')
 
         if not variant:
-            messages.error(request,"Product not found")
+            messages.error(request, "Product not found")
             return redirect('cart')
         
         if not variant.is_active:
-            messages.error(request,f"{product.name} is not available")
+            messages.error(request, f"{product.name} is not available")
             return redirect('cart')
         
         if variant.stock == 0:
-            messages.error(request,f"{product.name} is out of stock")
+            messages.error(request, f"{product.name} is out of stock")
             return redirect('cart')
-        if item.quantity == 0:
-            messages.error(request,f"Only {variant.stock} left for {product.name}")
-            return redirect('cart')
-        
+            
         if item.quantity > variant.stock:
-            messages.error(request,f"{product.name} only {variant.stock} left")
+            messages.error(request, f"{product.name} only {variant.stock} left")
             return redirect('cart')
     
-        item.item_total=item.quantity * variant.price 
-        subtotal+=item.item_total
+        item.item_total = item.quantity * variant.price 
+        subtotal += Decimal(item.item_total)
         
-    shipping = 0 if subtotal > 999 else 100
-    final_total=subtotal+shipping
+    shipping = Decimal('0.00') if subtotal > Decimal('999') else Decimal('100.00')
     
-    return render(request,"checkout.html", {
-        "cart_items":cart_items,
-        "addresses":addresses,
-        "default_address":default_address,
-        "subtotal":subtotal,
-        "shipping":shipping,
-        "final_total":final_total,
+    # check any coupon apply
+    discount = calculate_discount(request, subtotal)
+    
+    # Get available coupons
+    today = timezone.now().date()
+    available_coupons = Coupon.objects.filter(
+        is_active=True,
+        is_deleted=False,
+        start_date__lte=today,
+        end_date__gte=today
+    )
+    
+    final_total = subtotal + shipping - discount
+    if final_total < 0:
+        final_total = Decimal('0.00')
+    
+    return render(request, "checkout.html", {
+        "cart_items": cart_items,
+        "addresses": addresses,
+        "default_address": default_address,
+        "subtotal": subtotal,
+        "shipping": shipping,
+        "discount": discount,
+        "final_total": final_total,
+        "available_coupons": available_coupons,
     })
-        
-        
-        
-        
-        

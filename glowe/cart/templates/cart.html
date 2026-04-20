@@ -581,7 +581,7 @@ body { background: var(--cream); }
             </div>
 
             <!-- Price -->
-            <span class="item-price">₹{{ entry.price }}</span>
+            <span class="item-price">₹{{ entry.price|floatformat:2 }}</span>
           </div>
 
           <!-- Qty + Remove -->
@@ -613,7 +613,7 @@ body { background: var(--cream); }
                 {{ entry.item.id }},
                 '{{ entry.product.name|escapejs }}',
                 '{{ entry.variant.size|default:''|escapejs }}',
-                '{{ entry.price }}',
+                '{{ entry.price|floatformat:2 }}',
                 '{% if entry.product.images.first %}{{ entry.product.images.first.image.url }}{% endif %}'
               )">
               <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -656,7 +656,7 @@ body { background: var(--cream); }
         <!-- Rows -->
         <div class="summary-row">
           <span class="summary-row-label">Subtotal</span>
-          <span class="summary-row-value" id="summary-subtotal">₹{{ total }}</span>
+          <span class="summary-row-value" id="summary-subtotal">₹{{ total|floatformat:2 }}</span>
         </div>
         <div class="summary-row">
           <span class="summary-row-label tooltip-wrapper">
@@ -678,7 +678,7 @@ body { background: var(--cream); }
             <span class="summary-total-label">Total</span>
           </div>
           <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
-            <span class="summary-total-value" id="summary-total" style="line-height:0.8;">₹{{ total|add:0 }}</span>
+            <span class="summary-total-value" id="summary-total" style="line-height:0.8;">₹{{ total|floatformat:2 }}</span>
             <span class="summary-currency" style="margin:0;">INR</span>
           </div>
         </div>

@@ -3,9 +3,11 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.utils import timezone
-from .models import Coupon,CouponUsage
+from .models import Coupon, CouponUsage
 from django.db import models
 from .forms import CouponForm
+from cart.utils import get_cart_total
+from decimal import Decimal
 
 def coupon_list(request):
     coupons=Coupon.objects.filter(is_deleted=False).order_by('-created_at')
@@ -137,7 +139,6 @@ def toggle_coupon(request, id):
 
 def apply_coupon(request):
     if request.method == "POST":
-
         code = request.POST.get('code')
         if not code:
             return JsonResponse({'success': False, 'message': 'Enter coupon code'})
@@ -147,45 +148,80 @@ def apply_coupon(request):
         today = timezone.now().date()
 
         # get cart total
-        cart_total = get_cart_total(user)   # use your function
+        cart_total = get_cart_total(user)
 
         try:
             coupon = Coupon.objects.get(code=code, is_deleted=False)
         except Coupon.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Invalid coupon'})
+            return JsonResponse({'success': False, 'message': 'Invalid coupon code'})
 
-        # not started yet
-        if coupon.start_date > today:
-            return JsonResponse({'success': False, 'message': 'Coupon not started'})
-
-        # inactive
+        # Validation
         if not coupon.is_active:
-            return JsonResponse({'success': False, 'message': 'Coupon inactive'})
+            return JsonResponse({'success': False, 'message': 'This coupon is currently inactive'})
 
-        # expired
+        if coupon.start_date > today:
+            return JsonResponse({'success': False, 'message': f'Coupon starts on {coupon.start_date}'})
+
         if coupon.end_date < today:
-            return JsonResponse({'success': False, 'message': 'Coupon expired'})
+            return JsonResponse({'success': False, 'message': 'This coupon has expired'})
 
-        # min purchase
+        if coupon.total_usage_limit and coupon.used_count >= coupon.total_usage_limit:
+            return JsonResponse({'success': False, 'message': 'Coupon usage limit reached'})
+
+        # Per user limit
+        usage = CouponUsage.objects.filter(user=user, coupon=coupon).first()
+        if usage and usage.used_count >= coupon.usage_limit_per_user:
+            return JsonResponse({'success': False, 'message': 'You have already used this coupon'})
+
+        # Min purchase
         if coupon.min_purchase and cart_total < coupon.min_purchase:
             return JsonResponse({
-                'success': False,
-                'message': f'Minimum purchase ₹{coupon.min_purchase} required'
+                'success': False, 
+                'message': f'Minimum purchase of ₹{coupon.min_purchase} required'
             })
 
-        # usage limit
-        if coupon.total_usage_limit and coupon.used_count >= coupon.total_usage_limit:
-            return JsonResponse({'success': False, 'message': 'Coupon fully used'})
-
-        # ❌ per user limit
-        usage = CouponUsage.objects.filter(user=user, coupon=coupon).count()
-        if usage >= coupon.usage_limit_per_user:
-            return JsonResponse({'success': False, 'message': 'Already used this coupon'})
-
-        #replace old coupon
+        # Success - Save in session
         request.session['coupon_id'] = coupon.id
-
+        request.session['coupon_code'] = coupon.code
         return JsonResponse({
             'success': True,
-            'message': f'{coupon.code} applied successfully'
+            'message': f'Coupon "{coupon.code}" applied successfully!'
         })
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+def remove_coupon(request):
+    if 'coupon_id' in request.session:
+        del request.session['coupon_id']
+    if 'coupon_code' in request.session:
+        del request.session['coupon_code']
+    return JsonResponse({'success': True, 'message': 'Coupon removed'})
+
+def calculate_discount(request, cart_total):
+    coupon_id = request.session.get('coupon_id')
+    if not coupon_id:
+        return Decimal('0.00')
+
+    try:
+        coupon = Coupon.objects.get(id=coupon_id, is_active=True, is_deleted=False)
+        today = timezone.now().date()
+        
+        # Double check validity
+        if coupon.start_date > today or coupon.end_date < today:
+            del request.session['coupon_id']
+            return Decimal('0.00')
+            
+        if coupon.min_purchase and cart_total < coupon.min_purchase:
+            return Decimal('0.00')
+
+        if coupon.discount_type == 'percentage':
+            discount = (coupon.discount_value / Decimal('100')) * Decimal(cart_total)
+            if coupon.max_discount:
+                discount = min(discount, coupon.max_discount)
+        else:
+            discount = coupon.discount_value
+            
+        return Decimal(discount)
+    except Coupon.DoesNotExist:
+        if 'coupon_id' in request.session:
+            del request.session['coupon_id']
+        return Decimal('0.00')

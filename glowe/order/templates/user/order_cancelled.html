@@ -60,7 +60,7 @@
                     <div class="flex-1 py-1">
                         <div class="flex justify-between items-center mb-1">
                             <p class="text-[15px] text-[#1a1208] leading-tight m-0 pr-2" style="font-family:'Cormorant Garamond',serif;">{{ item.variant.product.name }}</p>
-                            <p class="text-[12px] font-bold font-montserrat text-[#1a1208] m-0 shrink-0">₹{{ item.price_at_time }}</p>
+                            <p class="text-[12px] font-bold font-montserrat text-[#1a1208] m-0 shrink-0">₹{{ item.price_at_time|floatformat:2 }}</p>
                         </div>
                         <p class="text-[9px] font-medium text-[#8a7e72] uppercase tracking-wider mb-1 font-montserrat">
                             {{ item.variant.size|default:"" }}{% if item.variant.size and item.variant.color %} / {% endif %}{{ item.variant.color|default:"" }}

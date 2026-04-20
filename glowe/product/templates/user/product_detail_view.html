@@ -185,9 +185,9 @@
             </h1>
             
             <div class="flex items-center gap-4 mb-14 font-montserrat">
-                <span id="product-price" class="text-[22px] font-semibold text-[#1a1208]">₹{{ selected_variant.price|default:"0.00" }}</span>
+                <span id="product-price" class="text-[22px] font-semibold text-[#1a1208]">₹{{ selected_variant.price|floatformat:2|default:"0.00" }}</span>
                 {% if product.old_price %}
-                <span class="text-[14px] font-medium text-[#c4b9b0] line-through">₹{{ product.old_price }}</span>
+                <span class="text-[14px] font-medium text-[#c4b9b0] line-through">₹{{ product.old_price|floatformat:2 }}</span>
                 {% endif %}
                 
                 <span id="stock-badge" class="px-2.5 py-1 text-[9px] font-bold tracking-[0.1em] rounded uppercase {% if stock > 0 %}bg-[#eae6e1] text-[#1a1208]{% else %}bg-red-100 text-red-800{% endif %}">
@@ -206,7 +206,7 @@
                         {% for variant in variants %}
                         <button type="button" 
                            data-variant-id="{{ variant.id }}"
-                           data-variant-price="{{ variant.price|default:'0.00' }}"
+                           data-variant-price="{{ variant.price|floatformat:2|default:'0.00' }}"
                            data-variant-stock="{{ variant.stock }}"
                            class="variant-btn px-6 py-2.5 rounded-lg font-montserrat text-[11px] font-semibold transition-colors border
                                   {% if variant.stock == 0 %} opacity-40 border-gray-200 text-gray-400 pointer-events-none
@@ -665,7 +665,7 @@
                         <h3 class="sp-name">{{ rel.name }}</h3>
                         <div class="sp-price-row">
                             <span class="sp-from">from</span>
-                            <span class="sp-price">₹{{ rel.variants.first.price|default:"199" }}</span>
+                            <span class="sp-price">₹{{ rel.variants.first.price|floatformat:2|default:"199.00" }}</span>
                         </div>
                     </div>
                 </a>

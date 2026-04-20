@@ -471,7 +471,7 @@
                 <div>
                   <div class="flex justify-between items-start gap-4 mb-2">
                     <p class="text-[17px] text-[#8a7e72] line-through leading-tight m-0" style="font-family:'Cormorant Garamond',serif;">{{ item.variant.product.name }}</p>
-                    <p class="font-montserrat font-bold text-[13px] text-[#8a7e72] line-through shrink-0 m-0">₹{{ item.price_at_time }}</p>
+                    <p class="font-montserrat font-bold text-[13px] text-[#8a7e72] line-through shrink-0 m-0">₹{{ item.price_at_time|floatformat:2 }}</p>
                   </div>
                   <p class="font-montserrat text-[10px] text-[#8a7e72] font-semibold uppercase tracking-wider m-0">
                     {{ item.variant.size|default:"" }}{% if item.variant.size and item.variant.color %} / {% endif %}{{ item.variant.color|default:"" }}
@@ -500,7 +500,7 @@
                 <div>
                   <div class="flex justify-between items-start gap-4 mb-2">
                     <p class="text-[17px] text-[#1a1208] leading-tight m-0" style="font-family:'Cormorant Garamond',serif;">{{ item.variant.product.name }}</p>
-                    <p class="font-montserrat font-bold text-[13px] text-[#1a1208] shrink-0 m-0">₹{{ item.price_at_time }}</p>
+                    <p class="font-montserrat font-bold text-[13px] text-[#1a1208] shrink-0 m-0">₹{{ item.price_at_time|floatformat:2 }}</p>
                   </div>
                   <p class="font-montserrat text-[10px] text-[#8a7e72] font-semibold uppercase tracking-wider m-0">
                     {{ item.variant.size|default:"" }}{% if item.variant.size and item.variant.color %} / {% endif %}{{ item.variant.color|default:"" }}
@@ -540,17 +540,23 @@
         <div class="flex flex-col gap-4 font-montserrat text-[14px] text-[#5c544a] pb-6 mb-6 border-b border-[#1a1208]/10">
           <div class="flex justify-between items-center">
             <span>Subtotal</span>
-            <span class="font-medium text-[#1a1208]">₹{{ order.subtotal|default:"0.00" }}</span>
+            <span class="font-medium text-[#1a1208]">₹{{ order.subtotal|floatformat:2|default:"0.00" }}</span>
           </div>
+          {% if order.discount_amount > 0 %}
+          <div class="flex justify-between items-center">
+            <span class="text-green-600">Discount Applied</span>
+            <span class="font-medium text-green-600">-₹{{ order.discount_amount|floatformat:2 }}</span>
+          </div>
+          {% endif %}
           <div class="flex justify-between items-center">
             <span>Shipping</span>
-            <span class="font-medium text-[#1a1208]">₹{{ order.delivery_charge|default:"0.00" }}</span>
+            <span class="font-medium text-[#1a1208]">₹{{ order.delivery_charge|floatformat:2|default:"0.00" }}</span>
           </div>
         </div>
         
         <div class="flex justify-between items-center mb-10">
           <span class="text-[28px] text-[#1a1208]" style="font-family:'Cormorant Garamond',serif;">Total</span>
-          <span class="text-[28px] font-medium text-[#1a1208]" style="font-family:'Cormorant Garamond',serif;">₹{{ order.total_amount }}</span>
+          <span class="text-[28px] font-medium text-[#1a1208]" style="font-family:'Cormorant Garamond',serif;">₹{{ order.total_amount|floatformat:2 }}</span>
         </div>
         
         <p class="font-montserrat text-[10px] text-center text-[#8a7e72] font-bold uppercase tracking-widest cursor-pointer hover:text-[#1a1208] transition-colors mb-0">Need help with this order?</p>
@@ -594,7 +600,7 @@
             <div class="flex-1 py-0.5">
               <div class="flex justify-between items-start gap-3 mb-1.5">
                 <p class="text-[15px] text-[#5c544a] line-through leading-tight m-0" style="font-family:'Cormorant Garamond',serif;">{{ item.variant.product.name }}</p>
-                <p class="font-montserrat font-semibold text-[12px] text-[#8a7e72] line-through shrink-0 m-0">₹{{ item.price_at_time }}</p>
+                <p class="font-montserrat font-semibold text-[12px] text-[#8a7e72] line-through shrink-0 m-0">₹{{ item.price_at_time|floatformat:2 }}</p>
               </div>
               {% if item.variant.size or item.variant.color %}
               <p class="font-montserrat text-[9.5px] text-[#8a7e72] uppercase tracking-wider font-semibold m-0 mb-2">

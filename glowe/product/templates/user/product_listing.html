@@ -466,7 +466,7 @@
       <a class="ftag-remove" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}{% if min_price %}min_price={{ min_price }}&{% endif %}{% if max_price != 5000 %}max_price={{ max_price }}&{% endif %}">✕</a>
     </span>{% endif %}
     {% if min_price or max_price != 5000 %}
-    <span class="ftag">₹{{ min_price }} – ₹{{ max_price }}
+    <span class="ftag">₹{{ min_price|floatformat:2 }} – ₹{{ max_price|floatformat:2 }}
       <a class="ftag-remove" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_skin_type %}skin_type={{ selected_skin_type }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}">✕</a>
     </span>{% endif %}
     <a href="{% if selected_sort %}?sort={{ selected_sort }}{% else %}?{% endif %}" class="clear-all-link">✕ Clear all</a>
@@ -526,7 +526,7 @@
     <a class="pcard-name" href="{% url 'product_detail_view' product.slug %}">{{ product.name }}</a>
     <div class="pcard-price-row">
       <span class="pcard-from">from</span>
-      <span class="pcard-price">₹{{ variant.price|floatformat:0 }}</span>
+      <span class="pcard-price">₹{{ variant.price|floatformat:2 }}</span>
     </div>
     {% if rev > 0 %}
     <div class="pcard-rating">
@@ -662,11 +662,11 @@
         <div class="fp-price-display">
           <div class="fp-price-end">
             <div class="fp-price-end-label">Min</div>
-            <div class="fp-price-end-val">₹<span id="disp-min">{{ min_price }}</span></div>
+            <div class="fp-price-end-val">₹<span id="disp-min">{{ min_price|floatformat:2 }}</span></div>
           </div>
           <div class="fp-price-end">
             <div class="fp-price-end-label">Max</div>
-            <div class="fp-price-end-val">₹<span id="disp-max">{{ max_price }}</span></div>
+            <div class="fp-price-end-val">₹<span id="disp-max">{{ max_price|floatformat:2 }}</span></div>
           </div>
         </div>
         <div class="range-wrap">

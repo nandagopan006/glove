@@ -106,8 +106,11 @@
                     <p style="font-family:Arial, sans-serif; font-size:16px; font-weight:400; color:#1a1208; margin-bottom:8px;">
                       {{ item.variant.product.name }}
                     </p>
+                    <p style="font-family:Arial, sans-serif; font-size:14px; color:#555555; margin-bottom:4px;">
+                      Qty: {{ item.quantity }}
+                    </p>
                     <p style="font-family:Arial, sans-serif; font-size:16px; font-weight:400; color:#1a1208;">
-                      ₹{{ item.price_at_time }} x {{ item.quantity }}
+                      ₹{{ item.price_at_time|floatformat:2 }}
                     </p>
                   </td>
                 </tr>
@@ -126,7 +129,7 @@
                 {% if order.payment.payment_method == 'COD' %}
                     Your order has been cancelled. Since this was a Cash on Delivery order, no payment was required and no refund is necessary.
                 {% else %}
-                    Your cancellation is successful. Your refund of ₹{{ refund_amount }} will be processed and credited to your account within 2 to 4 business days.
+                    Your cancellation is successful. Your refund of ₹{{ refund_amount|floatformat:2 }} will be processed and credited to your account within 2 to 4 business days.
                 {% endif %}
              </p>
           </td>
@@ -145,12 +148,12 @@
         <table cellpadding="0" cellspacing="0" role="presentation">
           <tr style="font-family:Arial, sans-serif; font-size:14px; color:#1a1208; letter-spacing:0.04em;">
             <td align="right" style="padding-bottom:12px; text-transform:uppercase;">ORDER TOTAL:</td>
-            <td align="right" style="padding:0 0 12px 30px;">₹{{ order.total_amount }}</td>
+            <td align="right" style="padding:0 0 12px 30px;">₹{{ order.total_amount|floatformat:2 }}</td>
           </tr>
           {% if order.payment.payment_method != 'COD' %}
           <tr style="font-family:Arial, sans-serif; font-size:14px; font-weight:700; color:#d9534f; letter-spacing:0.04em;">
             <td align="right" style="padding-bottom:12px; text-transform:uppercase;">REFUNDED:</td>
-            <td align="right" style="padding:0 0 12px 30px;">₹{{ refund_amount }}</td>
+            <td align="right" style="padding:0 0 12px 30px;">₹{{ refund_amount|floatformat:2 }}</td>
           </tr>
           {% endif %}
         </table>

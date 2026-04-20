@@ -604,7 +604,7 @@
                 <div>
                   <p class="card-meta-label">Total</p>
                   <!-- order.total_amount = subtotal + delivery_charge - discount_amount -->
-                  <p class="card-meta-val font-bold">₹{{ order.total_amount }}</p>
+                  <p class="card-meta-val font-bold">₹{{ order.total_amount|floatformat:2 }}</p>
                 </div>
                 <div>
                   <p class="card-meta-label">Order #</p>
@@ -798,7 +798,7 @@
                                 </p>
                               </div>
                               <div class="om-item-price flex items-center">
-                                ₹{{ item.price_at_time }}
+                                ₹{{ item.price_at_time|floatformat:2 }}
                               </div>
                             </a>
                             {% endfor %}
@@ -853,7 +853,7 @@
                                 </p>
                               </div>
                               <div class="om-item-price flex items-center">
-                                ₹{{ item.price_at_time }}
+                                ₹{{ item.price_at_time|floatformat:2 }}
                               </div>
                             </a>
                             {% endfor %}
