@@ -9,17 +9,13 @@ def get_razorpay_client():
 
 
 def create_razorpay_order(amount_in_rupees, currency="INR", receipt=None):
-    """
-    Create a Razorpay order.
-    amount_in_rupees: Decimal or float — will be converted to paise (int).
-    Returns the Razorpay order dict.
-    """
+   
     client = get_razorpay_client()
     amount_paise = int(float(amount_in_rupees) * 100)
     data = {
         "amount": amount_paise,
         "currency": currency,
-        "payment_capture": 1,  # auto-capture
+        "payment_capture": 1,  
     }
     if receipt:
         data["receipt"] = str(receipt)
@@ -27,9 +23,7 @@ def create_razorpay_order(amount_in_rupees, currency="INR", receipt=None):
 
 
 def verify_payment_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature):
-    """
-    Returns True if signature is valid, False otherwise.
-    """
+  
     client = get_razorpay_client()
     params = {
         "razorpay_order_id": razorpay_order_id,
