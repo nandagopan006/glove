@@ -40,16 +40,56 @@ body { background: var(--bg); }
 }
 .radio-outer.active .radio-inner { transform: scale(1); }
 
-/* ── Option card ── */
-.option-card {
-  border: 1.5px solid var(--border); border-radius: 14px;
-  padding: 16px 20px; cursor: pointer; background: var(--white);
-  transition: all 0.25s ease;
+/* ── Anti-Gravity Card Base – Resting ── */
+.option-card, .address-card-modern {
+  border: 1px solid rgba(196,168,130, 0.12); border-radius: 20px;
+  padding: 24px; cursor: pointer; background: #fff;
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(44, 31, 20, 0.02);
+  position: relative; overflow: visible; /* Changed to visible for shadow spread */
+  will-change: transform, box-shadow;
+  transform-style: preserve-3d;
+  perspective: 1000px;
 }
-.option-card:hover { border-color: #ccc; }
+
+/* ── Hover: Anti-Gravity Levitation ── */
+.option-card:hover, .address-card-modern:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 30px 60px rgba(44, 31, 20, 0.08);
+  border-color: var(--accent);
+  z-index: 5;
+}
+
+/* ── Active: Zero-Gravity Lock ── */
 .option-card.active {
-  border-color: var(--brown);
-  background: var(--white);
+  transform: translateY(-10px);
+  box-shadow: 0 40px 80px rgba(44, 31, 20, 0.12);
+  border: 1.5px solid var(--brown) !important;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* Inactive cards focus – Full Visibility */
+.payment-group-container:has(.option-card.active) .option-card:not(.active) {
+  opacity: 1; /* Keep full visibility */
+  transform: translateY(0) scale(1);
+  box-shadow: 0 2px 8px rgba(44, 31, 20, 0.01);
+  border-color: rgba(196,168,130, 0.1);
+}
+
+/* ── Radio Button Pop ── */
+.radio-outer.active .radio-inner {
+  animation: radioBouncyPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes radioBouncyPop {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Entrance Stagger ── */
+.stagger-levitate {
+  opacity: 0;
+  transform: translateY(30px);
 }
 
 /* ── Wallet check ── */
@@ -419,6 +459,16 @@ body { background: var(--bg); }
   </nav>
 </div>
 
+<!-- Page Title -->
+<div class="text-center py-12 sm:py-16 fade-up">
+  <h1 class="font-cormorant text-[40px] md:text-[56px] font-bold text-[#1a1208] uppercase tracking-wide leading-tight mb-2">
+    Checkout
+  </h1>
+  <p class="font-montserrat text-[10px] md:text-[11px] font-bold tracking-[0.2em] text-[#8C7F77] uppercase">
+    Complete your purchase and begin your journey
+  </p>
+</div>
+
 <!-- Main grid -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-20">
   <form action="{% url 'place_order' %}" method="POST" class="grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-x-16 xl:gap-x-24 items-start">
@@ -428,7 +478,7 @@ body { background: var(--bg); }
       <!-- ── SHIPPING ADDRESS ── -->
       <div class="lg:col-span-7 lg:col-start-1 lg:row-start-1 order-1 fade-up d1 w-full">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="checkout-title text-[28px] sm:text-[32px]">Shipping Address</h2>
+          <h2 class="font-cormorant text-[28px] sm:text-[32px] font-bold text-[#1a1208] uppercase tracking-wide">Shipping Address</h2>
           {% if default_address %}
           <div class="flex items-center gap-4">
             <button type="button" onclick="openDrawer()" style="background:none; border:none; cursor:pointer; font-family:'Montserrat',sans-serif; font-size:12px; font-weight:500; color:var(--brown); text-decoration:none;" class="hover:text-[var(--accent)] transition-colors">Change</button>
@@ -438,22 +488,28 @@ body { background: var(--bg); }
         
         {% if default_address %}
         <input type="hidden" name="address_id" id="selected_address_id" value="{{ default_address.id }}">
-        <div style="background:var(--white); border:1px solid rgba(196,168,130,.25); border-radius:18px; padding:28px 32px; position:relative; box-shadow:0 8px 30px rgba(44,31,20,.04); transition: transform 0.3s ease, box-shadow 0.3s ease;" class="hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(44,31,20,.08)]">
-          <div class="flex items-start justify-between mb-3">
-            <p id="display_addr_fullname" style="font-family:'Montserrat',sans-serif; font-size:1.05rem; font-weight:700; color:var(--ink); margin:0;">{{ default_address.full_name }}</p>
-            <span id="display_addr_label" style="font-family:'Montserrat',sans-serif; font-size:.6rem; background:var(--cream); color:var(--brown-md); padding:6px 12px; border-radius:8px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; border:1px solid rgba(196,168,130,.15);">{{ default_address.label }}</span>
+        <div class="address-card-modern stagger-levitate">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <p id="display_addr_fullname" class="font-montserrat text-[18px] font-bold text-[#1a1208] mb-1">{{ default_address.full_name }}</p>
+              <div id="display_addr_label_container" class="mt-1">
+                <span id="display_addr_label" class="inline-block font-montserrat text-[9px] bg-[#f5f1eb] text-[#8a7e72] px-3 py-1 rounded-full font-bold uppercase tracking-wider border border-[#1a1208]/5">{{ default_address.label }}</span>
+              </div>
+            </div>
           </div>
           
-          <p id="display_addr_details" style="font-family:'Montserrat',sans-serif; font-size:.8rem; color:var(--brown-lt); line-height:1.8; margin:0 0 16px;">
+          <div id="display_addr_details" class="font-montserrat text-[13px] text-[#8a7e72] leading-[1.8] mb-6">
             {{ default_address.street_address }}<br>
             {{ default_address.city }}, {{ default_address.district }}<br>
             {{ default_address.state }} — {{ default_address.pincode }}<br>
             {{ default_address.country }}
-          </p>
+          </div>
           
-          <div class="flex items-center gap-2" style="padding-top:16px; border-top:1px solid rgba(196,168,130,.15);">
-            <svg width="14" height="14" fill="none" stroke="var(--brown-lt)" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-            <span id="display_addr_phone" style="font-family:'Montserrat',sans-serif; font-size:.8rem; color:var(--brown-md); font-weight:600; letter-spacing:.05em;">{{ default_address.phone_number }}</span>
+          <div class="flex items-center gap-3 pt-5 border-t border-[#f0ebe2]">
+            <div class="w-8 h-8 rounded-full bg-[#f5f1eb] flex items-center justify-center text-[#1a1208]">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+            </div>
+            <span id="display_addr_phone" class="font-montserrat text-[13px] text-[#1a1208] font-semibold tracking-wide">{{ default_address.phone_number }}</span>
           </div>
         </div>
         {% else %}
@@ -473,56 +529,54 @@ body { background: var(--bg); }
       </div>
 
       <!-- ── PAYMENT ── -->
-      <div class="lg:col-span-7 lg:col-start-1 lg:row-start-2 order-3 fade-up d3 w-full mt-4 lg:mt-0">
-        <h2 class="checkout-title text-[28px] sm:text-[32px] mb-4">Payment</h2>
+      <div class="lg:col-span-7 lg:col-start-1 lg:row-start-2 order-3 fade-up d3 w-full mt-4 lg:mt-0 payment-group-container">
+        <h2 class="font-cormorant text-[28px] sm:text-[32px] font-bold text-[#1a1208] uppercase tracking-wide mb-4">Payment</h2>
         <div class="space-y-3">
 
           <!-- Wallet -->
           <!-- Wallet -->
-          <div class="option-card {% if wallet.balance < final_total %}opacity-50 pointer-events-none{% endif %}" data-value="WALLET" {% if wallet.balance >= final_total %}onclick="pickPayment(this)"{% endif %}>
-            <div class="flex items-center gap-3">
+          <div class="option-card {% if wallet.balance < final_total %}opacity-50 pointer-events-none{% endif %} stagger-levitate" data-value="WALLET" {% if wallet.balance >= final_total %}onclick="pickPayment(this)"{% endif %}>
+            <div class="flex items-center gap-5">
               <div class="radio-outer"><div class="radio-inner"></div></div>
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#1B9B7D;">
-                <svg class="w-4 h-4" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#1B9B7D; box-shadow: 0 4px 12px rgba(27,155,125,0.25);">
+                <svg width="20" height="20" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
               </div>
               <div class="flex-1">
                 <div class="flex items-center justify-between">
-                  <span style="font-family:'Montserrat',sans-serif; font-size:12.5px; font-weight:600; color:var(--brown);">Wallet Balance</span>
+                  <span class="font-montserrat text-[16px] font-bold text-[#1a1208] tracking-tight">Wallet Balance</span>
                   {% if wallet.balance < final_total %}
-                  <span style="font-family:'Montserrat',sans-serif; font-size:8.5px; font-weight:700; background:#f0ebe2; color:#D65A47; padding:3px 6px; border-radius:4px; text-transform:uppercase;">Insufficient</span>
+                  <span class="font-montserrat text-[9px] font-bold bg-[#fdf3f1] text-[#c0392b] px-3 py-1 rounded-full uppercase tracking-widest border border-[#c0392b]/10">Insufficient</span>
                   {% endif %}
                 </div>
-                <p style="font-family:'Montserrat',sans-serif; font-size:9.5px; color:var(--brown-lt); margin:1px 0 0;">Available: ₹{{ wallet.balance|floatformat:2|default:"0.00" }}</p>
+                <p class="font-montserrat text-[12px] text-[#5c544a] font-medium mt-0.5">Available Balance: <span class="font-bold text-[#1a1208]">₹{{ wallet.balance|floatformat:2|default:"0.00" }}</span></p>
               </div>
             </div>
           </div>
 
           <!-- Razorpay -->
-          <div class="option-card" data-value="RAZORPAY" onclick="pickPayment(this)">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="radio-outer"><div class="radio-inner"></div></div>
-                <div class="w-8 h-8 rounded-lg bg-[#E8F0FE] flex items-center justify-center flex-shrink-0">
-                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="#1A73E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                </div>
-                <div>
-                  <span style="font-family:'Montserrat',sans-serif; font-size:12.5px; font-weight:600; color:var(--brown);">Razorpay</span>
-                  <p style="font-family:'Montserrat',sans-serif; font-size:9.5px; color:var(--brown-lt); margin:1px 0 0;">UPI, Netbanking</p>
-                </div>
+          <div class="option-card stagger-levitate" data-value="RAZORPAY" onclick="pickPayment(this)">
+            <div class="flex items-center gap-5">
+              <div class="radio-outer"><div class="radio-inner"></div></div>
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#E8F0FE; box-shadow: 0 4px 12px rgba(26,115,232,0.15);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A73E8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              </div>
+              <div class="flex-1">
+                <span class="font-montserrat text-[16px] font-bold text-[#1a1208] tracking-tight">Razorpay</span>
+                <p class="font-montserrat text-[12px] text-[#5c544a] font-medium mt-0.5">UPI, Net Banking, Credit/Debit Cards</p>
               </div>
             </div>
           </div>
 
           <!-- COD -->
-          <div class="option-card active" data-value="COD" onclick="pickPayment(this)">
-            <div class="flex items-center gap-3">
+          <div class="option-card active stagger-levitate" data-value="COD" onclick="pickPayment(this)">
+            <div class="flex items-center gap-5">
               <div class="radio-outer active"><div class="radio-inner"></div></div>
-              <div class="w-8 h-8 rounded-lg bg-[#F0EBE2] flex items-center justify-center flex-shrink-0">
-                <svg class="w-4 h-4" fill="none" stroke="var(--brown)" viewBox="0 0 24 24" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#F0EBE2; box-shadow: 0 4px 12px rgba(42,32,24,0.1);">
+                <svg width="20" height="20" fill="none" stroke="#1a1208" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
               </div>
-              <div>
-                <span style="font-family:'Montserrat',sans-serif; font-size:12.5px; font-weight:600; color:var(--brown);">Cash on Delivery</span>
-                <p style="font-family:'Montserrat',sans-serif; font-size:9.5px; color:var(--brown-lt); margin:1px 0 0;">Pay when you receive</p>
+              <div class="flex-1">
+                <span class="font-montserrat text-[16px] font-bold text-[#1a1208] tracking-tight">Cash on Delivery</span>
+                <p class="font-montserrat text-[12px] text-[#5c544a] font-medium mt-0.5">Pay with cash when you receive your order</p>
               </div>
             </div>
           </div>
@@ -534,7 +588,7 @@ body { background: var(--bg); }
     <div class="lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:row-span-3 order-2 w-full">
       <div class="summary-card fade-up d2 lg:sticky lg:top-24">
 
-        <h2 class="checkout-title text-[26px] sm:text-[28px] mb-6">Your Selection</h2>
+        <h2 class="font-cormorant text-[26px] sm:text-[28px] font-bold text-[#1a1208] uppercase tracking-wide mb-6">Your Selection</h2>
 
         <!-- Products -->
         <div class="space-y-5 mb-6 max-h-[320px] overflow-y-auto summary-scroll pr-1">
@@ -1099,6 +1153,55 @@ document.querySelectorAll('.truck-button').forEach(button => {
                 }
             });
         }
+    });
+
+    // ── ANTI-GRAVITY / MAGNETIC TILT LOGIC ──
+    const cards = document.querySelectorAll('.option-card, .address-card-modern');
+    
+    // Entrance Stagger
+    gsap.to('.stagger-levitate', {
+        opacity: 1,
+        y: 0,
+        duration: 1.2,
+        stagger: 0.15,
+        ease: "power4.out",
+        delay: 0.2
+    });
+
+    cards.forEach(card => {
+        card.addEventListener('mousemove', e => {
+            // Disable 3D tilt for active cards
+            if (card.classList.contains('active')) return;
+
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // Subtle 4-degree max tilt
+            const rotateX = ((y - centerY) / centerY) * -4;
+            const rotateY = ((x - centerX) / centerX) * 4;
+            
+            gsap.to(card, {
+                rotateX: rotateX,
+                rotateY: rotateY,
+                duration: 0.6,
+                ease: "power2.out",
+                overwrite: "auto"
+            });
+        });
+
+        card.addEventListener('mouseleave', () => {
+            gsap.to(card, {
+                rotateX: 0,
+                rotateY: 0,
+                duration: 1,
+                ease: "elastic.out(1, 0.3)",
+                overwrite: "auto"
+            });
+        });
     });
 });
 

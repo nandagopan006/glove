@@ -421,7 +421,11 @@
     <!-- ── Mobile tabs ── -->
     <div class="flex md:hidden items-center gap-2 mb-6 overflow-x-auto pb-1" style="scrollbar-width:none;">
       <a href="{% url 'order_listing' %}" class="mob-accs-tab active whitespace-nowrap">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+          <path d="m3.3 7 8.7 5 8.7-5" />
+          <path d="M12 22V12" />
+        </svg>
         My Orders
       </a>
       <a href="{% url 'wishlist' %}" class="mob-accs-tab whitespace-nowrap">
@@ -460,9 +464,13 @@
 
         <!-- Nav links -->
         <a href="{% url 'order_listing' %}" class="accs-nav-item active">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+            <path d="m3.3 7 8.7 5 8.7-5" />
+            <path d="M12 22V12" />
+          </svg>
           My Orders
-          {% if total_orders %}<span class="ml-auto font-montserrat text-[9px] font-bold bg-[#1a1208] text-white px-2 py-0.5 rounded-full">{{ total_orders }}</span>{% endif %}
+          {% if total_orders %}<span class="ml-auto font-montserrat text-[9px] font-bold bg-[#1a1208] text-white px-2 py-0.5 rounded-full">{% if total_orders > 12 %}12+{% else %}{{ total_orders }}{% endif %}</span>{% endif %}
         </a>
         <a href="{% url 'wishlist' %}" class="accs-nav-item">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -483,8 +491,8 @@
         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5 mb-7">
           <!-- Title -->
           <div>
-            <h1 class="font-cormorant text-[34px] sm:text-[40px] font-semibold text-[#1a1208] leading-tight tracking-[-0.01em]">Order History</h1>
-            <p class="font-montserrat text-[11px] font-light text-[#8a7e72] mt-1.5">Manage your recent orders &amp; tracking information</p>
+            <h1 class="font-cormorant text-[40px] md:text-[56px] font-bold text-[#1a1208] uppercase tracking-wide leading-tight mb-2">Order History</h1>
+            <p class="font-montserrat text-[10px] md:text-[11px] font-bold tracking-[0.2em] text-[#8C7F77] uppercase">Manage your recent orders &amp; tracking information</p>
           </div>
 
           <!-- Search + custom filter -->

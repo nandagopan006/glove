@@ -96,6 +96,16 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
 .dropdown-item:hover svg { opacity:0.8; }
 .dropdown-item.danger svg { opacity:0.7; }
 
+/* ── Cart Badge Animation ── */
+@keyframes badgePop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.cart-badge-animate {
+  animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
 /* ── MOBILE SIDEBAR ── */
 .mob-sidebar-overlay {
   position:fixed; inset:0; z-index:400;
@@ -348,13 +358,13 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
 
         <!-- ── Cart icon (mobile) ── -->
         <a href="{% url 'cart' %}" aria-label="Cart" class="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#f0ebe2] transition-colors no-underline cart-nav-icon">
-          <svg class="w-[17px] h-[17px] {% if cart_count and cart_count > 0 %}cart-is-filled{% endif %}" viewBox="0 0 24 24" fill="none" stroke="#2a2018" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" fill="{% if cart_count and cart_count > 0 %}url(#cart-grad){% else %}none{% endif %}"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 0 1-8 0"/>
+          <svg class="w-[18px] h-[18px] {% if cart_count and cart_count > 0 %}cart-is-filled{% endif %}" viewBox="0 0 24 24" fill="none" stroke="#2a2018" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
           </svg>
           {% if cart_count and cart_count > 0 %}
-          <span class="absolute -top-0.5 -right-0.5 bg-[#1a1208] text-white text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center leading-none">{{ cart_count }}</span>
+          <span class="absolute -top-0.5 -right-0.5 bg-[#ff3b30] text-white text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center leading-none shadow-sm cart-badge-animate">{{ cart_count }}</span>
           {% endif %}
         </a>
 
@@ -382,10 +392,14 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My Profile
                 </a>
                 <a href="{% url 'wallet_view' %}" class="dropdown-item" role="menuitem">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Wallet
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5"/><line x1="16" y1="12" x2="22" y2="12"/></svg>My Wallet
                 </a>
                 <a href="{% url 'order_listing' %}" class="dropdown-item" role="menuitem">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>My Orders
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                    <path d="m3.3 7 8.7 5 8.7-5" />
+                    <path d="M12 22V12" />
+                  </svg>My Orders
                 </a>
               </div>
               <div class="border-t border-[#f0ebe2] py-2">
@@ -434,12 +448,12 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
         <!-- ── Cart icon (desktop) ── -->
         <a href="{% url 'cart' %}" aria-label="Cart" class="relative no-underline cart-nav-icon">
           <svg class="w-5 h-5 {% if cart_count and cart_count > 0 %}cart-is-filled{% endif %}" viewBox="0 0 24 24" fill="none" stroke="#2a2018" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" fill="{% if cart_count and cart_count > 0 %}url(#cart-grad){% else %}none{% endif %}"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 0 1-8 0"/>
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
           </svg>
           {% if cart_count and cart_count > 0 %}
-          <span class="absolute -top-2 -right-2.5 bg-[#1a1208] text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{{ cart_count }}</span>
+          <span class="absolute -top-2 -right-2.5 bg-[#ff3b30] text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-md cart-badge-animate">{{ cart_count }}</span>
           {% endif %}
         </a>
 
@@ -467,10 +481,14 @@ html, body { margin: 0; padding: 0; overflow-x: hidden; }
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My Profile
                 </a>
                 <a href="{% url 'wallet_view' %}" class="dropdown-item" role="menuitem">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Wallets
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5"/><line x1="16" y1="12" x2="22" y2="12"/></svg>My Wallet
                 </a>
                 <a href="{% url 'order_listing' %}" class="dropdown-item" role="menuitem">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>My Orders
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                    <path d="m3.3 7 8.7 5 8.7-5" />
+                    <path d="M12 22V12" />
+                  </svg>My Orders
                 </a>
               </div>
               <div class="border-t border-[#f0ebe2] py-2">

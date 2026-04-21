@@ -117,6 +117,7 @@ class OrderStatusHistory(models.Model):
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="status_history")
     status = models.CharField(max_length=30)
+    description = models.TextField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

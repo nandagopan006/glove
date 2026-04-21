@@ -418,6 +418,9 @@ def order_detail(request, order_id):
         status='COMPLETED'
     ).first()
 
+    # Check if a full return or any return is already in progress
+    full_return_requested = returns.exists()
+
     return render(
         request,
         "user/order_detail.html",
@@ -430,7 +433,7 @@ def order_detail(request, order_id):
             "delivery_start":order.delivery_start,
             "delivery_end":order.delivery_end,
             "can_cancel":can_cancel,
-            "can_return":can_return,
+            "can_return":can_return and not full_return_requested,
             "payment":payment,
             "total_count":total_count,
             "returns":returns,
@@ -438,6 +441,7 @@ def order_detail(request, order_id):
             "retry_allowed": retry_allowed,
             "time_left_seconds": time_left_seconds,
             "wallet_refund": wallet_refund,
+            "full_return_requested": full_return_requested,
         },
     )
 
@@ -870,36 +874,36 @@ def admin_order_detail(request, order_id):
     ReturnRequest = apps.get_model('return', 'ReturnRequest')
     all_returns = ReturnRequest.objects.filter(order_item__order=order).select_related('order_item__variant__product')
 
-    # STATUS RECONCILIATION: Fix any "stuck" statuses automatically
-    # Ensure item status matches return status
-    any_returned = False
-    all_returned_or_cancelled = True
-    
+    has_any_return = False
+    is_fully_returned = True
+
     for item in items:
-        # Check if this item has a completed return
-        completed_return = all_returns.filter(order_item=item, return_status='COMPLETED').exists()
-        if completed_return and item.item_status != OrderItem.Status.RETURNED:
-            item.item_status = OrderItem.Status.RETURNED
-            item.save()
+        # If this item was returned, mark it correctly
+        if all_returns.filter(order_item=item, return_status='COMPLETED').exists():
+            if item.item_status != OrderItem.Status.RETURNED:
+                item.item_status = OrderItem.Status.RETURNED
+                item.save()
         
+        # Track for overall order status
         if item.item_status == OrderItem.Status.RETURNED:
-            any_returned = True
+            has_any_return = True
         elif item.item_status != OrderItem.Status.CANCELLED:
-            all_returned_or_cancelled = False
-            
-    # Now reconcile overall order status
-    if any_returned:
-        new_status = Order.Status.RETURNED if all_returned_or_cancelled else Order.Status.PARTIALLY_RETURNED
-        if order.order_status != new_status:
-            order.order_status = new_status
+            is_fully_returned = False
+
+    # Update order status if needed
+    if has_any_return:
+        target_status = Order.Status.RETURNED if is_fully_returned else Order.Status.PARTIALLY_RETURNED
+        if order.order_status != target_status:
+            order.order_status = target_status
             order.save()
-            # Also log to history if not already there
-            if not order.status_history.filter(status=new_status).exists():
-                from order.models import OrderStatusHistory
+            
+            # Simple log for the history
+            from order.models import OrderStatusHistory
+            if not OrderStatusHistory.objects.filter(order=order, status=target_status).exists():
                 OrderStatusHistory.objects.create(
-                    order=order,
-                    status=new_status,
-                    description=f"Order status synchronized to {new_status} based on return requests."
+                    order=order, 
+                    status=target_status, 
+                    description=f"Status updated to {target_status} after return check."
                 )
 
     # Check for refund
