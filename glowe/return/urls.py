@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path("return/request/<int:item_id>/", views.request_return, name="request_return"),
+    path("return/full-order/<int:order_id>/", views.request_full_return, name="request_full_return"),
     path('admin-panel/returns/', views.admin_return_list, name='admin_return_list'),
     path('admin-panel/returns/<int:return_id>/', views.admin_return_detail, name='admin_return_detail'),
 

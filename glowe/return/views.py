@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import ReturnRequest, ReturnImage
 from order.models import Order, OrderItem, OrderStatusHistory
+from order.refund_utils import process_refund
+from decimal import Decimal
 from django.contrib import messages
 from datetime import timedelta
 from django.utils import timezone
@@ -14,10 +16,15 @@ def request_return(request, item_id):
     item = get_object_or_404(OrderItem, id=item_id, order__user=request.user)
     order = item.order
 
-    # only delivered allow
+    # Only allow return if order is delivered
     if order.order_status != Order.Status.DELIVERED:
         messages.error(request, "Return not allowed for this order status.")
         return redirect("order_detail", order_id=order.id)
+
+    # Redirect to full order return if discount was applied
+    if (order.discount_amount or 0) > 0:
+        return redirect("request_full_return", order_id=order.id)
+
 
     # return window (7 days)
     if order.delivered_date and timezone.now() > order.delivered_date + timedelta(
@@ -106,12 +113,103 @@ def request_return(request, item_id):
         )
         return redirect("order_detail", order_id=order.id)
 
+    # Calculate unit refund ratio (excluding shipping)
+    discounted_subtotal = order.subtotal - (order.discount_amount or 0)
+    refund_ratio = (discounted_subtotal / order.subtotal) if order.subtotal > 0 else 1
+    
+    
+    item.unit_refund = (item.price_at_time * refund_ratio).quantize(Decimal('0.01'))
+  
+    item.effective_refund = (item.unit_refund * item.quantity).quantize(Decimal('0.01'))
+
     return render(
         request,
         "user/return_form.html",
         {
             "item": item,
             "order": order,
+            "is_full_order": False,
+            "refund_ratio": refund_ratio,
+            "RETURN_REASONS": RETURN_REASONS,
+            "ITEM_CONDITIONS": ITEM_CONDITIONS,
+        },
+    )
+
+
+def request_full_return(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # Get all items that aren't cancelled or already requested for return
+    # Since the order is DELIVERED, these items are eligible
+    active_items = order.items.filter(
+        ~Q(item_status__in=[OrderItem.Status.CANCELLED, OrderItem.Status.RETURN_REQUESTED])
+    )
+
+    if not active_items.exists():
+        messages.error(request, "No eligible items found for return in this order.")
+        return redirect("order_detail", order_id=order.id)
+
+    # only delivered allow
+    if order.order_status != Order.Status.DELIVERED:
+        messages.error(request, "Return not allowed for this order status.")
+        return redirect("order_detail", order_id=order.id)
+
+    # return window (7 days)
+    if order.delivered_date and timezone.now() > order.delivered_date + timedelta(days=7):
+        messages.error(request, "Return window has expired (7 days).")
+        return redirect("order_detail", order_id=order.id)
+
+    RETURN_REASONS = [
+        "Changed my mind", "Ordered by mistake", "Received wrong product",
+        "Product arrived damaged", "Product quality not as expected",
+        "Caused skin irritation or allergy", "Not suitable for my skin type",
+        "Product expired or near expiry", "Missing items in package",
+        "Packaging was damaged or leaking",
+    ]
+    ITEM_CONDITIONS = ["Unopened (Sealed)", "Opened but not used", "Used a few times", "Damaged on arrival", "Leaking or broken packaging"]
+
+    if request.method == "POST":
+        reason = request.POST.get("reason")
+        description = request.POST.get("description")
+        condition = request.POST.get("condition")
+        
+        with transaction.atomic():
+            images = request.FILES.getlist("images")
+            for item in active_items:
+                return_request = ReturnRequest.objects.create(
+                    order_item=item,
+                    user=request.user,
+                    quantity=item.quantity,
+                    reason=reason,
+                    description=description,
+                    item_condition=condition,
+                )
+                
+                # Copy images to each return request (if multiple items, they share the same proof)
+                for img in images:
+                    ReturnImage.objects.create(return_request=return_request, image=img)
+                
+                item.item_status = OrderItem.Status.RETURN_REQUESTED
+                item.save()
+
+        messages.success(request, "Full order return request submitted successfully.")
+        return redirect("order_detail", order_id=order.id)
+
+    # Calculate refund ratio (excluding shipping)
+    discounted_subtotal = order.subtotal - (order.discount_amount or 0)
+    refund_ratio = (discounted_subtotal / order.subtotal) if order.subtotal > 0 else 1
+    for itm in active_items:
+        itm.unit_refund = (itm.price_at_time * refund_ratio).quantize(Decimal('0.01'))
+        itm.effective_refund = (itm.unit_refund * itm.quantity).quantize(Decimal('0.01'))
+
+    return render(
+        request,
+        "user/return_form.html",
+        {
+            "order": order,
+            "active_items": active_items,
+            "is_full_order": True,
+            "refund_ratio": refund_ratio,
             "RETURN_REASONS": RETURN_REASONS,
             "ITEM_CONDITIONS": ITEM_CONDITIONS,
         },
@@ -188,15 +286,30 @@ def should_restock(reason, condition):
 
 
 def admin_return_detail(request, return_id):
-    
     r = get_object_or_404(
         ReturnRequest.objects.select_related(
-            "user", "order_item__variant__product", "order_item__order"),id=return_id,)
+            "user", "order_item__variant__product", "order_item__order"
+        ), 
+        id=return_id
+    )
+
+    # Calculate estimated refund (excluding shipping)
+    item = r.order_item
+    order = item.order
+    original_item_total = item.price_at_time * r.quantity
     
+    if order.subtotal > 0:
+        discounted_subtotal = order.subtotal - (order.discount_amount or 0)
+        refund_ratio = discounted_subtotal / order.subtotal
+        calculated_refund = (original_item_total * refund_ratio).quantize(Decimal('0.01'))
+    else:
+        calculated_refund = original_item_total
+
     return render(request, "admin/return_detail.html", {
         "return_request": r,
-        "item": r.order_item,
+        "item": item,
         "images": r.images.all(),
+        "calculated_refund": calculated_refund,
     })
 
 
@@ -262,14 +375,66 @@ def complete_return(request, return_id):
     r = get_object_or_404(ReturnRequest, id=return_id)
     
     if r.return_status != ReturnRequest.Status.PICKED_UP:
-        
         messages.error(request, "Return can only be completed after pickup.")
         return redirect("admin_return_detail", return_id)
+
+   
+    item = r.order_item
+    order = item.order
     
-    r.return_status = ReturnRequest.Status.COMPLETED
-    r.save()
     
-    messages.success(request, "Return completed.")
+    # Calculate refund amount accounting for coupons (excluding shipping)
+    original_item_total = item.price_at_time * r.quantity
+    
+    if order.subtotal > 0:
+        discounted_subtotal = order.subtotal - (order.discount_amount or 0)
+        refund_ratio = discounted_subtotal / order.subtotal
+        refund_amount = (original_item_total * refund_ratio).quantize(Decimal('0.01'))
+    else:
+        refund_amount = original_item_total
+
+    with transaction.atomic():
+       
+        process_refund(
+            order,
+            refund_amount=refund_amount,
+            description=(
+                f"Refund for returned item '{item.variant.product.name}' "
+                f"(x{r.quantity}) in Order #{order.order_number}"
+            )
+        )
+
+        r.return_status = ReturnRequest.Status.COMPLETED
+        r.save()
+
+        # Update item status to reflect return completion
+        item.item_status = OrderItem.Status.RETURNED
+        item.save()
+
+        # Check if all items in this order are now RETURNED or CANCELLED
+        all_items = order.items.all()
+        returned_or_cancelled = all_items.filter(item_status__in=[OrderItem.Status.RETURNED, OrderItem.Status.CANCELLED])
+        
+        if returned_or_cancelled.count() == all_items.count():
+            # FULL RETURN
+            order.order_status = Order.Status.RETURNED
+            msg = "All items in this order have been successfully returned."
+        elif returned_or_cancelled.exists():
+            # PARTIAL RETURN
+            order.order_status = Order.Status.PARTIALLY_RETURNED
+            msg = "Some items in this order have been returned."
+        
+        if order.order_status in [Order.Status.RETURNED, Order.Status.PARTIALLY_RETURNED]:
+            order.save()
+            # Log this in status history
+            from order.models import OrderStatusHistory
+            OrderStatusHistory.objects.create(
+                order=order,
+                status=order.order_status,
+                description=msg
+            )
+
+    messages.success(request, f"Return completed. ₹{refund_amount} refunded to customer's wallet.")
     return redirect("admin_return_detail", return_id)
 
 

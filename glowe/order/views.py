@@ -1,4 +1,6 @@
+from accounts import models
 from django.shortcuts import redirect, get_object_or_404, render
+from order.refund_utils import process_refund
 from django.contrib import messages
 from order.models import Order, OrderItem, ShippingAddress, Payment, OrderStatusHistory
 from django.db import transaction
@@ -25,8 +27,7 @@ from order.email_util import send_order_confirmation_email, send_order_cancellat
 from coupons.views import calculate_discount
 from coupons.models import Coupon, CouponUsage
 from decimal import Decimal
-
-
+from wallet.models import WalletTransaction
 
 @login_required
 def place_order(request):
@@ -176,6 +177,8 @@ def place_order(request):
     # redirect bases on pyment 
     if payment_method == Payment.Method.COD:
         return redirect("order_success",order_id=order.id)
+    elif payment_method == Payment.Method.WALLET:
+        return redirect("process_wallet_payment", order_id=order.id)
     else:
         return redirect("payment_page",order_id=order.id)
 
@@ -344,6 +347,12 @@ def order_detail(request, order_id):
         .prefetch_related("variant__product__images")
     )
 
+    for item in active_items:
+        item.subtotal = item.price_at_time * item.quantity
+
+    for item in cancelled_items:
+        item.subtotal = item.price_at_time * item.quantity
+
     grouped = {}
     for item in cancelled_items:
         variant_id = item.variant_id
@@ -354,6 +363,7 @@ def order_detail(request, order_id):
                 "variant": item.variant,
                 "price_at_time": item.price_at_time,
                 "quantity": item.quantity,
+                "subtotal": item.subtotal,
                 "cancel_reason": item.cancel_reason,
             }
         else:
@@ -400,6 +410,14 @@ def order_detail(request, order_id):
     ReturnRequest = apps.get_model('return', 'ReturnRequest')
     returns = ReturnRequest.objects.filter(order_item__order=order).prefetch_related('images', 'order_item__variant__product__images').order_by('-created_at')
 
+    # Check for refund
+    
+    wallet_refund = WalletTransaction.objects.filter(
+        order=order, 
+        transaction_type='REFUND',
+        status='COMPLETED'
+    ).first()
+
     return render(
         request,
         "user/order_detail.html",
@@ -419,6 +437,7 @@ def order_detail(request, order_id):
             "returned_item_ids": [r.order_item.id for r in returns],
             "retry_allowed": retry_allowed,
             "time_left_seconds": time_left_seconds,
+            "wallet_refund": wallet_refund,
         },
     )
 
@@ -459,15 +478,23 @@ def cancel_order(request, order_id):
         order.order_status = Order.Status.CANCELLED
         order.save()
         
-        payment=getattr(order,'payment',None)
+        payment = getattr(order, 'payment', None)
         if payment and payment.payment_method == Payment.Method.COD:
             payment.payment_status = Payment.Status.FAILED
             payment.save()
 
-    # histy
-    OrderStatusHistory.objects.create(order=order,status=Order.Status.CANCELLED)
-    # Professional luxury cancellation email
-    send_order_cancellation_email(request, order, is_full_cancel=True, refund_amount=order.total_amount)
+    # Process refund to wallet (skips COD orders that were never delivered)
+    refunded = process_refund(
+        order,
+        refund_amount=order.total_amount,
+        description=f"Refund for cancelled Order #{order.order_number}"
+    )
+    refund_amount = order.total_amount if refunded else None
+
+    # Status history
+    OrderStatusHistory.objects.create(order=order, status=Order.Status.CANCELLED)
+    # Cancellation email
+    send_order_cancellation_email(request, order, is_full_cancel=True, refund_amount=refund_amount)
 
     messages.success(request, "Order cancelled successfully")
     return redirect("order_cancelled_success", order_id=order.id)
@@ -554,13 +581,21 @@ def cancel_order_item(request, item_id):
             order.order_status = Order.Status.CANCELLED
             order.save()
 
-    # Professional luxury cancellation email
+    # Process refund for the cancelled item amount (skips COD if not delivered)
+    refunded = process_refund(
+        order,
+        refund_amount=cancelled_amount,
+        description=f"Refund for cancelled item in Order #{order.order_number} — {item.variant.product.name}"
+    )
+    email_refund_amount = cancelled_amount if refunded else None
+
+    # Cancellation email
     send_order_cancellation_email(
         request, 
         order, 
         cancelled_items=[cancelled_item], 
         is_full_cancel=False, 
-        refund_amount=cancelled_amount
+        refund_amount=email_refund_amount
     )
 
     messages.success(request, "Item cancelled succussfully")
@@ -588,6 +623,14 @@ def order_cancelled_success(request, order_id):
     # Get payment method info
     payment = getattr(order, "payment", None)
 
+    # Check if a wallet refund was issued for this cancellation
+    from wallet.models import WalletTransaction
+    wallet_refund = WalletTransaction.objects.filter(
+        order=order,
+        transaction_type='REFUND',
+        status='COMPLETED',
+    ).first()
+
     return render(
         request,
         "user/order_cancelled.html",
@@ -596,6 +639,7 @@ def order_cancelled_success(request, order_id):
             "cancelled_items": cancelled_items,
             "cancellation_id": cancellation_id,
             "payment": payment,
+            "wallet_refund": wallet_refund,
         },
     )
 
@@ -799,9 +843,16 @@ def admin_order_list(request):
 
 def admin_order_detail(request, order_id):
 
-    order = get_object_or_404(Order, id=order_id)
+    order = get_object_or_404(Order.objects.prefetch_related(
+        "items__variant__product", 
+        "items__returnrequest_set"
+    ), id=order_id)
 
-    items = order.items.select_related("variant__product")
+    items = order.items.all()
+    
+    # Calculate subtotal for each item in the view to avoid model changes
+    for item in items:
+        item.subtotal = item.price_at_time * item.quantity
 
     address = getattr(order, "shipping_address", None)
 
@@ -815,6 +866,50 @@ def admin_order_detail(request, order_id):
         Order.Status.DELIVERED,
     ]
 
+    # Check for returns associated with this order
+    ReturnRequest = apps.get_model('return', 'ReturnRequest')
+    all_returns = ReturnRequest.objects.filter(order_item__order=order).select_related('order_item__variant__product')
+
+    # STATUS RECONCILIATION: Fix any "stuck" statuses automatically
+    # Ensure item status matches return status
+    any_returned = False
+    all_returned_or_cancelled = True
+    
+    for item in items:
+        # Check if this item has a completed return
+        completed_return = all_returns.filter(order_item=item, return_status='COMPLETED').exists()
+        if completed_return and item.item_status != OrderItem.Status.RETURNED:
+            item.item_status = OrderItem.Status.RETURNED
+            item.save()
+        
+        if item.item_status == OrderItem.Status.RETURNED:
+            any_returned = True
+        elif item.item_status != OrderItem.Status.CANCELLED:
+            all_returned_or_cancelled = False
+            
+    # Now reconcile overall order status
+    if any_returned:
+        new_status = Order.Status.RETURNED if all_returned_or_cancelled else Order.Status.PARTIALLY_RETURNED
+        if order.order_status != new_status:
+            order.order_status = new_status
+            order.save()
+            # Also log to history if not already there
+            if not order.status_history.filter(status=new_status).exists():
+                from order.models import OrderStatusHistory
+                OrderStatusHistory.objects.create(
+                    order=order,
+                    status=new_status,
+                    description=f"Order status synchronized to {new_status} based on return requests."
+                )
+
+    # Check for refund
+    from wallet.models import WalletTransaction
+    wallet_refund = WalletTransaction.objects.filter(
+        order=order, 
+        transaction_type='REFUND',
+        status='COMPLETED'
+    ).first()
+
     return render(
         request,
         "admin/order_detail.html",
@@ -826,6 +921,8 @@ def admin_order_detail(request, order_id):
             "address": address,
             "total_items": total_items,
             "can_update": can_update,
+            "wallet_refund": wallet_refund,
+            "all_returns": all_returns,
         },
     )
 
@@ -888,6 +985,11 @@ def update_order_status(request, order_id):
 
         if new_status == Order.Status.DELIVERED:
             order.delivered_date = timezone.now()
+            
+            # Sync item statuses to DELIVERED
+            order.items.filter(
+                ~Q(item_status=OrderItem.Status.CANCELLED)
+            ).update(item_status=OrderItem.Status.DELIVERED)
 
             #cod pyment update
             payment = getattr(order, "payment", None)

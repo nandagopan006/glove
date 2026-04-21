@@ -11,6 +11,8 @@ class Order(models.Model):
         OUT_FOR_DELIVERY="OUT_FOR_DELIVERY","Out for Delivery"
         DELIVERED= "DELIVERED","Delivered"
         CANCELLED ="CANCELLED","Cancelled"
+        RETURNED = "RETURNED", "Returned"
+        PARTIALLY_RETURNED = "PARTIALLY_RETURNED", "Partially Returned"
 
     user=models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
@@ -43,6 +45,7 @@ class OrderItem(models.Model):
         DELIVERED= "DELIVERED","Delivered"
         CANCELLED="CANCELLED","Cancelled"
         RETURN_REQUESTED = "RETURN_REQUESTED", "Return Requested"
+        RETURNED = "RETURNED", "Returned"
 
     order=models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     variant=models.ForeignKey(Variant, on_delete=models.CASCADE)
@@ -80,6 +83,7 @@ class Payment(models.Model):
     class Method(models.TextChoices):
         COD ="COD", "Cash on Delivery"
         RAZORPAY = "RAZORPAY", "Razorpay"
+        WALLET = "WALLET", "Wallet"
     class Status(models.TextChoices):
         PENDING="PENDING","Pending"
         SUCCESS="SUCCESS", "Success"

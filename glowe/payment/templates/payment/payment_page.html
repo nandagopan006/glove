@@ -41,29 +41,29 @@
             <h3 class="font-montserrat text-[9px] uppercase tracking-[0.2em] text-gray-400 mb-6 font-bold text-center">Select Method</h3>
             <div class="grid grid-cols-1 gap-3 mb-8">
                 <!-- CARD OPTION (DEFAULT) -->
-                <button class="payment-method-opt active flex items-center justify-between p-4 rounded-xl border-2 border-black bg-gray-50 transition-all group" data-method="card">
+                <button class="payment-method-opt active flex items-center justify-between p-4 rounded-xl border-2 transition-all group" data-method="card">
                     <div class="flex items-center gap-3">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" class="text-gray-800">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" class="text-gray-400 group-[.active]:text-gray-800 transition-colors">
                             <rect x="2" y="5" width="20" height="14" rx="2"/>
                             <line x1="2" y1="10" x2="22" y2="10"/>
                         </svg>
-                        <span class="font-montserrat text-xs font-bold text-gray-800 uppercase tracking-tight">Credit / Debit Card</span>
+                        <span class="font-montserrat text-xs font-bold text-gray-500 group-[.active]:text-gray-900 uppercase tracking-tight transition-colors">Credit / Debit Card</span>
                     </div>
-                    <div class="w-4 h-4 rounded-full border-2 border-black bg-black flex items-center justify-center">
-                        <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+                    <div class="w-4 h-4 rounded-full border-2 border-gray-200 group-[.active]:border-black group-[.active]:bg-black flex items-center justify-center transition-all">
+                        <div class="w-1.5 h-1.5 bg-white rounded-full opacity-0 group-[.active]:opacity-100 transition-opacity"></div>
                     </div>
                 </button>
 
                 <!-- NET BANKING OPTION -->
-                <button class="payment-method-opt flex items-center justify-between p-4 rounded-xl border-2 border-gray-100 hover:border-black transition-all group" data-method="netbanking">
+                <button class="payment-method-opt flex items-center justify-between p-4 rounded-xl border-2 border-gray-100 transition-all group" data-method="netbanking">
                     <div class="flex items-center gap-3">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" class="text-gray-400 group-hover:text-gray-800">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" class="text-gray-400 group-[.active]:text-gray-800 transition-colors">
                             <path d="M3 21h18M3 10h18M5 10v11M19 10v11M12 10v11M7 10l5-7 5 7"/>
                         </svg>
-                        <span class="font-montserrat text-xs font-bold text-gray-800 uppercase tracking-tight">Net Banking</span>
+                        <span class="font-montserrat text-xs font-bold text-gray-500 group-[.active]:text-gray-900 uppercase tracking-tight transition-colors">Net Banking</span>
                     </div>
-                    <div class="w-4 h-4 rounded-full border-2 border-gray-200 group-[.active]:border-black group-[.active]:bg-black flex items-center justify-center">
-                        <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+                    <div class="w-4 h-4 rounded-full border-2 border-gray-200 group-[.active]:border-black group-[.active]:bg-black flex items-center justify-center transition-all">
+                        <div class="w-1.5 h-1.5 bg-white rounded-full opacity-0 group-[.active]:opacity-100 transition-opacity"></div>
                     </div>
                 </button>
             </div>

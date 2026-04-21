@@ -8,6 +8,7 @@ from coupons.views import calculate_discount
 from coupons.models import Coupon
 from django.utils import timezone
 from decimal import Decimal
+from wallet.models import Wallet
 
 def cart(request):
     if not request.user.is_authenticated:
@@ -117,8 +118,6 @@ def remove_from_cart(request, item_id):
 
 
 def checkout(request):
-
-
     
     try :
         cart =request.user.cart
@@ -181,6 +180,9 @@ def checkout(request):
         end_date__gte=today
     )
     
+    wallet, _ = Wallet.objects.get_or_create(user=request.user)
+
+    
     final_total = subtotal + shipping - discount
     if final_total < 0:
         final_total = Decimal('0.00')
@@ -194,4 +196,5 @@ def checkout(request):
         "discount": discount,
         "final_total": final_total,
         "available_coupons": available_coupons,
+        "wallet":wallet,
     })
