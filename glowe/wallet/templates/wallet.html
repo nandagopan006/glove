@@ -5,13 +5,13 @@
 <style>
     body { background:#F5F1EC !important; }
     
-    /* Custom Animations */
-    .fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
+    /* Elegant Animations */
+    .fade-in-up { animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(30px); }
     .scale-up { animation: scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .slide-in-right { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .slide-in-right { animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     
     @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
+        from { opacity: 0; transform: translateY(30px); }
         to { opacity: 1; transform: translateY(0); }
     }
     @keyframes scaleUp {
@@ -23,123 +23,137 @@
         to { opacity: 1; transform: translateX(0); }
     }
 
-    /* Glowé Brand Colors overrides */
+    /* Glowé Minimalist Brand Colors */
     .bg-brand-dark { background-color: #1a1208; }
     .text-brand-dark { color: #1a1208; }
-    .border-brand-dark { border-color: #1a1208; }
     
-    .wallet-card-bg {
-        background: linear-gradient(135deg, #2d1f0e 0%, #1a1208 100%);
-        box-shadow: 0 20px 40px rgba(26,18,8,0.15);
+    .wallet-box {
+        background: transparent;
+        border: 2px solid #1a1208;
+        transition: all 0.4s ease;
     }
-    
-    .glass-effect {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+    .wallet-box:hover {
+        box-shadow: 8px 8px 0px rgba(26,18,8,0.1);
+        background: white;
+    }
+
+    /* Pagination (Matched with Order List) */
+    .pg-btn {
+      display:flex; align-items:center; justify-content:center;
+      width:40px; height:40px; border-radius:12px;
+      font-size:12px; font-weight:700; color:#1a1208;
+      border:1px solid rgba(26,18,8,0.08); background:transparent;
+      transition:all .25s ease;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .pg-btn:hover { background:#1a1208; color:#fff; border-color:#1a1208; transform:translateY(-2px); box-shadow: 0 8px 20px rgba(26,18,8,0.15); }
+    .pg-btn.active { background:#1a1208; color:#fff; border-color:#1a1208; pointer-events:none; box-shadow: 0 6px 15px rgba(26,18,8,0.2); }
+    .pg-btn.disabled { opacity:.3; pointer-events:none; }
+
+    @keyframes subtlePulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.4; }
+        100% { opacity: 1; }
+    }
+    .animate-subtle-pulse {
+        animation: subtlePulse 1.5s infinite ease-in-out;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="min-h-screen py-10 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-[1100px] mx-auto">
-        <!-- Header -->
-        <div class="mb-10 text-center sm:text-left fade-in-up" style="animation-delay: 0.1s;">
-            <h1 class="font-cormorant text-[clamp(28px,3.5vw,44px)] font-semibold text-[#1a1208] leading-tight mb-2">My Wallet</h1>
-            <p class="font-montserrat text-[11px] font-medium tracking-[0.16em] text-[#8C7F77] uppercase">Manage your funds & transactions</p>
+    <div class="max-w-[1200px] mx-auto">
+        
+        <!-- Breadcrumb -->
+        <div class="mb-8 text-center md:text-left fade-in-up" style="animation-delay: 0.05s;">
+            <nav class="flex justify-center md:justify-start items-center space-x-4 font-montserrat text-[11px] font-medium tracking-[0.25em] uppercase">
+                <a href="{% url 'home' %}" class="text-[#8C7F77] hover:text-[#1a1208] transition-colors">Home</a>
+                <span class="text-[#8C7F77] font-light">/</span>
+                <a href="{% url 'profile_overview' %}" class="text-[#8C7F77] hover:text-[#1a1208] transition-colors">Profile</a>
+                <span class="text-[#8C7F77] font-light">/</span>
+                <span class="text-[#1a1208] font-bold">Wallet</span>
+            </nav>
         </div>
 
-        <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Header -->
+        <div class="mb-12 text-center md:text-left fade-in-up" style="animation-delay: 0.1s;">
+            <h1 class="font-cormorant text-[40px] md:text-[56px] font-bold text-[#1a1208] uppercase tracking-wide leading-tight mb-2" style="font-family: 'Cormorant Garamond', serif; font-weight: 700;">My Wallet</h1>
+            <p class="font-montserrat text-[10px] md:text-[11px] font-bold tracking-[0.2em] text-[#8C7F77] uppercase">Manage your balance and track your transactions</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-10">
             
-            <!-- LEFT SIDE: Wallet Card -->
-            <div class="w-full lg:w-[360px] fade-in-up flex-shrink-0" style="animation-delay: 0.2s;">
-                <div class="bg-white rounded-3xl shadow-sm border border-[#E7DDD6] overflow-hidden transform transition duration-500 hover:shadow-lg">
-                    <!-- The Card Itself -->
-                    <div class="wallet-card-bg p-8 text-white relative overflow-hidden aspect-[1.6/1] flex flex-col justify-between">
-                        <!-- Abstract shapes for luxury feel -->
-                        <div class="absolute top-0 right-0 -mr-12 -mt-12 w-40 h-40 rounded-full bg-white opacity-5 mix-blend-overlay blur-md"></div>
-                        <div class="absolute bottom-0 left-0 -ml-10 -mb-10 w-32 h-32 rounded-full bg-[#c8b89a] opacity-10 mix-blend-overlay blur-lg"></div>
-                        
-                        <div class="relative z-10 flex justify-between items-start">
-                            <div>
-                                <p class="font-montserrat text-[9px] font-semibold opacity-70 mb-2 tracking-[0.2em] text-[#c8b89a] uppercase">Available Balance</p>
-                                <h2 class="font-cormorant text-[40px] leading-none font-medium tracking-wide">₹{{ wallet.balance|floatformat:2|default:"0.00" }}</h2>
-                            </div>
-                            <!-- Minimalist Icon -->
-                            <div class="glass-effect p-2 rounded-xl">
-                                <svg class="w-6 h-6 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                            </div>
-                        </div>
-                        
-                        <div class="relative z-10 mt-auto">
-                            <p class="font-montserrat text-[8px] opacity-60 uppercase tracking-[0.2em] mb-1">Card Holder</p>
-                            <p class="font-montserrat text-[13px] font-semibold tracking-[0.1em] uppercase shadow-sm">{{ request.user.full_name|default:request.user.username }}</p>
-                        </div>
+            <!-- LEFT SIDE: Wallet Box -->
+            <div class="w-full lg:w-[380px] fade-in-up flex-shrink-0" style="animation-delay: 0.2s;">
+                <div class="wallet-box p-8 flex flex-col justify-between min-h-[320px]">
+                    
+                    <div class="mb-8">
+                        <p class="font-montserrat text-[10px] font-bold tracking-[0.2em] text-[#8C7F77] uppercase mb-2">Available Balance</p>
+                        <h2 class="font-montserrat text-[40px] leading-none font-bold tracking-tight text-[#1a1208]">₹{{ wallet.balance|floatformat:2|default:"0.00" }}</h2>
                     </div>
                     
-                    <div class="p-6 bg-white">
-                        <button onclick="openAddMoneyModal()" class="w-full py-4 bg-[#1a1208] hover:bg-[#2d1f0e] text-white rounded-xl font-montserrat text-[11px] font-bold tracking-[0.15em] uppercase transition duration-300 shadow-md flex justify-center items-center gap-3 group">
-                            <svg class="w-4 h-4 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                            Add Money
-                        </button>
+                    <div class="mb-10">
+                        <p class="font-montserrat text-[9px] font-bold tracking-[0.2em] text-[#8C7F77] uppercase mb-1">Card Holder</p>
+                        <p class="font-montserrat text-[14px] font-bold tracking-widest text-[#1a1208] uppercase">{{ request.user.full_name|default:request.user.username }}</p>
                     </div>
+
+                    <button onclick="openAddMoneyModal()" class="w-full py-5 bg-[#1a1208] hover:bg-[#2d1f0e] text-white font-montserrat text-[11px] font-bold tracking-[0.2em] uppercase transition-all duration-300 flex justify-center items-center gap-3 group">
+                        <svg class="w-4 h-4 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        Add Money
+                    </button>
                 </div>
             </div>
 
-            <!-- RIGHT SIDE: Transaction Table -->
+            <!-- RIGHT SIDE: Transaction History -->
             <div class="w-full flex-grow fade-in-up" style="animation-delay: 0.3s;">
-                <div class="bg-white rounded-3xl shadow-sm border border-[#E7DDD6] overflow-hidden h-full flex flex-col">
-                    <div class="p-7 border-b border-[#E7DDD6] flex justify-between items-center bg-white">
-                        <h3 class="font-cormorant text-[24px] font-semibold text-[#1a1208]">Recent Transactions</h3>
+                <div class="bg-transparent h-full flex flex-col">
+                    <div class="mb-6 flex justify-between items-center">
+                        <h3 class="font-cormorant text-[28px] md:text-[32px] font-bold uppercase tracking-widest text-[#1a1208]" style="font-family: 'Cormorant Garamond', serif; font-weight: 700;">Recent Transactions</h3>
                     </div>
                     
-                    <div class="overflow-x-auto flex-grow">
-                        <table class="w-full text-left border-collapse">
+                    <div class="overflow-x-auto flex-grow pb-4">
+                        <table class="w-full text-left border-collapse min-w-[650px]">
                             <thead>
-                                <tr class="bg-[#faf8f5] border-b border-[#E7DDD6]">
-                                    <th class="px-7 py-5 font-montserrat text-[10px] font-semibold tracking-[0.15em] uppercase text-[#8C7F77]">Date</th>
-                                    <th class="px-7 py-5 font-montserrat text-[10px] font-semibold tracking-[0.15em] uppercase text-[#8C7F77]">Description</th>
-                                    <th class="px-7 py-5 font-montserrat text-[10px] font-semibold tracking-[0.15em] uppercase text-[#8C7F77]">Txn ID</th>
-                                    <th class="px-7 py-5 font-montserrat text-[10px] font-semibold tracking-[0.15em] uppercase text-[#8C7F77] text-center">Status</th>
-                                    <th class="px-7 py-5 font-montserrat text-[10px] font-semibold tracking-[0.15em] uppercase text-[#8C7F77] text-right">Amount</th>
+                                <tr class="border-b-[3px] border-[#1a1208]">
+                                    <th class="py-4 pr-4 font-montserrat text-[10px] font-extrabold tracking-[0.15em] uppercase text-[#1a1208]">Date & Time</th>
+                                    <th class="py-4 px-4 font-montserrat text-[10px] font-extrabold tracking-[0.15em] uppercase text-[#1a1208]">Transaction ID</th>
+                                    <th class="py-4 px-4 font-montserrat text-[10px] font-extrabold tracking-[0.15em] uppercase text-[#1a1208]">Description</th>
+                                    <th class="py-4 px-4 font-montserrat text-[10px] font-extrabold tracking-[0.15em] uppercase text-[#1a1208] text-center">Status</th>
+                                    <th class="py-4 pl-4 font-montserrat text-[10px] font-extrabold tracking-[0.15em] uppercase text-[#1a1208] text-right">Amount</th>
                                 </tr>
                             </thead>
-                            <tbody class="text-sm divide-y divide-[#E7DDD6]/50">
+                            <tbody class="divide-y divide-[#E7DDD6]">
                                 {% for txn in transactions %}
-                                <tr class="hover:bg-[#faf8f5]/60 transition duration-200">
-                                    <td class="px-7 py-5 text-[#8C7F77] font-montserrat text-[12px] whitespace-nowrap">{{ txn.created_at|date:"M d, Y" }}</td>
-                                    <td class="px-7 py-5 text-[#1a1208] font-montserrat text-[13px] font-medium">{{ txn.description }}</td>
-                                    <td class="px-7 py-5 text-[#8C7F77] font-montserrat text-[11px] font-mono tracking-widest">{{ txn.transaction_id|default:"-" }}</td>
-                                    <td class="px-7 py-5 text-center">
+                                <tr class="hover:bg-white/50 transition-colors duration-300">
+                                    <td class="py-6 pr-4 text-[#1a1208] font-montserrat text-[11px] font-bold whitespace-nowrap">{{ txn.created_at|date:"d M Y, h:i A" }}</td>
+                                    <td class="py-6 px-4 text-[#8C7F77] font-montserrat text-[11px] font-bold tracking-widest uppercase">{{ txn.transaction_id|default:"-" }}</td>
+                                    <td class="py-6 px-4 text-[#1a1208] font-montserrat text-[12px] font-medium">{{ txn.description }}</td>
+                                    <td class="py-6 px-4 text-center">
                                         {% if txn.status == 'COMPLETED' %}
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full font-montserrat text-[9px] font-bold tracking-wider uppercase bg-[#f0fdf4] text-[#166534] border border-[#bbf7d0]">Completed</span>
+                                            <span class="font-montserrat text-[10px] font-bold tracking-[0.1em] uppercase text-[#166534]">Success</span>
                                         {% elif txn.status == 'PENDING' %}
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full font-montserrat text-[9px] font-bold tracking-wider uppercase bg-[#fffbeb] text-[#92400e] border border-[#fde68a]">Pending</span>
+                                            <span class="font-montserrat text-[10px] font-bold tracking-[0.1em] uppercase text-[#92400e]">Pending</span>
                                         {% elif txn.status == 'FAILED' %}
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full font-montserrat text-[9px] font-bold tracking-wider uppercase bg-[#fef2f2] text-[#991b1b] border border-[#fecaca]">Failed</span>
+                                            <span class="font-montserrat text-[10px] font-bold tracking-[0.1em] uppercase text-[#991b1b]">Failed</span>
                                         {% else %}
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full font-montserrat text-[9px] font-bold tracking-wider uppercase bg-gray-50 text-gray-700 border border-gray-200">{{ txn.status }}</span>
+                                            <span class="font-montserrat text-[10px] font-bold tracking-[0.1em] uppercase text-[#8C7F77]">{{ txn.status }}</span>
                                         {% endif %}
                                     </td>
-                                    <td class="px-7 py-5 text-right whitespace-nowrap">
+                                    <td class="py-6 pl-4 text-right whitespace-nowrap">
                                         {% if txn.transaction_type == 'ADD' %}
-                                            <span class="font-montserrat text-[14px] font-semibold text-[#166534] tracking-wide">+ ₹{{ txn.amount|floatformat:2 }}</span>
+                                            <span class="font-montserrat text-[13px] font-bold text-[#166534] tracking-wider">+ ₹{{ txn.amount|floatformat:2 }}</span>
                                         {% else %}
-                                            <span class="font-montserrat text-[14px] font-semibold text-[#991b1b] tracking-wide">- ₹{{ txn.amount|floatformat:2 }}</span>
+                                            <span class="font-montserrat text-[13px] font-bold text-[#991b1b] tracking-wider">- ₹{{ txn.amount|floatformat:2 }}</span>
                                         {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="5" class="px-7 py-16 text-center">
+                                    <td colspan="5" class="py-16 text-center">
                                         <div class="flex flex-col items-center justify-center">
-                                            <div class="w-16 h-16 bg-[#F5F1EC] rounded-full flex items-center justify-center mb-4">
-                                                <svg class="w-8 h-8 text-[#c8b89a]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                            </div>
-                                            <p class="font-montserrat text-[13px] font-medium text-[#1a1208]">No transactions yet</p>
-                                            <p class="font-montserrat text-[11px] text-[#8C7F77] mt-1">When you add funds or make purchases, they will appear here.</p>
+                                            <p class="font-montserrat text-[12px] font-bold tracking-[0.15em] text-[#1a1208] uppercase">No transactions yet</p>
+                                            <p class="font-montserrat text-[11px] text-[#8C7F77] mt-2">When you add funds or make purchases, they will appear here.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -149,24 +163,35 @@
                     </div>
 
                     <!-- Pagination -->
-                    {% if transactions.has_other_pages %}
-                    <div class="px-7 py-5 border-t border-[#E7DDD6] flex items-center justify-between bg-[#faf8f5]/50">
-                        <span class="font-montserrat text-[11px] font-medium text-[#8C7F77]">
-                            Page {{ transactions.number }} of {{ transactions.paginator.num_pages }}
+                    {% if transactions.paginator.num_pages > 1 %}
+                    <div class="mt-8 mb-4 flex items-center justify-center gap-2">
+                        {% if transactions.has_previous %}
+                        <a href="?page={{ transactions.previous_page_number }}" class="pg-btn">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 18l-6-6 6-6"/></svg>
+                        </a>
+                        {% else %}
+                        <span class="pg-btn disabled">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 18l-6-6 6-6"/></svg>
                         </span>
-                        <div class="flex gap-2">
-                            {% if transactions.has_previous %}
-                            <a href="?page={{ transactions.previous_page_number }}" class="px-4 py-2 rounded-lg border border-[#E7DDD6] bg-white font-montserrat text-[11px] font-medium text-[#1a1208] hover:bg-[#F5F1EC] transition-colors">Prev</a>
-                            {% else %}
-                            <button disabled class="px-4 py-2 rounded-lg border border-[#E7DDD6] bg-[#faf8f5] font-montserrat text-[11px] font-medium text-[#8C7F77] opacity-50 cursor-not-allowed">Prev</button>
+                        {% endif %}
+                        
+                        {% for i in transactions.paginator.page_range %}
+                            {% if transactions.number == i %}
+                                <span class="pg-btn active">{{ i }}</span>
+                            {% elif i >= transactions.number|add:"-2" and i <= transactions.number|add:"2" %}
+                                <a href="?page={{ i }}" class="pg-btn">{{ i }}</a>
                             {% endif %}
+                        {% endfor %}
 
-                            {% if transactions.has_next %}
-                            <a href="?page={{ transactions.next_page_number }}" class="px-4 py-2 rounded-lg border border-[#E7DDD6] bg-white font-montserrat text-[11px] font-medium text-[#1a1208] hover:bg-[#F5F1EC] transition-colors">Next</a>
-                            {% else %}
-                            <button disabled class="px-4 py-2 rounded-lg border border-[#E7DDD6] bg-[#faf8f5] font-montserrat text-[11px] font-medium text-[#8C7F77] opacity-50 cursor-not-allowed">Next</button>
-                            {% endif %}
-                        </div>
+                        {% if transactions.has_next %}
+                        <a href="?page={{ transactions.next_page_number }}" class="pg-btn">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 18l6-6-6-6"/></svg>
+                        </a>
+                        {% else %}
+                        <span class="pg-btn disabled">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 18l6-6-6-6"/></svg>
+                        </span>
+                        {% endif %}
                     </div>
                     {% endif %}
                 </div>
@@ -178,50 +203,54 @@
 <!-- ADD MONEY MODAL -->
 <div id="addMoneyModal" class="fixed inset-0 z-50 hidden items-center justify-center">
     <!-- Backdrop -->
-    <div class="absolute inset-0 bg-[#1a1208]/60 backdrop-blur-sm transition-opacity" onclick="closeAddMoneyModal()"></div>
+    <div class="absolute inset-0 bg-[#1a1208]/70 backdrop-blur-sm transition-opacity" onclick="closeAddMoneyModal()"></div>
     
     <!-- Modal Content -->
-    <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform transition-all scale-up border border-[#E7DDD6]">
-        <div class="p-8">
-            <div class="flex justify-between items-start mb-6">
+    <div class="relative bg-[#F5F1EC] shadow-2xl w-full max-w-md mx-4 overflow-hidden transform transition-all border border-[#1a1208] scale-up">
+        <div class="p-10">
+            <div class="flex justify-between items-start mb-10">
                 <div>
-                    <h3 class="font-cormorant text-[32px] font-semibold text-[#1a1208] leading-tight">Add Funds</h3>
-                    <p class="font-montserrat text-[12px] text-[#8C7F77] mt-1">Securely top up your Glowé wallet.</p>
+                    <h3 class="font-cormorant text-[36px] font-bold text-[#1a1208] uppercase tracking-widest leading-none" style="font-family: 'Cormorant Garamond', serif; font-weight: 700;">Add Funds</h3>
                 </div>
-                <button onclick="closeAddMoneyModal()" class="text-[#8C7F77] hover:text-[#1a1208] transition-colors rounded-full p-2 hover:bg-[#F5F1EC] focus:outline-none">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <button onclick="closeAddMoneyModal()" class="text-[#1a1208] hover:opacity-60 transition-opacity focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="square" stroke-linejoin="miter" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
             <!-- Quick Amounts -->
-            <div class="grid grid-cols-3 gap-3 mb-6">
-                <button onclick="setAmount(100)" class="py-3 px-2 border border-[#E7DDD6] rounded-xl font-montserrat text-[13px] font-semibold text-[#1a1208] hover:border-[#1a1208] hover:bg-[#faf8f5] transition-all duration-200">₹100</button>
-                <button onclick="setAmount(500)" class="py-3 px-2 border border-[#E7DDD6] rounded-xl font-montserrat text-[13px] font-semibold text-[#1a1208] hover:border-[#1a1208] hover:bg-[#faf8f5] transition-all duration-200">₹500</button>
-                <button onclick="setAmount(1000)" class="py-3 px-2 border border-[#E7DDD6] rounded-xl font-montserrat text-[13px] font-semibold text-[#1a1208] hover:border-[#1a1208] hover:bg-[#faf8f5] transition-all duration-200">₹1000</button>
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <button onclick="setAmount(100)" class="py-4 px-2 bg-transparent border border-[#1a1208] font-montserrat text-[13px] font-bold text-[#1a1208] hover:bg-[#1a1208] hover:text-white transition-colors duration-300 hover:-translate-y-1 transform">₹100</button>
+                <button onclick="setAmount(500)" class="py-4 px-2 bg-transparent border border-[#1a1208] font-montserrat text-[13px] font-bold text-[#1a1208] hover:bg-[#1a1208] hover:text-white transition-colors duration-300 hover:-translate-y-1 transform">₹500</button>
+                <button onclick="setAmount(1000)" class="py-4 px-2 bg-transparent border border-[#1a1208] font-montserrat text-[13px] font-bold text-[#1a1208] hover:bg-[#1a1208] hover:text-white transition-colors duration-300 hover:-translate-y-1 transform">₹1000</button>
             </div>
 
             <!-- Custom Input -->
-            <div class="mb-7 relative">
-                <label for="customAmount" class="block font-montserrat text-[10px] font-semibold uppercase tracking-[0.15em] text-[#8C7F77] mb-2">Custom Amount</label>
+            <div class="mb-10 relative">
+                <label for="customAmount" class="block font-montserrat text-[10px] font-bold uppercase tracking-[0.25em] text-[#1a1208] mb-4">Custom Amount</label>
                 <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-5 text-[#8C7F77] font-medium text-[16px]">₹</span>
-                    <input type="number" id="customAmount" min="1" step="1" class="w-full pl-10 pr-5 py-4 bg-[#faf8f5] border border-[#E7DDD6] rounded-xl focus:outline-none focus:border-[#c8b89a] focus:ring-1 focus:ring-[#c8b89a] transition-all font-montserrat font-medium text-[16px] text-[#1a1208]" placeholder="Enter amount">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-5 text-[#1a1208] font-bold text-[20px]">₹</span>
+                    <input type="number" id="customAmount" min="1" step="1" class="w-full pl-12 pr-5 py-5 bg-white border border-[#1a1208] focus:outline-none focus:ring-1 focus:ring-[#1a1208] transition-all font-montserrat font-bold text-[24px] text-[#1a1208]" placeholder="0">
                 </div>
             </div>
 
             <!-- Total Display -->
-            <div class="flex justify-between items-center py-5 border-t border-[#E7DDD6] mb-6">
-                <span class="font-montserrat text-[12px] font-medium text-[#8C7F77]">Total to pay</span>
-                <span class="font-cormorant text-[32px] font-semibold text-[#1a1208]" id="displayTotal">₹0</span>
+            <div class="flex justify-between items-center py-6 border-t-[3px] border-[#1a1208] mb-8">
+                <span class="font-montserrat text-[12px] font-bold uppercase tracking-[0.15em] text-[#1a1208]">Total to pay</span>
+                <span class="font-montserrat text-[32px] font-bold text-[#1a1208]" id="displayTotal">₹0</span>
             </div>
 
             <!-- Action Button -->
-            <button id="addFundsBtn" onclick="processAddFunds()" class="w-full py-4 bg-[#1a1208] hover:bg-[#2d1f0e] text-white rounded-xl font-montserrat text-[11px] font-bold tracking-[0.15em] uppercase transition-all duration-300 shadow-md relative overflow-hidden flex justify-center items-center group">
-                <span id="btnText">Secure Add Funds</span>
-                <svg id="btnSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden absolute" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+            <button id="addFundsBtn" onclick="processAddFunds()" class="w-full py-5 bg-[#1a1208] border-2 border-[#1a1208] text-white font-montserrat text-[12px] font-bold tracking-[0.2em] uppercase transition-all duration-300 relative overflow-hidden flex justify-center items-center group shadow-lg hover:shadow-xl hover:-translate-y-1">
+                <span id="btnText" class="transition-opacity duration-300">Secure Add Funds</span>
+                
+                <!-- Modern Minimal Loader -->
+                <div id="btnSpinner" class="hidden absolute inset-0 flex items-center justify-center bg-[#1a1208] text-white">
+                    <svg class="animate-spin h-4 w-4 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                        <path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="animate-subtle-pulse tracking-[0.3em] font-bold">PROCESSING</span>
+                </div>
             </button>
         </div>
     </div>
@@ -281,23 +310,23 @@
         const toast = document.createElement('div');
         
         // Base classes
-        toast.className = 'slide-in-right flex items-center px-4 py-3.5 rounded-lg shadow-lg border min-w-[280px] max-w-sm pointer-events-auto transform transition-all duration-300';
+        toast.className = 'slide-in-right flex items-center px-4 py-3.5 border-2 min-w-[280px] max-w-sm pointer-events-auto transform transition-all duration-300';
         
         if (type === 'success') {
-            toast.classList.add('bg-white', 'border-green-100', 'text-green-800');
+            toast.classList.add('bg-[#F5F1EC]', 'border-[#166534]', 'text-[#166534]');
             toast.innerHTML = `
-                <div class="flex-shrink-0 bg-green-50 rounded-full p-1 mr-3">
-                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <div class="flex-shrink-0 bg-transparent p-1 mr-3">
+                    <svg class="w-5 h-5 text-[#166534]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                 </div>
-                <span class="font-montserrat font-medium text-[12px] tracking-wide">${message}</span>
+                <span class="font-montserrat font-bold text-[12px] tracking-wide uppercase">${message}</span>
             `;
         } else {
-            toast.classList.add('bg-white', 'border-red-100', 'text-red-800');
+            toast.classList.add('bg-[#F5F1EC]', 'border-[#991b1b]', 'text-[#991b1b]');
             toast.innerHTML = `
-                <div class="flex-shrink-0 bg-red-50 rounded-full p-1 mr-3">
-                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div class="flex-shrink-0 bg-transparent p-1 mr-3">
+                    <svg class="w-5 h-5 text-[#991b1b]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </div>
-                <span class="font-montserrat font-medium text-[12px] tracking-wide">${message}</span>
+                <span class="font-montserrat font-bold text-[12px] tracking-wide uppercase">${message}</span>
             `;
         }
 
@@ -319,19 +348,19 @@
     function setLoadingState() {
         isProcessing = true;
         addFundsBtn.disabled = true;
-        btnText.innerText = 'Processing...';
-        btnText.classList.add('ml-2');
+        btnText.classList.add('opacity-0'); // fade out original text
         btnSpinner.classList.remove('hidden');
-        addFundsBtn.classList.add('opacity-80', 'cursor-not-allowed');
+        addFundsBtn.classList.remove('hover:-translate-y-1', 'hover:shadow-xl');
+        addFundsBtn.classList.add('cursor-wait');
     }
 
     function resetButtonState() {
         isProcessing = false;
         addFundsBtn.disabled = false;
-        btnText.innerText = 'Secure Add Funds';
-        btnText.classList.remove('ml-2');
+        btnText.classList.remove('opacity-0'); // fade in original text
         btnSpinner.classList.add('hidden');
-        addFundsBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+        addFundsBtn.classList.add('hover:-translate-y-1', 'hover:shadow-xl');
+        addFundsBtn.classList.remove('cursor-wait');
     }
 
     // --- Process Payment ---
