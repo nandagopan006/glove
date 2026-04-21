@@ -13,6 +13,10 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from order.models import Order, Payment, OrderStatusHistory
+from order.email_util import send_order_confirmation_email
 
 
 def wallet_view(request):
@@ -155,3 +159,88 @@ def mark_wallet_payment_failed(request):
             pass
         
     return JsonResponse({"status": "failed"}, status=400)
+
+
+@login_required
+def process_wallet_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # Check if order is already processed
+    if order.order_status != Order.Status.PENDING:
+        messages.error(request, "This order cannot be processed.")
+        return redirect("order_listing")
+
+    payment = getattr(order, 'payment', None)
+    if not payment:
+        messages.error(request, "Invalid payment method.")
+        return redirect("order_listing")
+
+    # Prevent double payment
+    if payment.payment_status == Payment.Status.SUCCESS:
+        return redirect("order_success", order_id=order.id)
+
+    wallet, created = Wallet.objects.get_or_create(user=request.user)
+
+    if wallet.balance < order.total_amount:
+        payment.payment_status = Payment.Status.FAILED
+        payment.save()
+        messages.error(request, "Insufficient wallet balance.")
+        return redirect("payment_failed", order_id=order.id)
+
+    try:
+        with transaction.atomic():
+            # Lock wallet for update
+            wallet = Wallet.objects.select_for_update().get(id=wallet.id)
+            
+            if wallet.balance < order.total_amount:
+                payment.payment_status = Payment.Status.FAILED
+                payment.save()
+                messages.error(request, "Insufficient wallet balance.")
+                return redirect("payment_failed", order_id=order.id)
+
+            # Deduct balance
+            wallet.balance -= order.total_amount
+            wallet.save()
+
+            # Create wallet transaction
+            WalletTransaction.objects.create(
+                wallet=wallet,
+                order=order,
+                transaction_type='PURCHASE',
+                amount=order.total_amount,
+                status='COMPLETED',
+                description=f"Payment for Order"
+            )
+
+            # Update Payment
+            payment.payment_status = Payment.Status.SUCCESS
+            payment.transaction_id = f"WALLET_{order.id}"
+            payment.save()
+
+            # Update Order
+            order.order_status = Order.Status.CONFIRMED
+            order.save()
+
+            # Reduce stock
+            for item in order.items.all():
+                variant = item.variant
+                variant.stock -= item.quantity
+                variant.save()
+
+            # Log history
+            OrderStatusHistory.objects.create(order=order, status=Order.Status.CONFIRMED)
+
+            # Send confirmation email
+            try:
+                send_order_confirmation_email(request, order)
+            except Exception:
+                pass
+
+        messages.success(request, "Payment successful using Wallet.")
+        return redirect("order_success", order_id=order.id)
+    except Exception as e:
+        print("Wallet Payment Error:", e)
+        payment.payment_status = Payment.Status.FAILED
+        payment.save()
+        messages.error(request, "Something went wrong during wallet payment.")
+        return redirect("payment_failed", order_id=order.id)

@@ -176,6 +176,8 @@ def place_order(request):
     # redirect bases on pyment 
     if payment_method == Payment.Method.COD:
         return redirect("order_success",order_id=order.id)
+    elif payment_method == Payment.Method.WALLET:
+        return redirect("process_wallet_payment", order_id=order.id)
     else:
         return redirect("payment_page",order_id=order.id)
 

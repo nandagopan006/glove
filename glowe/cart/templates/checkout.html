@@ -385,25 +385,21 @@ body { background: var(--bg); }
         <div class="space-y-3">
 
           <!-- Wallet -->
-          <div style="background:var(--white); border:1px solid var(--border); border-radius:14px; padding:18px 20px; opacity: 0.55; pointer-events: none;">
+          <!-- Wallet -->
+          <div class="option-card {% if wallet.balance < final_total %}opacity-50 pointer-events-none{% endif %}" data-value="WALLET" {% if wallet.balance >= final_total %}onclick="pickPayment(this)"{% endif %}>
             <div class="flex items-center gap-3">
-              <div class="wallet-check">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <div class="radio-outer"><div class="radio-inner"></div></div>
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#1B9B7D;">
+                <svg class="w-4 h-4" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
               </div>
-              <div class="flex items-center gap-1.5 flex-wrap flex-1">
-                <span style="font-family:'Montserrat',sans-serif; font-size:12.5px; font-weight:600; color:var(--brown);">Use Wallet Balance</span>
-                <span style="font-family:'Montserrat',sans-serif; font-size:11px; color:var(--brown-lt);">(Available Balance: ₹150.00)</span>
-              </div>
-              <span style="font-family:'Montserrat',sans-serif; font-size:8px; font-weight:700; background:#f0ebe2; color:var(--brown-md); padding:3px 6px; border-radius:4px; text-transform:uppercase;">Coming Soon</span>
-            </div>
-            <div class="flex items-center justify-between mt-3 ml-[34px]">
-              <div>
-                <p style="font-family:'Montserrat',sans-serif; font-size:10px; color:var(--brown-lt); margin:0;">Wallet Applied:</p>
-                <p style="font-family:'Montserrat',sans-serif; font-size:10px; color:var(--brown-lt); margin:2px 0 0; font-weight:600;">Remaining Payable:</p>
-              </div>
-              <div style="text-align:right;">
-                <p style="font-family:'Montserrat',sans-serif; font-size:11px; font-weight:600; color:var(--brown); margin:0;">₹60.00</p>
-                <p style="font-family:'Montserrat',sans-serif; font-size:11px; font-weight:700; color:var(--brown); margin:2px 0 0;">₹82.00</p>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <span style="font-family:'Montserrat',sans-serif; font-size:12.5px; font-weight:600; color:var(--brown);">Wallet Balance</span>
+                  {% if wallet.balance < final_total %}
+                  <span style="font-family:'Montserrat',sans-serif; font-size:8.5px; font-weight:700; background:#f0ebe2; color:#D65A47; padding:3px 6px; border-radius:4px; text-transform:uppercase;">Insufficient</span>
+                  {% endif %}
+                </div>
+                <p style="font-family:'Montserrat',sans-serif; font-size:9.5px; color:var(--brown-lt); margin:1px 0 0;">Available: ₹{{ wallet.balance|floatformat:2|default:"0.00" }}</p>
               </div>
             </div>
           </div>
