@@ -29,9 +29,10 @@
             {% endif %}
         </p>
         
-        {% if payment and payment.payment_method != 'COD' %}
-        <p class="text-[#1a1208] text-[11px] bg-[#faf8f5] py-2 px-4 rounded-lg border border-[#e6e0d8] max-w-[250px] mx-auto mb-6 font-medium">
-            Refund initiated to original payment method.
+        {% if wallet_refund %}
+        <p class="text-[#1a1208] text-[11px] bg-green-50 py-2 px-4 rounded-lg border border-green-100 max-w-[300px] mx-auto mb-6 font-medium flex items-center justify-center gap-2">
+            <svg width="12" height="12" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            &#8377;{{ wallet_refund.amount|floatformat:2 }} refunded to your Glow&eacute; Wallet
         </p>
         {% endif %}
 
@@ -46,7 +47,7 @@
                 <p class="text-[9px] font-medium text-[#8a7e72] uppercase tracking-widest m-0">{{ order.created_at|date:"M d, Y" }}</p>
             </div>
 
-            <div class="flex flex-col gap-5 {% if payment and payment.payment_method != 'COD' %}mb-6 pb-6 border-b border-[#e6e0d8]/50{% else %}mb-2{% endif %}">
+            <div class="flex flex-col gap-5 {% if wallet_refund %}mb-6 pb-6 border-b border-[#e6e0d8]/50{% else %}mb-2{% endif %}">
                 {% for item in cancelled_items %}
                 <div class="flex gap-4 items-center group">
                     <div class="w-12 h-16 bg-[#faf8f5] rounded-md overflow-hidden shrink-0 border border-[#e6e0d8]/50">
@@ -74,17 +75,12 @@
                 {% endfor %}
             </div>
 
-            {% if payment and payment.payment_method != 'COD' %}
+            {% if wallet_refund %}
             <div class="flex justify-between items-center">
-                <p class="text-[9px] font-medium text-[#8a7e72] uppercase tracking-widest font-montserrat m-0">Payment Option</p>
-                <div class="flex items-center gap-2">
-                    <svg width="12" height="12" fill="none" stroke="#8a7e72" stroke-width="1.5" viewBox="0 0 24 24">
-                        <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                        <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                    <p class="text-[10px] font-semibold font-montserrat text-[#1a1208] m-0 uppercase tracking-widest">
-                        {{ payment.payment_method }} Refund
-                    </p>
+                <p class="text-[9px] font-medium text-[#8a7e72] uppercase tracking-widest font-montserrat m-0">Refunded To</p>
+                <div class="flex items-center gap-1.5">
+                    <svg width="11" height="11" fill="none" stroke="#16a34a" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                    <p class="text-[10px] font-semibold font-montserrat text-[#16a34a] m-0 uppercase tracking-widest">Glow&eacute; Wallet</p>
                 </div>
             </div>
             {% endif %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Return Request – {{ item.variant.product.name }} – Glowé{% endblock %}
+{% block title %}{% if is_full_order %}Return Entire Order – #{{ order.order_number }}{% else %}Return Request – {{ item.variant.product.name }}{% endif %} – Glowé{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -156,14 +156,40 @@
   }
 
   /* Dropzone Styling */
-  .drop-zone {
-    border: 1px dashed var(--glowe-border);
-    transition: all 0.3s ease;
-  }
-
   .drop-zone:hover, .drop-zone.drag-over {
     border-color: var(--glowe-gold);
     background-color: #faf9f7;
+    transform: scale(1.005);
+  }
+
+  .preview-container {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  .preview-container:hover {
+    transform: translateY(-4px);
+  }
+  .remove-img-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #3e2723;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    z-index: 10;
+    transition: all 0.2s ease;
+  }
+  .remove-img-btn:hover {
+    background: #ff4d4d;
+    transform: scale(1.1);
   }
 
   /* Quantity Controller */
@@ -210,16 +236,22 @@
     <span class="text-[#d8d2ca]">/</span>
     <a href="{% url 'order_listing' %}" class="hover:text-[#3e2723] transition-colors">Account</a>
     <span class="text-[#d8d2ca]">/</span>
-    <a href="{% url 'order_detail' item.order.id %}" class="hover:text-[#3e2723] transition-colors">Orders</a>
+    <a href="{% url 'order_detail' order.id %}" class="hover:text-[#3e2723] transition-colors">Orders</a>
     <span class="text-[#d8d2ca]">/</span>
     <span class="text-[#3e2723]">Return Request</span>
   </nav>
 
   <!-- Header Section -->
   <div class="text-center mb-10 fade-up delay-1">
-    <h1 class="text-[32px] md:text-[38px] text-[#1a1208] leading-tight mb-3" style="font-family:'Cormorant Garamond',serif;">Return Request</h1>
+    <h1 class="text-[32px] md:text-[38px] text-[#1a1208] leading-tight mb-3" style="font-family:'Cormorant Garamond',serif;">
+      {% if is_full_order %}Return Entire Order{% else %}Return Request{% endif %}
+    </h1>
     <p class="font-montserrat text-[12px] text-[#8a7e72] max-w-sm mx-auto leading-relaxed">
-      Fill out the form below to process your return for Order <span class="text-[#1a1208] font-bold">#{{ order.order_id|default:order.id }}</span>.
+      {% if is_full_order %}
+        You are initiating a return for all items in Order <span class="text-[#1a1208] font-bold">#{{ order.order_number }}</span>.
+      {% else %}
+        Fill out the form below to process your return for Order <span class="text-[#1a1208] font-bold">#{{ order.order_number|default:order.id }}</span>.
+      {% endif %}
     </p>
   </div>
 
@@ -233,48 +265,75 @@
         <h2 class="text-[9px] font-bold text-[#b0a498] uppercase tracking-[0.2em] font-montserrat">Items to Return</h2>
       </div>
 
-      <!-- Item Card -->
-      <div class="item-row-lift flex items-center gap-3 p-3 rounded-lg border border-var(--glowe-border) bg-[#faf8f5]/50 transition-all group">
-         <!-- Image -->
-         <div class="w-14 h-14 md:w-16 md:h-16 rounded-md bg-white border border-var(--glowe-border) overflow-hidden shrink-0 shadow-sm">
-            {% if item.variant.product.images.first %}
-              <img src="{{ item.variant.product.images.first.image.url }}" alt="{{ item.variant.product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-            {% else %}
-              <div class="w-full h-full flex items-center justify-center text-[#d8d2ca]">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              </div>
-            {% endif %}
-         </div>
-
-         <!-- Info -->
-         <div class="flex-1 min-w-0">
-           <h3 class="text-[14px] md:text-[16px] font-semibold text-[#1a1208] leading-tight mb-0.5" style="font-family:'Cormorant Garamond',serif;">
-             {{ item.variant.product.name }}
-           </h3>
-           <p class="text-[10px] font-montserrat text-[#8a7e72] mb-1.5">
-             {{ item.variant.size }} | {{ item.variant.color|default:"Standard" }}
-           </p>
-           
-           <!-- Qty Controller -->
-           <div class="flex items-center gap-2.5">
-              <span class="text-[8px] font-bold text-[#b0a498] uppercase tracking-widest font-montserrat">Qty:</span>
-              <div class="inline-flex items-center bg-white border border-[#e6e0d8] rounded-full overflow-hidden h-6 shadow-sm">
-                 <button type="button" id="minusBtn" class="qty-btn border-r border-[#e6e0d8] text-[#3e2723]">
-                   <svg width="6" height="1" viewBox="0 0 10 2" fill="none"><rect width="10" height="2" rx="1" fill="currentColor"/></svg>
-                 </button>
-                 <span id="qtyDisplay" class="w-6 text-center text-[10px] font-bold text-[#1a1208] font-montserrat">{{ item.quantity }}</span>
-                 <input type="hidden" name="return_quantity" id="qtyInput" value="{{ item.quantity }}">
-                 <button type="button" id="plusBtn" class="qty-btn border-l border-[#e6e0d8] text-[#3e2723]">
-                   <svg width="6" height="6" viewBox="0 0 10 10" fill="none"><rect y="4" width="10" height="2" rx="1" fill="currentColor"/><rect x="4" width="2" height="10" rx="1" fill="currentColor"/></svg>
-                 </button>
-              </div>
-           </div>
-         </div>
-
-         <!-- Price -->
-         <div class="shrink-0 text-right pr-0.5">
-            <p class="text-[14px] md:text-[16px] font-semibold text-[#1a1208] font-montserrat">₹{{ item.price_at_time }}</p>
-         </div>
+      <!-- Item Card(s) -->
+      <div class="space-y-3">
+        {% if is_full_order %}
+          {% for active_item in active_items %}
+          <div class="item-row-lift flex items-center gap-3 p-3 rounded-lg border border-[#e6e0d8] bg-[#faf8f5]/50 transition-all group">
+             <div class="w-12 h-12 rounded-md bg-white border border-[#e6e0d8] overflow-hidden shrink-0 shadow-sm">
+                {% if active_item.variant.product.images.first %}
+                  <img src="{{ active_item.variant.product.images.first.image.url }}" class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center text-[#d8d2ca]">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </div>
+                {% endif %}
+             </div>
+             <div class="flex-1 min-w-0">
+               <h3 class="text-[14px] font-semibold text-[#1a1208] leading-tight mb-0.5" style="font-family:'Cormorant Garamond',serif;">{{ active_item.variant.product.name }}</h3>
+               <p class="text-[9px] font-montserrat text-[#8a7e72]">{{ active_item.variant.size }} | Qty: {{ active_item.quantity }}</p>
+             </div>
+             <div class="shrink-0 text-right pr-0.5">
+                <p class="text-[13px] font-bold text-[#1a1208] font-montserrat">₹{{ active_item.effective_refund }}</p>
+                <p class="text-[7px] font-bold text-[#c8a96e] uppercase tracking-tighter mt-0.5">Refund Value</p>
+             </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="item-row-lift flex items-center gap-3 p-3 rounded-lg border border-var(--glowe-border) bg-[#faf8f5]/50 transition-all group">
+             <!-- Image -->
+             <div class="w-14 h-14 md:w-16 md:h-16 rounded-md bg-white border border-var(--glowe-border) overflow-hidden shrink-0 shadow-sm">
+                {% if item.variant.product.images.first %}
+                  <img src="{{ item.variant.product.images.first.image.url }}" alt="{{ item.variant.product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center text-[#d8d2ca]">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </div>
+                {% endif %}
+             </div>
+    
+             <!-- Info -->
+             <div class="flex-1 min-w-0">
+               <h3 class="text-[14px] md:text-[16px] font-semibold text-[#1a1208] leading-tight mb-0.5" style="font-family:'Cormorant Garamond',serif;">
+                 {{ item.variant.product.name }}
+               </h3>
+               <p class="text-[10px] font-montserrat text-[#8a7e72] mb-1.5">
+                 {{ item.variant.size }} | {{ item.variant.color|default:"Standard" }}
+               </p>
+               
+               <!-- Qty Controller -->
+               <div class="flex items-center gap-2.5">
+                  <span class="text-[8px] font-bold text-[#b0a498] uppercase tracking-widest font-montserrat">Qty:</span>
+                  <div class="inline-flex items-center bg-white border border-[#e6e0d8] rounded-full overflow-hidden h-6 shadow-sm">
+                     <button type="button" id="minusBtn" class="qty-btn border-r border-[#e6e0d8] text-[#3e2723]">
+                       <svg width="6" height="1" viewBox="0 0 10 2" fill="none"><rect width="10" height="2" rx="1" fill="currentColor"/></svg>
+                     </button>
+                     <span id="qtyDisplay" class="w-6 text-center text-[10px] font-bold text-[#1a1208] font-montserrat">{{ item.quantity }}</span>
+                     <input type="hidden" name="return_quantity" id="qtyInput" value="{{ item.quantity }}">
+                     <button type="button" id="plusBtn" class="qty-btn border-l border-[#e6e0d8] text-[#3e2723]">
+                       <svg width="6" height="6" viewBox="0 0 10 10" fill="none"><rect y="4" width="10" height="2" rx="1" fill="currentColor"/><rect x="4" width="2" height="10" rx="1" fill="currentColor"/></svg>
+                     </button>
+                  </div>
+               </div>
+             </div>
+    
+             <!-- Price -->
+             <div class="shrink-0 text-right pr-0.5">
+                <p id="refundValue" class="text-[14px] md:text-[16px] font-semibold text-[#1a1208] font-montserrat">₹{{ item.effective_refund }}</p>
+                <p class="text-[8px] font-bold text-[#c8a96e] uppercase tracking-widest mt-1">Refund Value</p>
+             </div>
+          </div>
+        {% endif %}
       </div>
     </div>
 
@@ -331,66 +390,74 @@
       </div>
 
       <!-- Photo Upload -->
-      <div class="space-y-3">
-        <label class="block text-[11px] font-montserrat text-[#1a1208] font-medium leading-relaxed">Upload Photos (Optional - Helpful for damaged items)</label>
-        <div class="drop-zone rounded-[30px] p-6 py-10 flex flex-col items-center justify-center cursor-pointer group border-dashed border-[#e6e0d8] bg-transparent" id="dropZone" style="border-width: 1.5px;">
+      <div class="space-y-4">
+        <label class="block text-[11px] font-bold text-[#8a7e72] uppercase tracking-widest font-montserrat">Upload Photos (Optional)</label>
+        <div class="drop-zone rounded-[24px] p-8 py-12 flex flex-col items-center justify-center cursor-pointer group border-2 border-dashed border-[#e6e0d8] bg-white transition-all hover:shadow-lg hover:shadow-[#3e2723]/5" id="dropZone">
           <input type="file" name="images" id="imageInput" multiple class="hidden" accept="image/*">
-          <div class="mb-4">
-             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#7a6e60" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <div class="w-16 h-16 rounded-full bg-[#fdfaf7] flex items-center justify-center mb-5 group-hover:bg-[#f3f0eb] transition-colors duration-500 shadow-inner">
+             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7a6e60" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:stroke-[#3e2723] transition-colors duration-500">
                <path d="M17.5 19c2.5 0 4.5-2 4.5-4.5 0-2-1.3-3.7-3.2-4.2-.5-2.8-2.9-5-5.8-5-2.1 0-3.9 1.1-5 2.8-1.5-.5-3.2-.2-4.4.8C2.4 10 2 11.5 2 13c0 2.8 2.2 5 5 5h1"/>
                <path d="M12 11v8m-3-3l3-3 3 3"/>
              </svg>
           </div>
-          <p class="font-montserrat text-[14px] text-[#7a6e60] tracking-tight">
-            <span class="text-[#1a1208] font-semibold">Upload a file</span> <span class="font-normal opacity-80">or drag and drop</span>
-          </p>
-          <div id="filePreview" class="flex flex-wrap gap-2 mt-4 justify-center"></div>
+          <div class="text-center">
+            <p class="font-montserrat text-[15px] text-[#1a1208] font-semibold tracking-tight mb-1">
+              Upload photos
+            </p>
+            <p class="font-montserrat text-[11px] text-[#8a7e72] tracking-wider uppercase opacity-80">
+              or drag and drop here
+            </p>
+          </div>
+          
+          <!-- File Preview Grid -->
+          <div id="filePreview" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 mt-8 w-full empty:hidden">
+            <!-- Previews will be injected here -->
+          </div>
         </div>
+        <p class="text-[10px] text-[#b0a498] font-montserrat italic text-center">Helpful for damaged or incorrect items. Max 5 photos.</p>
       </div>
     </div>
 
-    <!-- SECTION 3: REFUND METHOD (RESTORED AS DISABLED/MODERN) -->
-    <div class="glass-card rounded-xl p-5 md:p-6 fade-up delay-3 opacity-60 pointer-events-none select-none" style="animation-delay: 0.4s; filter: grayscale(0.2);">
-      <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center gap-2">
-            <span class="w-5 h-5 rounded-full bg-[#f3f0eb] text-[#8a7e72] flex items-center justify-center text-[9px] font-bold font-montserrat">3</span>
-            <h2 class="text-[9px] font-bold text-[#b0a498] uppercase tracking-[0.2em] font-montserrat">Refund Method</h2>
-        </div>
-  
+    <!-- SECTION 3: REFUND DESTINATION -->
+    <div class="glass-card rounded-xl p-5 md:p-6 fade-up delay-3" style="animation-delay: 0.4s;">
+      <div class="flex items-center gap-2 mb-5">
+        <span class="w-5 h-5 rounded-full bg-[#f3f0eb] text-[#3e2723] flex items-center justify-center text-[9px] font-bold font-montserrat">3</span>
+        <h2 class="text-[9px] font-bold text-[#b0a498] uppercase tracking-[0.2em] font-montserrat">Refund Destination</h2>
       </div>
 
-      <div class="space-y-3">
-        <!-- Wallet Option (Disabled) -->
-        <div class="flex items-center gap-4 p-4 rounded-lg border border-[#e6e0d8] bg-[#faf8f5]/30">
-          <div class="w-4 h-4 rounded-full border border-[#d8d2ca]"></div>
-          <div class="flex-1">
-            <h3 class="font-montserrat text-[12px] font-bold text-[#b0a498] mb-0.5">Store to Wallet (Instant)</h3>
-            <p class="font-montserrat text-[10px] text-[#bcada0]">and after use through the wallet</p>
-          </div>
-          <div class="shrink-0 text-[#bcada0]">
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M16 14h2"/></svg>
-          </div>
+      <!-- Wallet Card — active, selected, single option -->
+      <div class="flex items-center gap-4 p-4 rounded-xl border-2 border-[#3e2723] bg-[#f7f3f0]" style="box-shadow: 0 4px 14px rgba(62,39,35,0.07);">
+        <!-- Selected indicator -->
+        <div class="w-4 h-4 rounded-full border-2 border-[#3e2723] flex items-center justify-center shrink-0">
+          <div class="w-2 h-2 rounded-full bg-[#3e2723]"></div>
         </div>
 
-        <!-- Original Payment Option (Disabled) -->
-        <div class="flex items-center gap-4 p-4 rounded-lg border border-[#e6e0d8] bg-[#faf8f5]/30">
-           <div class="w-4 h-4 rounded-full border border-[#d8d2ca]"></div>
-           <div class="flex-1">
-             <h3 class="font-montserrat text-[12px] font-bold text-[#b0a498] mb-0.5">Original Payment Method</h3>
-             <p class="font-montserrat text-[10px] text-[#bcada0]">Refund to card ending in 4242. Takes 5-7 business days.</p>
-           </div>
-           <div class="shrink-0 text-[#bcada0]">
-             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="10"/></svg>
-           </div>
+        <!-- Wallet icon -->
+        <div class="w-9 h-9 rounded-full bg-[#3e2723] flex items-center justify-center shrink-0">
+          <svg width="16" height="16" fill="none" stroke="white" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+          </svg>
         </div>
+
+        <!-- Text -->
+        <div class="flex-1">
+          <h3 class="font-montserrat text-[12px] font-bold text-[#1a1208] mb-0.5">Glowé Wallet — Instant Refund</h3>
+          <p class="font-montserrat text-[10px] text-[#8a7e72] leading-relaxed">Your refund will be credited to your Glowé Wallet immediately after pickup is completed. Use it on any future order.</p>
+        </div>
+
+        <!-- Instant badge -->
+        <span class="shrink-0 text-[8px] font-bold font-montserrat uppercase tracking-widest text-[#1a1208] bg-[#e8e0d4] px-2 py-1 rounded-full">Instant</span>
       </div>
+
+      <!-- Note -->
+      <p class="font-montserrat text-[10px] text-[#b0a498] mt-3 text-center">All refunds are processed to your Glowé Wallet regardless of original payment method.</p>
     </div>
 
     <!-- Final Actions -->
     <div class="flex flex-wrap items-center justify-between gap-4 pt-8 fade-up" style="animation-delay: 0.4s;">
-      <a href="{% url 'order_detail' item.order.id %}" class="font-montserrat text-[10px] font-bold text-[#8a7e72] uppercase tracking-widest hover:text-[#1a1208] transition-colors underline underline-offset-8">Cancel Request</a>
+      <a href="{% url 'order_detail' order.id %}" class="font-montserrat text-[10px] font-bold text-[#8a7e72] uppercase tracking-widest hover:text-[#1a1208] transition-colors underline underline-offset-8">Cancel Request</a>
       <button type="submit" class="w-full md:w-auto bg-[#3e2723] text-white px-10 py-4 rounded-xl font-montserrat text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#2a1a17] transition-all transform hover:-translate-y-1 shadow-md active:scale-95 flex items-center justify-center gap-2">
-        Submit Request
+        {% if is_full_order %}Submit Full Return{% else %}Submit Request{% endif %}
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </button>
     </div>
@@ -432,30 +499,40 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Qty Controller
+    // Qty Controller (Only if not full order return)
     const minusBtn = document.getElementById('minusBtn');
     const plusBtn = document.getElementById('plusBtn');
     const qtyDisplay = document.getElementById('qtyDisplay');
     const qtyInput = document.getElementById('qtyInput');
-    const maxQty = parseInt('{{ item.quantity }}');
     
-    let currentQty = parseInt(qtyInput.value);
+    if (minusBtn && plusBtn && qtyDisplay && qtyInput) {
+        const maxQty = parseInt('{{ item.quantity|default:0 }}');
+        let currentQty = parseInt(qtyInput.value);
 
-    function updateQty(newQty) {
-        if (newQty >= 1 && newQty <= maxQty) {
-            currentQty = newQty;
-            qtyDisplay.textContent = currentQty;
-            qtyInput.value = currentQty;
-            
-            // Visual feedback
-            minusBtn.style.opacity = currentQty === 1 ? '0.3' : '1';
-            plusBtn.style.opacity = currentQty === maxQty ? '0.3' : '1';
+        function updateQty(newQty) {
+            if (newQty >= 1 && newQty <= maxQty) {
+                currentQty = newQty;
+                qtyDisplay.textContent = currentQty;
+                qtyInput.value = currentQty;
+                
+                // Update Refund Value Display
+                const unitRefund = parseFloat('{{ item.unit_refund|default:0 }}');
+                const refundValueEl = document.getElementById('refundValue');
+                if (refundValueEl) {
+                    const totalRefund = (unitRefund * currentQty).toFixed(2);
+                    refundValueEl.textContent = '₹' + totalRefund;
+                }
+                
+                // Visual feedback
+                minusBtn.style.opacity = currentQty === 1 ? '0.3' : '1';
+                plusBtn.style.opacity = currentQty === maxQty ? '0.3' : '1';
+            }
         }
-    }
 
-    minusBtn.addEventListener('click', () => updateQty(currentQty - 1));
-    plusBtn.addEventListener('click', () => updateQty(currentQty + 1));
-    updateQty(currentQty);
+        minusBtn.addEventListener('click', () => updateQty(currentQty - 1));
+        plusBtn.addEventListener('click', () => updateQty(currentQty + 1));
+        updateQty(currentQty);
+    }
 
     // Custom Dropdown Logic
     const customSelects = document.querySelectorAll('.custom-select-wrapper');
@@ -499,8 +576,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('dropZone');
     const imageInput = document.getElementById('imageInput');
     const filePreview = document.getElementById('filePreview');
+    let uploadedFiles = [];
 
-    dropZone.addEventListener('click', () => imageInput.click());
+    dropZone.addEventListener('click', (e) => {
+        if (e.target.closest('.remove-img-btn')) return;
+        imageInput.click();
+    });
 
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, e => {
@@ -519,24 +600,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dropZone.addEventListener('drop', e => {
         const files = e.dataTransfer.files;
-        imageInput.files = files;
         handleFiles(files);
     });
 
     imageInput.addEventListener('change', () => handleFiles(imageInput.files));
 
     function handleFiles(files) {
-        filePreview.innerHTML = '';
-        Array.from(files).forEach(file => {
+        const newFiles = Array.from(files);
+        if (uploadedFiles.length + newFiles.length > 5) {
+            alert('You can only upload up to 5 photos.');
+            return;
+        }
+
+        newFiles.forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+            uploadedFiles.push(file);
+            
             const reader = new FileReader();
             reader.onload = e => {
+                const container = document.createElement('div');
+                container.className = 'preview-container w-full aspect-square bg-white rounded-xl border border-[#e6e0d8] overflow-hidden shadow-sm fade-up';
+                
                 const img = document.createElement('img');
                 img.src = e.target.result;
-                img.className = 'w-12 h-12 object-cover rounded-lg border border-[#e6e0d8]';
-                filePreview.appendChild(img);
+                img.className = 'w-full h-full object-cover';
+                
+                const removeBtn = document.createElement('div');
+                removeBtn.className = 'remove-img-btn';
+                removeBtn.innerHTML = '✕';
+                removeBtn.onclick = (event) => {
+                    event.stopPropagation();
+                    const index = uploadedFiles.indexOf(file);
+                    if (index > -1) {
+                        uploadedFiles.splice(index, 1);
+                        container.remove();
+                        updateInputFiles();
+                    }
+                };
+
+                container.appendChild(img);
+                container.appendChild(removeBtn);
+                filePreview.appendChild(container);
             };
             reader.readAsDataURL(file);
         });
+        updateInputFiles();
+    }
+
+    function updateInputFiles() {
+        const dataTransfer = new DataTransfer();
+        uploadedFiles.forEach(file => dataTransfer.items.add(file));
+        imageInput.files = dataTransfer.files;
     }
 
     // Radio Card Logic

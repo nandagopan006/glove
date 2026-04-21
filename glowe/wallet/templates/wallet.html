@@ -157,7 +157,7 @@
                                     <td class="py-6 pl-4 text-right whitespace-nowrap">
                                         {% if txn.status == 'FAILED' %}
                                             <span class="font-montserrat text-[13px] font-bold text-[#8C7F77] tracking-wider line-through decoration-[1.5px]">₹{{ txn.amount|floatformat:2 }}</span>
-                                        {% elif txn.transaction_type == 'ADD' %}
+                                        {% elif txn.transaction_type == 'ADD' or txn.transaction_type == 'REFUND' %}
                                             <span class="font-montserrat text-[13px] font-bold text-[#166534] tracking-wider">+ ₹{{ txn.amount|floatformat:2 }}</span>
                                         {% else %}
                                             <span class="font-montserrat text-[13px] font-bold text-[#991b1b] tracking-wider">- ₹{{ txn.amount|floatformat:2 }}</span>

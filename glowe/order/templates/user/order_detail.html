@@ -82,7 +82,7 @@
       </div>
       
       <h1 class="text-5xl md:text-6xl text-[#1a1208] mb-4 tracking-tight" style="font-family:'Cormorant Garamond',serif;">
-        {{ order_items.0.variant.product.name|default:"Your Order" }}{% if order_items|length > 1 %} <span class="text-3xl text-[#8a7e72] font-semibold italic"> & {{ order_items|length|add:"-1" }} other item{{ order_items|length|add:"-1"|pluralize }}</span>{% endif %}
+        {{ active_items.0.variant.product.name|default:order.order_number }}{% if active_items|length > 1 %} <span class="text-3xl text-[#8a7e72] font-semibold italic"> & {{ active_items|length|add:"-1" }} other item{{ active_items|length|add:"-1"|pluralize }}</span>{% endif %}
       </h1>
       
       <p class="text-[#5c544a] text-[15px] font-montserrat leading-relaxed m-0">
@@ -100,6 +100,10 @@
           Your order has been successfully delivered. We hope you deeply enjoy your new Glowé products!
         {% elif order.order_status == 'CANCELLED' %}
           This order has been cancelled. If you have any further questions, please contact our support team.
+        {% elif order.order_status == 'RETURNED' %}
+          All items in this order have been successfully returned and your refund has been processed.
+        {% elif order.order_status == 'PARTIALLY_RETURNED' %}
+          Some items in this order have been returned. Your refund for those items has been processed.
         {% endif %}
       </p>
     </div>
@@ -126,6 +130,34 @@
       {% endif %}
     </div>
   </div>
+  
+  {% if wallet_refund %}
+  <!-- Premium Refund Info Card -->
+  <div class="mb-12 delay-200 fade-in-up">
+    <div class="bg-[#faf8f5] rounded-[24px] p-6 sm:p-8 border border-[#c8a96e]/20 shadow-[0_12px_30px_rgba(200,169,110,0.08)] flex flex-col sm:flex-row items-center gap-6 relative overflow-hidden">
+      <!-- Glow decoration -->
+      <div class="absolute -right-12 -top-12 w-32 h-32 bg-[#c8a96e]/5 rounded-full blur-3xl"></div>
+      
+      <!-- Icon -->
+      <div class="w-16 h-16 rounded-full bg-white border border-[#c8a96e]/30 flex items-center justify-center shrink-0 shadow-sm antigravity-active">
+        <svg class="text-[#c8a96e]" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+      </div>
+      
+      <!-- Text content -->
+      <div class="flex-1 text-center sm:text-left">
+        <h3 class="text-[28px] text-[#1a1208] m-0" style="font-family:'Cormorant Garamond',serif;">Refund Processed</h3>
+        <p class="font-montserrat text-[14px] text-[#5c544a] mt-2 mb-0">A total of <span class="font-bold text-[#1a1208]">₹{{ wallet_refund.amount|floatformat:2 }}</span> has been successfully credited back to your <span class="text-[#c8a96e] font-semibold">Glowé Wallet</span>.</p>
+      </div>
+      
+      <!-- Link to wallet -->
+      <a href="{% url 'wallet_view' %}" class="btn-ghost !border-[#c8a96e]/30 hover:!border-[#c8a96e] hover:!bg-[#c8a96e]/5 !text-[#c8a96e]">
+        View Wallet
+      </a>
+    </div>
+  </div>
+  {% endif %}
 
   <!-- Two Column Grid -->
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-20">
@@ -206,11 +238,12 @@
                 <!-- Right Column: Content -->
                 <div class="flex-1 pb-10 w-full pt-[2px]">
                   <div class="flex flex-col sm:flex-row sm:justify-between items-start gap-1 sm:gap-4 lg:pr-4">
-                    <span class="inline-block relative {% if h.status == order.order_status and order.order_status != 'DELIVERED' %}shimmer-text{% endif %}">
-                      <p class="text-[19px] sm:text-[21px] m-0 leading-none {% if h.status == order.order_status and order.order_status != 'DELIVERED' %}text-[#4a3d31] font-bold{% else %}text-[#4a3d31] font-semibold{% endif %}" style="font-family:'Cormorant Garamond',serif;">
+                    <span class="inline-block relative {% if h.status == order.order_status and order.order_status != 'DELIVERED' and order.order_status != 'RETURNED' %}shimmer-text{% endif %}">
+                      <p class="text-[19px] sm:text-[21px] m-0 leading-none {% if h.status == order.order_status and order.order_status != 'DELIVERED' and order.order_status != 'RETURNED' %}text-[#4a3d31] font-bold{% else %}text-[#4a3d31] font-semibold{% endif %}" style="font-family:'Cormorant Garamond',serif;">
                          {% if h.status == 'PENDING' %}Order Received
                          {% elif h.status == 'ITEM_CANCELLED' %}Item Cancelled
                          {% elif h.status == 'OUT_FOR_DELIVERY' %}Out for Delivery
+                         {% elif h.status == 'RETURNED' %}Order Returned
                          {% else %}{{ h.status|title }}{% endif %}
                       </p>
                     </span>
@@ -524,7 +557,11 @@
                           {% endif %}
                         {% endfor %}
                       {% else %}
-                        <a href="{% url 'request_return' item.id %}" class="text-[10px] text-[#c8a96e] hover:text-[#1a1208] font-montserrat font-bold uppercase tracking-wider transition-colors no-underline block cursor-pointer">Return Item</a>
+                        {% if order.discount_amount > 0 %}
+                          {% comment %} Hide individual returns for coupon orders to prevent confusion {% endcomment %}
+                        {% else %}
+                          <a href="{% url 'request_return' item.id %}" class="text-[10px] text-[#c8a96e] hover:text-[#1a1208] font-montserrat font-bold uppercase tracking-wider transition-colors no-underline block cursor-pointer">Return Item</a>
+                        {% endif %}
                       {% endif %}
                     {% endif %}
                   </div>
@@ -554,10 +591,29 @@
           </div>
         </div>
         
-        <div class="flex justify-between items-center mb-10">
+        <div class="flex justify-between items-center mb-8">
           <span class="text-[28px] text-[#1a1208]" style="font-family:'Cormorant Garamond',serif;">Total</span>
           <span class="text-[28px] font-medium text-[#1a1208]" style="font-family:'Cormorant Garamond',serif;">₹{{ order.total_amount|floatformat:2 }}</span>
         </div>
+
+        {% if order.order_status == 'DELIVERED' and active_items %}
+          <div class="mb-8">
+            {% if order.discount_amount > 0 %}
+              <a href="{% url 'request_full_return' order.id %}" class="w-full bg-gradient-to-r from-[#c8a96e] to-[#b08d4a] text-white px-6 py-4 rounded-xl font-montserrat text-[11px] font-bold uppercase tracking-[0.2em] hover:shadow-lg hover:shadow-[#c8a96e]/20 transition-all transform hover:-translate-y-1 shadow-md active:scale-95 flex flex-col items-center justify-center gap-1 no-underline">
+                <div class="flex items-center gap-2">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+                  <span>Return Entire Order</span>
+                </div>
+                <span class="text-[8px] opacity-90 tracking-[0.1em] font-medium">Coupon Applied: Full Return Required</span>
+              </a>
+            {% else %}
+              <a href="{% url 'request_full_return' order.id %}" class="w-full bg-[#3e2723] text-white px-6 py-4 rounded-xl font-montserrat text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#2a1a17] transition-all transform hover:-translate-y-1 shadow-md active:scale-95 flex items-center justify-center gap-2 no-underline">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+                Return Entire Order
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
         
         <p class="font-montserrat text-[10px] text-center text-[#8a7e72] font-bold uppercase tracking-widest cursor-pointer hover:text-[#1a1208] transition-colors mb-0">Need help with this order?</p>
       </div>

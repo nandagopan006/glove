@@ -129,7 +129,7 @@
                 {% if order.payment.payment_method == 'COD' %}
                     Your order has been cancelled. Since this was a Cash on Delivery order, no payment was required and no refund is necessary.
                 {% else %}
-                    Your cancellation is successful. Your refund of ₹{{ refund_amount|floatformat:2 }} will be processed and credited to your account within 2 to 4 business days.
+                    Your cancellation is successful. A refund of <strong>₹{{ refund_amount|floatformat:2 }}</strong> has been credited to your <strong>Glowé Wallet</strong> instantly.
                 {% endif %}
              </p>
           </td>
@@ -150,9 +150,9 @@
             <td align="right" style="padding-bottom:12px; text-transform:uppercase;">ORDER TOTAL:</td>
             <td align="right" style="padding:0 0 12px 30px;">₹{{ order.total_amount|floatformat:2 }}</td>
           </tr>
-          {% if order.payment.payment_method != 'COD' %}
-          <tr style="font-family:Arial, sans-serif; font-size:14px; font-weight:700; color:#d9534f; letter-spacing:0.04em;">
-            <td align="right" style="padding-bottom:12px; text-transform:uppercase;">REFUNDED:</td>
+          {% if refund_amount %}
+          <tr style="font-family:Arial, sans-serif; font-size:14px; font-weight:700; color:#16a34a; letter-spacing:0.04em;">
+            <td align="right" style="padding-bottom:12px; text-transform:uppercase;">REFUNDED TO WALLET:</td>
             <td align="right" style="padding:0 0 12px 30px;">₹{{ refund_amount|floatformat:2 }}</td>
           </tr>
           {% endif %}

@@ -33,7 +33,7 @@ def wallet_view(request):
 
     transactions_list = wallet.transactions.all().order_by('-created_at')
 
-    paginator=Paginator(transactions_list,5)  # 5 per page
+    paginator=Paginator(transactions_list,7)
     page_number=request.GET.get('page')
     transactions =paginator.get_page(page_number)
 
@@ -152,7 +152,7 @@ def mark_wallet_payment_failed(request):
         try:
             txn = WalletTransaction.objects.select_related("wallet").get(id=txn_id)
             if txn.wallet.user == request.user and txn.status == "PENDING":
-                txn.status = "FAILED"
+                txn.status ="FAILED"
                 txn.save()
                 return JsonResponse({"status": "success"})
         except WalletTransaction.DoesNotExist:
@@ -243,4 +243,4 @@ def process_wallet_payment(request, order_id):
         payment.payment_status = Payment.Status.FAILED
         payment.save()
         messages.error(request, "Something went wrong during wallet payment.")
-        return redirect("payment_failed", order_id=order.id)
+        return redirect("payment_failed",order_id=order.id)
