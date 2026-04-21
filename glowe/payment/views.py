@@ -119,14 +119,12 @@ def verify_payment(request):
             except Exception as e:
                 print("Email failed:", e)
 
-        messages.success(request, "Payment successful. Order confirmed")
         return redirect("order_success", order_id=order.id)
 
     except Exception as e:
         print("ERROR:", e)
         payment.payment_status = Payment.Status.FAILED
         payment.save()
-        messages.error(request, "Payment failed. Try again")
         return redirect("payment_failed", order_id=order.id)
 
 @login_required

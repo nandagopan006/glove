@@ -198,9 +198,15 @@ body { background: var(--bg); }
 .truck-button .truck:before, .truck-button .truck:after {
   content: ''; position: absolute; bottom: -6px; left: var(--l, 18px); width: 10px; height: 10px;
   border-radius: 50%; z-index: 2; box-shadow: inset 0 0 0 2px var(--wheel), inset 0 0 0 4px var(--wheel-inner);
-  background: var(--wheel-dot); transform: translateY(calc(var(--truck-y) * -1px)) translateZ(0);
+  background: var(--wheel-dot); transform: translateY(calc(var(--truck-y) * -1px)) rotate(var(--w-rot, 0deg));
 }
 .truck-button .truck:after { --l: 54px; }
+.truck-button .truck .light-beam {
+  position: absolute; right: -40px; bottom: -2px; width: 40px; height: 14px;
+  background: linear-gradient(to right, rgba(255,248,177,0.6), transparent);
+  clip-path: polygon(0 30%, 100% 0, 100% 100%, 0 70%);
+  opacity: var(--beam-o, 0); z-index: 0; pointer-events: none;
+}
 .truck-button .truck .wheel, .truck-button .truck .wheel:before {
   position: absolute; bottom: var(--b, -6px); left: var(--l, 6px); width: 10px; height: 10px;
   border-radius: 50%; background: var(--wheel); transform: translateZ(0);
@@ -240,12 +246,24 @@ body { background: var(--bg); }
   background: linear-gradient(68deg, var(--box) 0%, var(--box) 50%, var(--box-shadow) 50.2%, var(--box-shadow) 100%);
   background-size: 250% 100%; background-position-x: calc(var(--bx, 0) * 1%);
 }
-.truck-button .truck .box:before, .truck-button .truck .box:after { content: ''; position: absolute; }
-.truck-button .truck .box:before { content: ''; background: rgba(255,255,255, .2); left: 0; right: 0; top: 6px; height: 1px; }
-.truck-button .truck .box:after { width: 6px; left: 100%; top: 0; bottom: 0; background: var(--back); transform: translateX(calc(var(--hx, 0) * 1px)); }
-.truck-button.animation { --rx: -90deg; --br: 0; }
+.truck-button .truck .box:before { content: ''; position: absolute; background: rgba(255,255,255, .2); left: 0; right: 0; top: 6px; height: 1px; }
+.truck-button .truck .door {
+  position: absolute; left: 0; top: 0; width: 11px; height: 28px;
+  background: var(--back); border-radius: 1px 0 0 0;
+  transform-origin: 50% 0; transform: scaleY(var(--door-s, 0)); z-index: 3;
+}
+.truck-button .truck .door:before {
+  content: ''; position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+  background: repeating-linear-gradient(to bottom, transparent, transparent 3px, rgba(0,0,0,0.15) 3px, rgba(0,0,0,0.15) 4px);
+}
+.truck-button.animation { --rx: -90deg; --br: 0; animation: truckPulse 2.5s infinite; }
+@keyframes truckPulse {
+  0% { box-shadow: 0 4px 15px rgba(44, 31, 20, 0.12); }
+  50% { box-shadow: 0 4px 28px rgba(22, 191, 120, 0.35); }
+  100% { box-shadow: 0 4px 15px rgba(44, 31, 20, 0.12); }
+}
 .truck-button.animation .default { --o: 0; }
-.truck-button.animation.done { --rx: 0deg; --br: 9999px; --br-d: .2s; }
+.truck-button.animation.done { --rx: 0deg; --br: 9999px; --br-d: .2s; animation: none; box-shadow: 0 8px 25px rgba(22, 191, 120, 0.25); }
 .truck-button.animation.done .success { --o: 1; --offset: 0; }
 
 /* ── Coupon ── */
@@ -675,16 +693,15 @@ body { background: var(--bg); }
           <button class="truck-button">
             <span class="default">Complete Order <span class="price-sep">•</span> ₹{{ final_total|floatformat:2 }}</span>
             <span class="success">
-              Order Placed
-              <svg viewBox="0 0 12 10">
-                <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
-              </svg>
+              <span style="display:flex; align-items:center; gap:8px;">Processing <div class="btn-spinner" style="position:relative; left:0; top:0; transform:none; width:14px; height:14px; opacity:1; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; animation: btn-spin 0.6s linear infinite;"></div></span>
             </span>
             <div class="truck">
               <div class="wheel"></div>
               <div class="back"></div>
               <div class="front"></div>
               <div class="box"></div>
+              <div class="door"></div>
+              <div class="light-beam"></div>
             </div>
           </button>
           <div class="flex items-center justify-center gap-1.5">
@@ -724,10 +741,7 @@ body { background: var(--bg); }
         <button class="truck-button">
             <span class="default">Complete Order <span class="price-sep">•</span> ₹{{ final_total|floatformat:2 }}</span>
             <span class="success">
-              Order Placed
-              <svg viewBox="0 0 12 10">
-                <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
-              </svg>
+              <span style="display:flex; align-items:center; gap:8px;">Processing <div class="btn-spinner" style="position:relative; left:0; top:0; transform:none; width:14px; height:14px; opacity:1; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; animation: btn-spin 0.6s linear infinite;"></div></span>
             </span>
             <div class="truck">
               <div class="wheel"></div>
@@ -1090,66 +1104,59 @@ document.querySelectorAll('.truck-button').forEach(button => {
         if(!button.classList.contains('animation')) {
             button.classList.add('animation');
 
-            gsap.to(button, {
-                '--box-s': 1,
-                '--box-o': 1,
-                duration: .15,
-                delay: .25
-            });
+            gsap.set(truck, { x: -140 });
+            gsap.set(button, { '--w-rot': '0deg', '--beam-o': 0 });
 
-            gsap.to(box, {
-                x: 0,
-                duration: .2,
-                delay: .35
-            });
+            // 1. Truck drives in
+            gsap.to(truck, { x: 0, duration: 1.4, delay: 0.2, ease: "back.out(1)" });
+            gsap.to(button, { '--w-rot': '360deg', duration: 1.4, delay: 0.2, ease: "power2.out" });
 
-            gsap.to(button, {
-                '--hx': -5,
-                '--bx': 50,
-                duration: .09,
-                delay: .46
-            });
+            // 2. Box appears high up
+            gsap.set(box, { y: -25 });
+            gsap.to(button, { '--box-s': 1, '--box-o': 1, duration: 0.3, delay: 1.8 });
 
-            gsap.to(box, {
-                y: 0,
-                duration: .05,
-                delay: .58
-            });
+            // 3. Box drops onto loading platform
+            gsap.to(box, { y: -6, duration: 0.4, delay: 2.1, ease: "bounce.out" });
 
-            gsap.set(button, {
-                '--truck-y': 0,
-                '--truck-y-n': -26
-            });
+            // 4. Box slides into the truck
+            gsap.to(box, { x: 0, duration: 0.5, delay: 2.6, ease: "power2.inOut" });
 
+            // 5. Box drops down inside the truck
+            gsap.to(box, { y: 0, duration: 0.2, delay: 3.1, ease: "power1.in" });
+
+            // 6. Door rolls down
+            gsap.to(button, { '--door-s': 1, duration: 0.4, delay: 3.3, ease: "bounce.out" });
+
+            // 7. Engine starts (lights on & bounce)
+            gsap.to(button, { '--beam-o': 1, duration: 0.2, delay: 3.8 });
+            
+            gsap.set(button, { '--truck-y': 0, '--truck-y-n': -26 });
             gsap.to(button, {
                 '--truck-y': 1,
                 '--truck-y-n': -25,
-                duration: .1,
-                delay: .62,
+                duration: 0.2,
+                delay: 3.8,
                 onComplete() {
                     gsap.timeline({
                         onComplete() {
-                            // Instant redirect once truck crosses! No text pause.
-                            button.closest('form').submit();
+                            button.classList.add('done');
+                            gsap.to(button, { '--beam-o': 0, duration: 0.2 }); // Turn lights off
+                            setTimeout(() => {
+                                button.closest('form').submit();
+                            }, 2000);
                         }
                     }).to(truck, {
-                        x: 0,
-                        duration: .2
+                        x: 20, duration: 0.4
                     }).to(truck, {
-                        x: 40,
-                        duration: .5
+                        x: 10, duration: 0.3
                     }).to(truck, {
-                        x: 20,
-                        duration: .3
-                    }).to(truck, {
-                        x: 96,
-                        duration: .2
+                        x: 180, duration: 1.2, ease: "power2.in"
                     });
-                    gsap.to(button, {
-                        '--progress': 1,
-                        duration: 1.2,
-                        ease: "power2.in"
-                    });
+                    
+                    // Wheels spin driving off
+                    gsap.to(button, { '--w-rot': '1080deg', duration: 1.9, ease: "power2.in" });
+
+                    gsap.to(button, { '--progress': 1, duration: 1.9, ease: "power1.inOut" });
                 }
             });
         }
