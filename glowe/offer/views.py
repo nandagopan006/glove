@@ -148,11 +148,11 @@ def edit_offer(request, id):
         start_date = request.POST.get("start_date")
         end_date = request.POST.get("end_date")
 
-        # error return (changed)
+        # error return
         def error(msg):
             return JsonResponse({"success": False, "error": msg})
 
-        # validation (same)
+        # validation 
         if not name:
             return error("Offer name required")
 
@@ -228,21 +228,21 @@ def offer_list(request):
         offers = offers.filter(items__apply_to="PRODUCT")
 
     elif offer_type == "CATEGORY":
-        offers = offers.filter(items__apply_to="CATEGORY")
+        offers=offers.filter(items__apply_to="CATEGORY")
 
     # filter by status
     if status == "ACTIVE":
-        offers = offers.filter(
+        offers=offers.filter(
             is_active=True,
             start_date__lte=now,
             end_date__gte=now
         )
 
     elif status == "SCHEDULED":
-        offers = offers.filter(start_date__gt=now)
+        offers=offers.filter(start_date__gt=now)
 
     elif status == "EXPIRED":
-        offers = offers.filter(end_date__lt=now)
+        offers =offers.filter(end_date__lt=now)
 
     
     offer_data = []
