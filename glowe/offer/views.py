@@ -7,7 +7,8 @@ from django.utils import timezone
 from .models import Offer, OfferItem
 from product.models import Product
 from category.models import Category
-
+from django.core.paginator import Paginator
+from django.http import JsonResponse
 
 def add_offer(request):
 
@@ -29,17 +30,14 @@ def add_offer(request):
         product_id = request.POST.get("product_id")
         category_id = request.POST.get("category_id")
 
-        #for error pass
+        # error return (changed)
         def error(msg):
-            messages.error(request, msg)
-            return redirect("add_offer")
+            return JsonResponse({"success": False, "error": msg})
 
-        #validation
-
+        # validation (same)
         if not name:
             return error("Offer name required")
 
-        # discount value
         try:
             discount_value = Decimal(discount_value)
         except (InvalidOperation, TypeError):
@@ -54,7 +52,6 @@ def add_offer(request):
         if discount_type == "PERCENTAGE" and discount_value > 100:
             return error("Percentage cannot exceed 100")
 
-        # max discount
         if max_discount:
             try:
                 max_discount = Decimal(max_discount)
@@ -63,7 +60,6 @@ def add_offer(request):
             except:
                 return error("Invalid max discount")
 
-        # min purchase
         if min_purchase:
             try:
                 min_purchase = Decimal(min_purchase)
@@ -72,7 +68,6 @@ def add_offer(request):
             except:
                 return error("Invalid min purchase")
 
-        # date validation
         try:
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
             end_date = datetime.strptime(end_date, "%Y-%m-%d")
@@ -82,14 +77,12 @@ def add_offer(request):
         if start_date >= end_date:
             return error("End date must be after start date")
 
-        # apply validation
         if apply_to == "PRODUCT" and not product_id:
             return error("Select a product")
 
         if apply_to == "CATEGORY" and not category_id:
             return error("Select a category")
 
-        #dulipate check
         now = timezone.now()
 
         if apply_to == "PRODUCT":
@@ -116,7 +109,7 @@ def add_offer(request):
             if exists:
                 return error("This category already has an active offer")
 
-        # save
+        # save (same)
         offer = Offer.objects.create(
             name=name,
             discount_type=discount_type,
@@ -129,15 +122,13 @@ def add_offer(request):
         )
 
         if apply_to == "PRODUCT":
-            OfferItem.objects.create(offer=offer,apply_to="PRODUCT",product_id=product_id)
-            
+            OfferItem.objects.create(offer=offer, apply_to="PRODUCT", product_id=product_id)
         else:
-            OfferItem.objects.create(offer=offer,apply_to="CATEGORY",category_id=category_id )
+            OfferItem.objects.create(offer=offer, apply_to="CATEGORY", category_id=category_id)
 
-        messages.success(request, "Offer created successfully")
-        return redirect("offer_list")
+        return JsonResponse({"success": True, "message": "Offer created successfully"})
 
-    return render(request, "admin/add_offer.html",{
+    return render(request, "admin/offer_list.html", {
         "products": products,
         "categories": categories
     })
@@ -157,12 +148,11 @@ def edit_offer(request, id):
         start_date = request.POST.get("start_date")
         end_date = request.POST.get("end_date")
 
+        # error return (changed)
         def error(msg):
-            messages.error(request, msg)
-            return redirect("edit_offer", id=id)
+            return JsonResponse({"success": False, "error": msg})
 
-    
-
+        # validation (same)
         if not name:
             return error("Offer name required")
 
@@ -177,7 +167,6 @@ def edit_offer(request, id):
         if offer.discount_type == "PERCENTAGE" and discount_value > 100:
             return error("Percentage cannot exceed 100")
 
-        # max discount
         if max_discount:
             try:
                 max_discount = Decimal(max_discount)
@@ -186,7 +175,6 @@ def edit_offer(request, id):
             except:
                 return error("Invalid max discount")
 
-        # min purchase
         if min_purchase:
             try:
                 min_purchase = Decimal(min_purchase)
@@ -195,7 +183,6 @@ def edit_offer(request, id):
             except:
                 return error("Invalid min purchase")
 
-        # date validation
         try:
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
             end_date = datetime.strptime(end_date, "%Y-%m-%d")
@@ -205,7 +192,7 @@ def edit_offer(request, id):
         if start_date >= end_date:
             return error("End date must be after start date")
 
-        #save
+        # save (same)
         offer.name = name
         offer.discount_value = discount_value
         offer.max_discount = max_discount if offer.discount_type == "PERCENTAGE" else None
@@ -215,10 +202,101 @@ def edit_offer(request, id):
 
         offer.save()
 
-        messages.success(request, "Offer updated successfully")
-        return redirect("offer_list")
+        return JsonResponse({"success": True, "message": "Offer updated successfully"})
 
-    return render(request, "admin/edit_offer.html", {
+    return render(request, "admin/offer_list.html", {
         "offer": offer,
         "item": item
     })
+
+def offer_list(request):
+
+    offers = Offer.objects.all().order_by("-created_at")
+
+    search = request.GET.get("search")
+    offer_type = request.GET.get("type")
+    status = request.GET.get("status")
+
+    now = timezone.now()
+
+    
+    if search:
+        offers = offers.filter(name__icontains=search)
+
+    # type
+    if offer_type == "PRODUCT":
+        offers = offers.filter(items__apply_to="PRODUCT")
+
+    elif offer_type == "CATEGORY":
+        offers = offers.filter(items__apply_to="CATEGORY")
+
+    # filter by status
+    if status == "ACTIVE":
+        offers = offers.filter(
+            is_active=True,
+            start_date__lte=now,
+            end_date__gte=now
+        )
+
+    elif status == "SCHEDULED":
+        offers = offers.filter(start_date__gt=now)
+
+    elif status == "EXPIRED":
+        offers = offers.filter(end_date__lt=now)
+
+    
+    offer_data = []
+
+    for offer in offers:
+        item = OfferItem.objects.filter(offer=offer).first()
+
+        # STATUS LOGIC
+        if not offer.is_active:
+            offer_status = "Inactive"
+        elif offer.start_date > now:
+            offer_status = "Scheduled"
+        elif offer.end_date < now:
+            offer_status = "Expired"
+        else:
+            offer_status = "Active"
+
+        offer_data.append({
+            "offer": offer,
+            "item": item,
+            "status": offer_status
+        })
+        
+    paginator = Paginator(offer_data, 5)
+    page = request.GET.get("page")
+    offers = paginator.get_page(page)
+
+    return render(request, "admin/offer_list.html", {
+        "offers": offer_data,
+    })
+
+
+def toggle_offer(request, id):
+
+    if request.method != "POST":
+        messages.error(request, "Invalid request")
+        return redirect("offer_list")
+
+    offer = get_object_or_404(Offer, id=id)
+
+    now = timezone.now()
+
+    #Prevent activating expired offers
+    if offer.end_date < now:
+        messages.error(request, "Cannot activate expired offer")
+        return redirect("offer_list")
+
+    #Toggle
+    offer.is_active = not offer.is_active
+    offer.save()
+
+    if offer.is_active:
+        messages.success(request, "Offer activated")
+    else:
+        messages.success(request, "Offer deactivated")
+
+    return redirect("offer_list")
