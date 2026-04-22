@@ -1,13 +1,15 @@
 # views.py
 
 from django.shortcuts import render, redirect
+import openpyxl
+from django.http import HttpResponse
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from accounts.models import OTPVerification, ProfileUser
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
-from datetime import timedelta
 import random
 from django.core.mail import send_mail
 from django.conf import settings
@@ -16,6 +18,16 @@ import re
 from django.core.paginator import Paginator
 from django.db.models import Q
 from accounts.email_utils import send_admin_otp_email
+from django.utils import timezone
+from django.utils.timezone import make_aware
+from datetime import datetime, timedelta
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncDate
+from order.models import Order, OrderItem
+
+
+
+
 @never_cache
 def admin_signin(request):
 
@@ -295,4 +307,94 @@ def user_detail(request, id):
         'avg_order':avg_order,
         'orders':orders_page,
     })
+    
+
+def sales_report(request):
+    filter_type = request.GET.get("filter", "month")
+
+    today = timezone.now()
+
+    #Date filtering
+    if filter_type == "day":
+        start_date = today.replace(hour=0, minute=0, second=0)
+        end_date = today
+
+    elif filter_type == "week":
+        start_date = today - timedelta(days=7)
+        end_date = today
+
+    elif filter_type == "year":
+        start_date = today - timedelta(days=365)
+        end_date = today
+
+    elif filter_type == "custom":
+        start = request.GET.get("start_date")
+        end = request.GET.get("end_date")
+
+        if start and end:
+            start_date = make_aware(datetime.strptime(start, "%Y-%m-%d"))
+            end_date = make_aware(datetime.strptime(end, "%Y-%m-%d"))
+        else:
+            start_date = today - timedelta(days=30)
+            end_date = today
+
+    else:
+        start_date = today - timedelta(days=30)
+        end_date = today
+
+    
+    orders = Order.objects.filter(created_at__range=[start_date, end_date],status="DELIVERED")
+
+    total_revenue = orders.aggregate(Sum("final_amount"))["final_amount__sum"] or 0
+    total_orders = orders.count()
+
+    coupon_discount = orders.aggregate(Sum("coupon_discount"))["coupon_discount__sum"] or 0
+    offer_discount = orders.aggregate(Sum("offer_discount"))["offer_discount__sum"] or 0
+
+    total_discount = coupon_discount + offer_discount
+
+    products_sold = OrderItem.objects.filter(
+        order__in=orders
+    ).aggregate(Sum("quantity"))["quantity__sum"] or 0
+
+    #Chart Data
+    chart_data = orders.annotate(
+        date=TruncDate("created_at")
+    ).values("date").annotate(
+        total=Sum("final_amount")
+    ).order_by("date")
+
+    #Growth Calculation
+    previous_orders = Order.objects.filter(
+        created_at__range=[
+            start_date - (end_date - start_date),
+            start_date
+        ],
+        status="DELIVERED"
+    )
+
+    previous_revenue = previous_orders.aggregate(
+        Sum("final_amount")
+    )["final_amount__sum"] or 0
+
+    if previous_revenue > 0:
+        growth = ((total_revenue - previous_revenue) / previous_revenue) * 100
+    else:
+        growth = 0
+
+    context = {
+        "total_revenue": total_revenue,
+        "total_orders": total_orders,
+        "products_sold": products_sold,
+        "total_discount": total_discount,
+        "coupon_discount": coupon_discount,
+        "offer_discount": offer_discount,
+        "chart_data": list(chart_data),
+        "growth": round(growth, 2),
+        "filter_type": filter_type,
+        "start_date": start_date,
+        "end_date": end_date,
+    }
+
+    return render(request, "admin/sales_report.html", context)
  
