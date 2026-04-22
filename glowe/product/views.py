@@ -596,7 +596,7 @@ def variant_management(request, product_id):
 
 
 # ---== user side  statinggg--
-@login_required
+
 def product_listing(request):
 
     products = Product.objects.filter(
@@ -759,7 +759,7 @@ def product_listing(request):
     )
 
 
-@login_required
+
 def product_detail_view(request, slug):
 
     product = get_object_or_404(
