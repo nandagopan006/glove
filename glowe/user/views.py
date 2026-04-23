@@ -13,21 +13,34 @@ from django.contrib.auth import update_session_auth_hash
 import random
 import re
 import os
+from wallet.models import Wallet
+from order.models import Order
+from wishlist.models import Wishlist
 
 
 
 @login_required
 def profile_overview(request):
-    user=request.user
-    social_account=SocialAccount.objects.filter(user=user).first()
-    success=request.session.pop('success',None)
+    
 
-    context={
-        "user":user,
-        "social_account":social_account,
+    user = request.user
+    social_account = SocialAccount.objects.filter(user=user).first()
+    success = request.session.pop('success', None)
+
+    # Live stats for dashboard
+    wallet, _ = Wallet.objects.get_or_create(user=user)
+    order_count = Order.objects.filter(user=user).count()
+    wishlist_count = Wishlist.objects.filter(user=user).count()
+
+    context = {
+        "user": user,
+        "social_account": social_account,
         "success": success,
+        "wallet_balance": wallet.balance,
+        "order_count": order_count,
+        "wishlist_count": wishlist_count,
     }
-    return render(request,'profile_overview.html', context,)
+    return render(request, 'profile_overview.html', context)
 
 @login_required
 def edit_profile(request):

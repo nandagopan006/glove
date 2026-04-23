@@ -70,17 +70,43 @@
 .shop-controls { display:flex; align-items:center; gap:14px; }
 .count-label { font-size:.68rem; font-weight:400; color:var(--dust); letter-spacing:.08em; white-space:nowrap; }
 .count-label strong { color:var(--ink); font-weight:500; }
-#sort-form { display:inline; }
-.sort-select {
-  appearance:none; background:var(--white); border:1px solid rgba(139,111,78,.18);
+#sort-form { display:inline; position:relative; }
+.sort-wrapper { position:relative; display:inline-block; }
+.sort-btn {
+  display:flex; align-items:center; gap:8px;
+  padding:6px 12px;
+  background:var(--white); border:1px solid rgba(139,111,78,.2);
   color:var(--stone); font-family:'Montserrat',sans-serif;
-  font-size:.72rem; font-weight:400; letter-spacing:.04em;
-  padding:9px 38px 9px 14px; outline:none; cursor:pointer;
-  transition:border-color .2s; min-width:175px;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7' fill='none'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23928778' stroke-width='1.4'/%3E%3C/svg%3E");
-  background-repeat:no-repeat; background-position:right 14px center;
+  font-size:.68rem; font-weight:500; letter-spacing:.03em;
+  cursor:pointer; border-radius:4px;
+  transition:all .2s ease; white-space:nowrap;
 }
-.sort-select:focus { border-color:var(--gold); }
+.sort-btn:hover { border-color:var(--gold); color:var(--ink); }
+.sort-btn svg { transition:transform .2s ease; }
+.sort-btn.open svg { transform:rotate(180deg); }
+.sort-dropdown {
+  position:absolute; top:calc(100% + 4px); right:0;
+  min-width:160px; background:var(--white);
+  border:1px solid rgba(139,111,78,.15);
+  border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,.08);
+  overflow:hidden; z-index:200;
+  opacity:0; transform:translateY(-4px);
+  pointer-events:none;
+  transition:opacity .15s ease, transform .15s ease;
+}
+.sort-dropdown.open { opacity:1; transform:translateY(0); pointer-events:all; }
+.sort-option {
+  display:block; padding:8px 14px;
+  font-family:'Montserrat',sans-serif;
+  font-size:.68rem; font-weight:400; letter-spacing:.02em;
+  color:var(--stone); cursor:pointer;
+  transition:background .12s ease;
+  border-bottom:1px solid rgba(139,111,78,.06);
+  text-decoration:none;
+}
+.sort-option:last-child { border-bottom:none; }
+.sort-option:hover { background:var(--cream); color:var(--ink); }
+.sort-option.active { color:var(--ink); font-weight:600; background:rgba(139,111,78,.07); }
 
 /* ─── FILTER TAGS ─── */
 .filter-tags-row { display:flex; align-items:center; gap:8px; padding:18px 0 0; flex-wrap:wrap; }
@@ -456,40 +482,58 @@
       <span class="count-label"><strong>{{ total_count }}</strong> product{{ total_count|pluralize }}</span>
       <form method="GET" id="sort-form">
         {% if search_query      %}<input type="hidden" name="search"    value="{{ search_query }}">{% endif %}
-        {% if selected_category %}<input type="hidden" name="category"  value="{{ selected_category }}">{% endif %}
-        {% if selected_skin_type%}<input type="hidden" name="skin_type" value="{{ selected_skin_type }}">{% endif %}
+        {% if selected_category_str %}<input type="hidden" name="category"  value="{{ selected_category_str }}">{% endif %}
+        {% if selected_skin_type_str%}<input type="hidden" name="skin_type" value="{{ selected_skin_type_str }}">{% endif %}
         {% if min_price         %}<input type="hidden" name="min_price" value="{{ min_price }}">{% endif %}
         {% if max_price != 5000 %}<input type="hidden" name="max_price" value="{{ max_price }}">{% endif %}
-        <select name="sort" class="sort-select" onchange="this.form.submit()">
-          <option value=""           {% if not selected_sort              %}selected{% endif %}>Sort: Latest</option>
-          <option value="price_low"  {% if selected_sort == 'price_low'  %}selected{% endif %}>Price: Low → High</option>
-          <option value="price_high" {% if selected_sort == 'price_high' %}selected{% endif %}>Price: High → Low</option>
-          <option value="a_z"        {% if selected_sort == 'a_z'        %}selected{% endif %}>Name: A → Z</option>
-          <option value="z_a"        {% if selected_sort == 'z_a'        %}selected{% endif %}>Name: Z → A</option>
-        </select>
+        <input type="hidden" name="sort" id="sort-hidden" value="{{ selected_sort }}">
+
+        <!-- Modern Custom Sort Dropdown -->
+        <div class="sort-wrapper">
+          <button type="button" class="sort-btn" id="sort-btn" onclick="toggleSortDropdown()">
+            <span id="sort-label">
+              {% if selected_sort == 'price_low' %}Price: Low → High
+              {% elif selected_sort == 'price_high' %}Price: High → Low
+              {% elif selected_sort == 'a_z' %}Name: A → Z
+              {% elif selected_sort == 'z_a' %}Name: Z → A
+              {% else %}Sort: Latest{% endif %}
+            </span>
+            <svg width="11" height="7" viewBox="0 0 11 7" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M1 1l4.5 4.5L10 1" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div class="sort-dropdown" id="sort-dropdown">
+            <a class="sort-option {% if not selected_sort %}active{% endif %}" onclick="selectSort('', 'Sort: Latest')">Latest</a>
+            <a class="sort-option {% if selected_sort == 'price_low' %}active{% endif %}" onclick="selectSort('price_low', 'Price: Low → High')">Price: Low → High</a>
+            <a class="sort-option {% if selected_sort == 'price_high' %}active{% endif %}" onclick="selectSort('price_high', 'Price: High → Low')">Price: High → Low</a>
+            <a class="sort-option {% if selected_sort == 'a_z' %}active{% endif %}" onclick="selectSort('a_z', 'Name: A → Z')">Name: A → Z</a>
+            <a class="sort-option {% if selected_sort == 'z_a' %}active{% endif %}" onclick="selectSort('z_a', 'Name: Z → A')">Name: Z → A</a>
+          </div>
+        </div>
       </form>
     </div>
   </div>
 
-  {% if search_query or selected_category or selected_skin_type or min_price or max_price != 5000 %}
+  {% if search_query or selected_categories or selected_skin_types or min_price or max_price != 5000 %}
   <div class="filter-tags-row">
     <span style="font-size:.56rem;letter-spacing:.24em;text-transform:uppercase;color:var(--dust);">Active:</span>
     {% if search_query %}
     <span class="ftag">"{{ search_query }}"
-      <a class="ftag-remove" href="?{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_skin_type %}skin_type={{ selected_skin_type }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}{% if min_price %}min_price={{ min_price }}&{% endif %}{% if max_price != 5000 %}max_price={{ max_price }}&{% endif %}">✕</a>
+      <a class="ftag-remove" href="#" onclick="clearFilterVal('search', ''); return false;">✕</a>
     </span>{% endif %}
-    {% if selected_category %}
+    {% for cat_id in selected_categories %}
     <span class="ftag">
-      {% for cat in categories %}{% if cat.id|stringformat:"s" == selected_category %}{{ cat.name }}{% endif %}{% endfor %}
-      <a class="ftag-remove" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_skin_type %}skin_type={{ selected_skin_type }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}{% if min_price %}min_price={{ min_price }}&{% endif %}{% if max_price != 5000 %}max_price={{ max_price }}&{% endif %}">✕</a>
-    </span>{% endif %}
-    {% if selected_skin_type %}
-    <span class="ftag">{{ selected_skin_type }}
-      <a class="ftag-remove" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}{% if min_price %}min_price={{ min_price }}&{% endif %}{% if max_price != 5000 %}max_price={{ max_price }}&{% endif %}">✕</a>
-    </span>{% endif %}
+      {% for cat in categories %}{% if cat.id|stringformat:"s" == cat_id %}{{ cat.name }}{% endif %}{% endfor %}
+      <a class="ftag-remove" href="#" onclick="clearFilterVal('category', '{{ cat_id }}'); return false;">✕</a>
+    </span>{% endfor %}
+    {% for sk in selected_skin_types %}
+    <span class="ftag">{{ sk }}
+      <a class="ftag-remove" href="#" onclick="clearFilterVal('skin_type', '{{ sk }}'); return false;">✕</a>
+    </span>{% endfor %}
     {% if min_price or max_price != 5000 %}
     <span class="ftag">₹{{ min_price|floatformat:2 }} – ₹{{ max_price|floatformat:2 }}
-      <a class="ftag-remove" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_skin_type %}skin_type={{ selected_skin_type }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}">✕</a>
+      <a class="ftag-remove" href="#" onclick="document.getElementById('f-min').value=0; document.getElementById('f-max').value=5000; document.getElementById('filter-form').submit(); return false;">✕</a>
     </span>{% endif %}
     <a href="{% if selected_sort %}?sort={{ selected_sort }}{% else %}?{% endif %}" class="clear-all-link">✕ Clear all</a>
   </div>
@@ -569,7 +613,7 @@
     <div class="pcard-rating">
       <div class="stars-wrap">
         <div class="stars-base">{% for i in "12345" %}<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>{% endfor %}</div>
-        <div class="stars-fill" style="width:{{ avg|floatformat:0 }}0%;">{% for i in "12345" %}<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>{% endfor %}</div>
+        <div class="stars-fill" style="width :{{ avg|floatformat:0 }}0%;">{% for i in "12345" %}<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>{% endfor %}</div>
       </div>
       <span class="rating-val">{{ avg|floatformat:1 }}</span>
       <span class="rating-count">({{ rev }})</span>
@@ -585,7 +629,7 @@
   {% if page_obj.paginator.num_pages > 1 %}
   <div class="pagination-wrap">
     <div class="page-nums">
-      {% with s=search_query c=selected_category sk=selected_skin_type so=selected_sort mn=min_price mx=max_price %}
+      {% with s=search_query c=selected_category_str sk=selected_skin_type_str so=selected_sort mn=min_price mx=max_price %}
       {% if page_obj.has_previous %}
       <a class="pnum" href="?{% if s %}search={{ s }}&{% endif %}{% if c %}category={{ c }}&{% endif %}{% if sk %}skin_type={{ sk }}&{% endif %}{% if so %}sort={{ so }}&{% endif %}{% if mn %}min_price={{ mn }}&{% endif %}{% if mx != 5000 %}max_price={{ mx }}&{% endif %}page={{ page_obj.previous_page_number }}">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
@@ -593,8 +637,8 @@
       {% else %}<span class="pnum pnum--disabled"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></span>{% endif %}
       {% for num in page_obj.paginator.page_range %}
         {% if num == page_obj.number %}<span class="pnum pnum--active">{{ num }}</span>
-        {% elif num == 1 or num == page_obj.paginator.num_pages %}<a class="pnum" href="?{% if s %}search={{ s }}&{% endif %}{% if c %}category={{ c }}&{% endif %}{% if sk %}skin_type={{ sk }}&{% endif %}{% if so %}sort={{ so }}&{% endif %}page={{ num }}">{{ num }}</a>
-        {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}<a class="pnum" href="?{% if s %}search={{ s }}&{% endif %}{% if c %}category={{ c }}&{% endif %}{% if sk %}skin_type={{ sk }}&{% endif %}{% if so %}sort={{ so }}&{% endif %}page={{ num }}">{{ num }}</a>
+        {% elif num == 1 or num == page_obj.paginator.num_pages %}<a class="pnum" href="?{% if s %}search={{ s }}&{% endif %}{% if c %}category={{ c }}&{% endif %}{% if sk %}skin_type={{ sk }}&{% endif %}{% if so %}sort={{ so }}&{% endif %}{% if mn %}min_price={{ mn }}&{% endif %}{% if mx != 5000 %}max_price={{ mx }}&{% endif %}page={{ num }}">{{ num }}</a>
+        {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}<a class="pnum" href="?{% if s %}search={{ s }}&{% endif %}{% if c %}category={{ c }}&{% endif %}{% if sk %}skin_type={{ sk }}&{% endif %}{% if so %}sort={{ so }}&{% endif %}{% if mn %}min_price={{ mn }}&{% endif %}{% if mx != 5000 %}max_price={{ mx }}&{% endif %}page={{ num }}">{{ num }}</a>
         {% elif num == page_obj.number|add:"-3" or num == page_obj.number|add:"3" %}<span class="pnum pnum--dots">…</span>
         {% endif %}
       {% endfor %}
@@ -649,8 +693,8 @@
   <div class="fp-body">
     <form method="GET" id="filter-form">
       <input type="hidden" name="search"    id="f-search"   value="{{ search_query }}">
-      <input type="hidden" name="category"  id="f-category" value="{{ selected_category }}">
-      <input type="hidden" name="skin_type" id="f-skin"     value="{{ selected_skin_type }}">
+      <input type="hidden" name="category"  id="f-category" value="{{ selected_category_str }}">
+      <input type="hidden" name="skin_type" id="f-skin"     value="{{ selected_skin_type_str }}">
       <input type="hidden" name="sort"      id="f-sort"     value="{{ selected_sort }}">
       <input type="hidden" name="min_price" id="f-min"      value="{{ min_price }}">
       <input type="hidden" name="max_price" id="f-max"      value="{{ max_price }}">
@@ -680,7 +724,7 @@
         <span class="fp-section-label">Category</span>
         <div class="fp-chips">
           {% for cat in categories %}
-          <button type="button" class="fp-chip {% if selected_category == cat.id|stringformat:'s' %}active{% endif %}" data-val="{{ cat.id }}" onclick="toggleFilter(this,'category')">{{ cat.name }}</button>
+          <button type="button" class="fp-chip {% if cat.id|stringformat:'s' in selected_categories %}active{% endif %}" data-val="{{ cat.id }}" onclick="toggleFilter(this,'category')">{{ cat.name }}</button>
           {% endfor %}
         </div>
       </div>
@@ -689,7 +733,7 @@
         <span class="fp-section-label">Skin Type</span>
         <div class="fp-chips">
           {% for sk in skin_types %}
-          <button type="button" class="fp-chip {% if selected_skin_type == sk %}active{% endif %}" data-val="{{ sk }}" onclick="toggleFilter(this,'skin_type')">{{ sk }}</button>
+          <button type="button" class="fp-chip {% if sk in selected_skin_types %}active{% endif %}" data-val="{{ sk }}" onclick="toggleFilter(this,'skin_type')">{{ sk }}</button>
           {% endfor %}
         </div>
       </div>
@@ -754,16 +798,34 @@ function setSort(val) {
 /* ── Filter toggle ── */
 function toggleFilter(btn, type) {
   var val = btn.dataset.val;
-  var hidden = type === 'category' ? 'f-category' : 'f-skin';
-  var current = document.getElementById(hidden).value;
-  btn.closest('.fp-chips').querySelectorAll('.fp-chip').forEach(function(c){ c.classList.remove('active'); });
-  if (current === String(val)) {
-    document.getElementById(hidden).value = '';
+  var hidden = document.getElementById(type === 'category' ? 'f-category' : 'f-skin');
+  var currentVals = hidden.value ? hidden.value.split(',').filter(v => v !== '') : [];
+  
+  if (btn.classList.contains('active')) {
+    btn.classList.remove('active');
+    currentVals = currentVals.filter(v => v !== val);
   } else {
-    document.getElementById(hidden).value = val;
     btn.classList.add('active');
+    if (!currentVals.includes(val)) currentVals.push(val);
   }
+  hidden.value = currentVals.join(',');
   updateBadge();
+}
+
+function clearFilterVal(type, val) {
+  var hidden = document.getElementById(type === 'category' ? 'f-category' : (type === 'skin_type' ? 'f-skin' : 'f-' + type));
+  if (hidden) {
+    if (type === 'search' || type === 'sort' || type === 'min_price' || type === 'max_price') {
+       if (type === 'min_price') hidden.value = 0;
+       else if (type === 'max_price') hidden.value = 5000;
+       else hidden.value = '';
+    } else {
+       let currentVals = hidden.value ? hidden.value.split(',').filter(v => v !== '') : [];
+       currentVals = currentVals.filter(v => String(v) !== String(val));
+       hidden.value = currentVals.join(',');
+    }
+    document.getElementById('filter-form').submit();
+  }
 }
 
 /* ── Price range ── */
@@ -792,8 +854,12 @@ function drawFill() {
 function updateBadge() {
   var n = 0;
   if (document.getElementById('vis-search').value.trim()) n++;
-  if (document.getElementById('f-category').value) n++;
-  if (document.getElementById('f-skin').value) n++;
+  if (document.getElementById('f-category').value) {
+    n += document.getElementById('f-category').value.split(',').filter(v => v !== '').length;
+  }
+  if (document.getElementById('f-skin').value) {
+    n += document.getElementById('f-skin').value.split(',').filter(v => v !== '').length;
+  }
   var sort = document.getElementById('f-sort').value;
   if (sort && sort !== '') n++;
   var mn = parseInt(document.getElementById('f-min').value||0);
@@ -863,5 +929,31 @@ document.addEventListener('keydown', function(e) {
 
 /* ── Init ── */
 (function(){ drawFill(); updateBadge(); })();
+</script>
+
+<script>
+/* ── Sort Dropdown ── */
+function toggleSortDropdown() {
+  var btn = document.getElementById('sort-btn');
+  var dd  = document.getElementById('sort-dropdown');
+  btn.classList.toggle('open');
+  dd.classList.toggle('open');
+}
+
+function selectSort(value, label) {
+  document.getElementById('sort-hidden').value = value;
+  document.getElementById('sort-label').textContent = label;
+  toggleSortDropdown();
+  document.getElementById('sort-form').submit();
+}
+
+// Close on outside click
+document.addEventListener('click', function(e) {
+  var wrapper = document.querySelector('.sort-wrapper');
+  if (wrapper && !wrapper.contains(e.target)) {
+    document.getElementById('sort-btn').classList.remove('open');
+    document.getElementById('sort-dropdown').classList.remove('open');
+  }
+});
 </script>
 {% endblock %}

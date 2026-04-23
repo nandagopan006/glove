@@ -15,6 +15,7 @@ path('forgot-password/sent/', views.forget_password_link, name='forget_password_
 path('forgot-password/resend/', views.resend_reset_email, name='resend_reset_email'),
 path('reset-password/<uidb64>/<token>/', views.reset_password, name='reset_password'),
 path('reset-password-invalid/',views.reset_password_invalid,name ='reset_password_invalid'),
+path('referral/', views.referral_page, name='referral_page'),
 
 
     

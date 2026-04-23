@@ -8,10 +8,11 @@ import re
 class SignupForm(forms.ModelForm):
     password=forms.CharField(widget=forms.PasswordInput)
     confirm_password=forms.CharField(widget=forms.PasswordInput)
+    referral_code = forms.CharField(required=False)
     
     class Meta:
         model=ProfileUser
-        fields=['full_name','email','phone_number']
+        fields=['full_name','email','phone_number', 'referral_code']
         
         
     #ull_name validation

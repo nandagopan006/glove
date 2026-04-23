@@ -176,17 +176,4 @@ body { background:#F5F1EC !important; }
 {% block extra_js %}
 <link rel="stylesheet" href="{% static 'user/css/edit_profile.css' %}">
 <script src="{% static 'user/js/edit_profile.js' %}"></script>
-<script>
-window.addEventListener('load', () => {
-  {% if messages %}
-    {% for message in messages %}
-      {% if 'show_on_overview' not in message.tags %}
-        {% if 'success' in message.tags %}showToast('success', 'Done!', '{{ message }}');{% endif %}
-        {% if 'error' in message.tags %}showToast('error', 'Error', '{{ message }}');{% endif %}
-        {% if 'warning' in message.tags %}showToast('warning', 'Notice', '{{ message }}');{% endif %}
-      {% endif %}
-    {% endfor %}
-  {% endif %}
-});
-</script>
 {% endblock %}

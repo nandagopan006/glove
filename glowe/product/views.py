@@ -610,34 +610,96 @@ def product_listing(request):
     if search:
         products = products.filter(name__icontains=search)
 
-    category = request.GET.get("category", "").strip()
-    if category:
-        products = products.filter(category__id=category)
-
-    skin_type = request.GET.get("skin_type", "").strip()
-    if skin_type:
-        products = products.filter(skin_type__iexact=skin_type)
-
-    # price filtering
-    min_price = request.GET.get("min_price", "").strip()
-    max_price = request.GET.get("max_price", "").strip()
-
-    try:
-        min_price = int(min_price) if min_price else None
-        max_price = int(max_price) if max_price else None
-    except ValueError:
-        min_price = None
-        max_price = None
-
     
-    if min_price and max_price:
-        if int(min_price) > int(max_price):
-            min_price, max_price = max_price, min_price
+    category_param = request.GET.get("category", "")
+    selected_categories = []
+    
+    
+    if category_param != "":
+        
+        items = category_param.split(",")
+        for item in items:
+            clean_item = item.strip()
+            if clean_item != "":
+                selected_categories.append(clean_item)
+                
+    # Filter products if we have any categories selected
+    if len(selected_categories) > 0:
+        products = products.filter(category__id__in=selected_categories)
 
-    if min_price:
-        products = products.filter(variants__price__gte=min_price)
-    if max_price:
-        products = products.filter(variants__price__lte=max_price)
+
+  
+    skin_param = request.GET.get("skin_type", "")
+    selected_skin_types = []
+    
+   
+    if skin_param != "":
+        # Split the string by comma 
+        items = skin_param.split(",")
+        for item in items:
+            clean_item = item.strip()
+            if clean_item != "":
+                selected_skin_types.append(clean_item)
+                
+    
+    if len(selected_skin_types) > 0:
+        # We create an empty query first
+        skin_query = Q()
+        
+        
+        for skin in selected_skin_types:
+            skin_query = skin_query | Q(skin_type__icontains=skin)
+            
+        products = products.filter(skin_query)
+
+
+    min_price_param = request.GET.get("min_price", "").strip()
+    max_price_param = request.GET.get("max_price", "").strip()
+
+    min_price = None
+    max_price = None
+
+    # Convert min_price to integer if it is not empty
+    if min_price_param != "":
+        try:
+            min_price = int(min_price_param)
+        except ValueError:
+            pass
+
+   
+    if max_price_param != "":
+        try:
+            max_price = int(max_price_param)
+        except ValueError:
+            pass
+
+    # Swap them if min is greater than max
+    if min_price is not None and max_price is not None:
+        if min_price > max_price:
+            temp = min_price
+            min_price = max_price
+            max_price = temp
+
+    # Apply the price filter to the default variant
+    if min_price is not None and max_price is not None:
+        # Both min and max exist
+        products = products.filter(
+            variants__is_default=True,
+            variants__price__gte=min_price,
+            variants__price__lte=max_price
+        )
+    elif min_price is not None:
+        # Only min exists
+        products = products.filter(
+            variants__is_default=True,
+            variants__price__gte=min_price
+        )
+    elif max_price is not None:
+        # Only max exists
+        products = products.filter(
+            variants__is_default=True,
+            variants__price__lte=max_price
+        )
 
     # sortingg
     sort = request.GET.get("sort", "").strip()
@@ -748,8 +810,10 @@ def product_listing(request):
             "categories": categories,
             "total_count": total_count,
             "search_query": search,
-            "selected_category": category,
-            "selected_skin_type": skin_type,
+            "selected_categories": selected_categories,
+            "selected_skin_types": selected_skin_types,
+            "selected_category_str": category_param,
+            "selected_skin_type_str": skin_param,
             "selected_sort": sort,
             "min_price": min_price or 0,
             "max_price": max_price or 5000,
