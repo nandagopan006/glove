@@ -14,11 +14,14 @@ from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
 from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.cache import never_cache
 from django.contrib import messages
 from order.models import Order, Payment, OrderStatusHistory
 from order.email_util import send_order_confirmation_email
 
 
+@never_cache
+@login_required
 def wallet_view(request):
     wallet,created = Wallet.objects.get_or_create(user=request.user)
 
@@ -161,6 +164,7 @@ def mark_wallet_payment_failed(request):
     return JsonResponse({"status": "failed"}, status=400)
 
 
+@never_cache
 @login_required
 def process_wallet_payment(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)

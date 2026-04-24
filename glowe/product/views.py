@@ -13,8 +13,12 @@ from django.contrib.auth.decorators import login_required
 from wishlist.models import Wishlist
 from decimal import Decimal
 from offer.utils import get_best_offer
+from django.views.decorators.cache import never_cache
+from core.decorators import admin_required
 
 
+@never_cache
+@admin_required
 def add_product(request):
 
     categories = Category.objects.filter(is_active=True, is_deleted=False)
@@ -71,6 +75,8 @@ def add_product(request):
     )
 
 
+@never_cache
+@admin_required
 def edit_product(request, id):
     product = get_object_or_404(Product, id=id)
     categories = Category.objects.filter(is_active=True, is_deleted=False)
@@ -158,6 +164,8 @@ def edit_product(request, id):
     )
 
 
+@never_cache
+@admin_required
 def delete_product_image(request, id):
     if request.method == "POST":
 
@@ -189,6 +197,8 @@ def delete_product_image(request, id):
     return redirect("product_management")
 
 
+@never_cache
+@admin_required
 def set_primary_image(request, id):
     if request.method == "POST":
 
@@ -211,6 +221,8 @@ def set_primary_image(request, id):
     return redirect("product_management")
 
 
+@never_cache
+@admin_required
 def soft_delete_product(request, id):
     if request.method == "POST":
 
@@ -225,6 +237,8 @@ def soft_delete_product(request, id):
     return redirect("product_management")
 
 
+@never_cache
+@admin_required
 def restore_product(request, id):
     if request.method == "POST":
 
@@ -239,6 +253,8 @@ def restore_product(request, id):
     return redirect("product_management")
 
 
+@never_cache
+@admin_required
 def permanent_delete_product(request, id):
     if request.method == "POST":
         product = get_object_or_404(Product, id=id)
@@ -257,6 +273,8 @@ def permanent_delete_product(request, id):
     return redirect("product_management")
 
 
+@never_cache
+@admin_required
 def toggle_product_status(request, id):
     if request.method == "POST":
         product = get_object_or_404(Product, id=id)
@@ -270,6 +288,8 @@ def toggle_product_status(request, id):
     return redirect("product_management")
 
 
+@never_cache
+@admin_required
 def product_management(request):
 
     q = request.GET.get("q", "").strip()
@@ -336,6 +356,8 @@ def product_management(request):
     )
 
 
+@never_cache
+@admin_required
 def product_detail(request, id):
     product = get_object_or_404(Product, id=id, is_deleted=False)
     images = product.images.all()
@@ -390,6 +412,8 @@ def product_detail(request, id):
     )
 
 
+@never_cache
+@admin_required
 def add_variant(request, product_id):
     product = get_object_or_404(Product, id=product_id, is_deleted=False)
 
@@ -425,6 +449,8 @@ def add_variant(request, product_id):
     return redirect("variant_management", product_id=product.id)
 
 
+@never_cache
+@admin_required
 def edit_variant(request, id):
     variant =get_object_or_404(Variant, id=id)
     product = variant.product
@@ -477,6 +503,8 @@ def edit_variant(request, id):
     return redirect("variant_management", product_id=product.id)
 
 
+@never_cache
+@admin_required
 def delete_variant(request, id):
     if request.method == "POST":
         variant = get_object_or_404(Variant, id=id)
@@ -506,6 +534,8 @@ def delete_variant(request, id):
     return redirect("product_management")
 
 
+@never_cache
+@admin_required
 def toggle_variant_status(request, id):
     if request.method == "POST":
         variant = get_object_or_404(Variant, id=id)
@@ -521,6 +551,8 @@ def toggle_variant_status(request, id):
     return redirect("variant_management", product_id=variant.product.id)
 
 
+@never_cache
+@admin_required
 def set_default_variant(request, id):
     variant = get_object_or_404(Variant, id=id)
     product = variant.product
@@ -545,6 +577,8 @@ def set_default_variant(request, id):
     return redirect("variant_management", product_id=product.id)
 
 
+@never_cache
+@admin_required
 def variant_management(request, product_id):
     product = get_object_or_404(Product, id=product_id, is_deleted=False)
     status = request.GET.get("status", "")

@@ -8,7 +8,12 @@ from django.db import models
 from .forms import CouponForm
 from cart.utils import get_cart_total
 from decimal import Decimal
+from django.views.decorators.cache import never_cache
+from core.decorators import admin_required
+from django.contrib.auth.decorators import login_required
 
+@never_cache
+@admin_required
 def coupon_list(request):
     coupons=Coupon.objects.filter(is_deleted=False).order_by('-created_at')
 
@@ -61,6 +66,8 @@ def coupon_list(request):
         'total_used':total_used
     })
     
+@never_cache
+@admin_required
 def create_coupon(request):
     if request.method == "POST":
         form =CouponForm(request.POST)
@@ -77,6 +84,8 @@ def create_coupon(request):
 
     return redirect('coupon_list')
 
+@never_cache
+@admin_required
 def edit_coupon(request, id):
     coupon=get_object_or_404(Coupon, id=id, is_deleted=False)
 
@@ -97,6 +106,8 @@ def edit_coupon(request, id):
     return redirect('coupon_list')
 
 
+@never_cache
+@admin_required
 def delete_coupon(request, id):
     coupon = get_object_or_404(Coupon, id=id, is_deleted=False)
 
@@ -108,6 +119,8 @@ def delete_coupon(request, id):
 
     return redirect('coupon_list')
 
+@never_cache
+@admin_required
 def toggle_coupon(request, id):
     coupon =get_object_or_404(Coupon, id=id, is_deleted=False)
 
@@ -137,6 +150,7 @@ def toggle_coupon(request, id):
 
 #----- - - - -  user side------
 
+@login_required
 def apply_coupon(request):
     if request.method == "POST":
         code=request.POST.get('code')

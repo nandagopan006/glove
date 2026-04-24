@@ -5,9 +5,13 @@ from django.contrib import messages
 from .models import Category
 from django.db.models import Count
 from django.core.paginator import Paginator
+from django.views.decorators.cache import never_cache
+from core.decorators import admin_required
 
 
 
+@never_cache
+@admin_required
 def category_management(request):   
     
     q = request.GET.get('q','').strip()
@@ -55,6 +59,8 @@ def category_management(request):
     return render(request,'category_management.html',context)
 
 
+@never_cache
+@admin_required
 def add_category(request):
     
     if request.method =='POST' :
@@ -74,6 +80,8 @@ def add_category(request):
     
     return redirect('category_management')
 
+@never_cache
+@admin_required
 def edit_category(request,id):
     
     category=get_object_or_404(Category,id=id,is_deleted=False)
@@ -91,6 +99,8 @@ def edit_category(request,id):
     
     return redirect('category_management')
 
+@never_cache
+@admin_required
 def toggle_category(request, id):
 
     if request.method!='POST':
@@ -108,6 +118,8 @@ def toggle_category(request, id):
     messages.success(request,f'{category.name}  has been {active_status}.')
     return redirect('category_management')
 
+@never_cache
+@admin_required
 def soft_delete_category(request,id):
     if request.method =="POST":
         category=get_object_or_404(Category,id=id,)
@@ -122,6 +134,8 @@ def soft_delete_category(request,id):
         return redirect('category_management')
     return redirect('category_management')
 
+@never_cache
+@admin_required
 def restore_category(request,id):
     if request.method == "POST":
         category=get_object_or_404(Category,id=id,is_deleted=True)
@@ -132,6 +146,8 @@ def restore_category(request,id):
 
     return redirect("category_management")
         
+@never_cache
+@admin_required
 def permanent_delete_category(request, id):
     if request.method =="POST":
         category =get_object_or_404(Category, id=id)

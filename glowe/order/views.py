@@ -13,6 +13,8 @@ from datetime import timedelta
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
+from django.views.decorators.cache import never_cache
+from core.decorators import admin_required
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.http import HttpResponse
@@ -30,6 +32,7 @@ from decimal import Decimal
 from wallet.models import WalletTransaction
 from offer.utils import get_best_offer
 
+@never_cache
 @login_required
 def place_order(request):
     if request.method != "POST":
@@ -208,6 +211,7 @@ def place_order(request):
     
 
 
+@never_cache
 @login_required
 def order_success(request, order_id):
     # get order the user
@@ -629,6 +633,7 @@ def cancel_order_item(request, item_id):
     return redirect("order_cancelled_success", order_id=order.id)
 
 
+@never_cache
 @login_required
 def order_cancelled_success(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
@@ -788,6 +793,8 @@ def download_invoice(request, order_id):
 # --start ---admin side---- - - - - - -------
 
 
+@never_cache
+@admin_required
 def admin_order_list(request):
 
     orders = Order.objects.select_related("user").all()
@@ -875,6 +882,8 @@ def admin_order_list(request):
         })
 
 
+@never_cache
+@admin_required
 def admin_order_detail(request, order_id):
 
     order = get_object_or_404(Order.objects.prefetch_related(
@@ -961,6 +970,8 @@ def admin_order_detail(request, order_id):
     )
 
 
+@never_cache
+@admin_required
 def update_order_status(request, order_id):
 
     if request.method != "POST":

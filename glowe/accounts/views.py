@@ -17,8 +17,12 @@ from django.utils.encoding import force_bytes, force_str
 from django.db import transaction
 from wallet.models import Wallet, WalletTransaction
 import re
+from django.views.decorators.cache import never_cache
+from core.decorators import unauthenticated_user
 
 
+@never_cache
+@unauthenticated_user
 def signup_page(request):
 
     if request.user.is_authenticated:
@@ -85,6 +89,7 @@ def signup_page(request):
     return render(request, "signup.html", {"form": form})
 
 
+@never_cache
 def signup_otp_verify(request):
     email = request.session.get("email")
     otp_msg = request.session.pop("otp_msg", None)
@@ -243,6 +248,8 @@ def signup_resend_otp(request):
     return redirect("signup_otp_verify")
 
 
+@never_cache
+@unauthenticated_user
 def signin_page(request):
 
     if request.user.is_authenticated:
@@ -323,6 +330,7 @@ def signin_page(request):
     )
 
 
+@never_cache
 def forget_password(request):
     # Allow authenticated users too (e.g. from change password page)
     # Pre-fill their email on GET so they don't have to type it
@@ -499,6 +507,7 @@ def resend_reset_email(request):
     return redirect("forget_password_link")
 
 
+@never_cache
 def reset_password(request, uidb64, token):
 
     # Do NOT block authenticated users — they arrive here from the change password flow

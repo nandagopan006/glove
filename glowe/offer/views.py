@@ -9,8 +9,12 @@ from product.models import Product
 from category.models import Category
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.views.decorators.cache import never_cache
+from core.decorators import admin_required
 
 
+@never_cache
+@admin_required
 def add_offer(request):
 
     products = Product.objects.all()
@@ -164,6 +168,8 @@ def add_offer(request):
     )
 
 
+@never_cache
+@admin_required
 def edit_offer(request, id):
 
     offer = get_object_or_404(Offer, id=id)
@@ -274,6 +280,8 @@ def edit_offer(request, id):
     return render(request, "admin/offer_list.html", {"offer": offer, "item": item})
 
 
+@never_cache
+@admin_required
 def offer_list(request):
 
     offers = Offer.objects.all().order_by("-created_at")
@@ -338,6 +346,8 @@ def offer_list(request):
     )
 
 
+@never_cache
+@admin_required
 def toggle_offer(request, id):
     if request.method != "POST":
         return JsonResponse({"success": False, "error": "Invalid request"})
@@ -362,6 +372,8 @@ def toggle_offer(request, id):
     )
 
 
+@never_cache
+@admin_required
 def delete_offer(request, id):
     if request.method == "POST":
         offer = get_object_or_404(Offer, id=id)

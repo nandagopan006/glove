@@ -29,10 +29,12 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
+from core.decorators import admin_required, unauthenticated_user
 
 
 
 @never_cache
+@unauthenticated_user
 def admin_signin(request):
 
     # Already logged in admin
@@ -73,11 +75,8 @@ def admin_signin(request):
     return render(request, 'auth/admin_signin.html', {'submitted_email': ''})
 
 @never_cache
-@login_required(login_url='/admin-signin/')
+@admin_required
 def admin_dashboard(request):
-    if not request.user.is_superuser:
-        return redirect('admin_signin')
-    
     success = request.session.pop('success', None)
     
   
@@ -268,16 +267,15 @@ def admin_dashboard(request):
 
     return render(request, 'admin_dashboard.html', context)
 
+@never_cache
 def admin_signout(request):
     logout(request)
     return redirect('admin_signin')
 
 
+@never_cache
+@unauthenticated_user
 def admin_forget_password(request):
-    if request.user.is_authenticated and request.user.is_superuser:
-        return redirect('admin_dashboard')
-    if request.user.is_authenticated:
-        return redirect("home")
     
     if request.method=="POST":
         email=request.POST.get('email')
@@ -314,12 +312,9 @@ def admin_forget_password(request):
 
     return render(request, 'auth/admin_forget_password.html', {'submitted_email': ''})
 
+@never_cache
+@unauthenticated_user
 def admin_otp_verification(request):
-    
-    if request.user.is_authenticated and request.user.is_superuser:
-        return redirect('admin_dashboard')
-    if request.user.is_authenticated:
-        return redirect("home")
     
     user_id=request.session.get('reset_user')
 
@@ -356,11 +351,9 @@ def admin_otp_verification(request):
     return render(request,'auth/admin_otp_verification.html')
 
 
+@never_cache
+@unauthenticated_user
 def admin_resend_otp(request):
-    if request.user.is_authenticated and request.user.is_superuser:
-        return redirect('admin_dashboard')
-    if request.user.is_authenticated:
-        return redirect("home")
     
     user_id=request.session.get('reset_user')
     if not user_id:
@@ -384,11 +377,9 @@ def admin_resend_otp(request):
 
 
 
+@never_cache
+@unauthenticated_user
 def admin_reset_password(request):
-    if request.user.is_authenticated and request.user.is_superuser:
-        return redirect('admin_dashboard')
-    if request.user.is_authenticated:
-        return redirect("home")
     
     user_id=request.session.get('reset_user')
     verified=request.session.get('otp_verified')
@@ -428,6 +419,8 @@ def admin_reset_password(request):
 
     return render(request, 'auth/admin_reset_password.html')
 
+@never_cache
+@admin_required
 def user_management(request):
     q = request.GET.get('q', '')
     status = request.GET.get('status', '')
@@ -459,6 +452,8 @@ def user_management(request):
 
     return render(request, 'user_management.html',context)
 
+@never_cache
+@admin_required
 def admin_toggle_block(request, id):
     if request.method !='POST':
         return redirect('user_management')
@@ -474,6 +469,8 @@ def admin_toggle_block(request, id):
     messages.success(request,f"{name} has been {action} successfully.")
 
     return redirect('user_management')
+@never_cache
+@admin_required
 def user_detail(request, id):
     # Get the user
     user = get_object_or_404(ProfileUser, id=id, is_superuser=False)
@@ -535,6 +532,8 @@ def user_detail(request, id):
     return render(request, 'user_detail.html', context)
     
 
+@never_cache
+@admin_required
 def sales_report(request):
 
     
@@ -675,6 +674,8 @@ def sales_report(request):
 
 
 
+@never_cache
+@admin_required
 def export_sales_excel(request):
     filter_type = request.GET.get('filter', 'month')
     now = timezone.localtime(timezone.now())
@@ -758,6 +759,8 @@ def export_sales_excel(request):
     return response
 
 
+@never_cache
+@admin_required
 def export_sales_pdf(request):
     filter_type = request.GET.get('filter', 'month')
     now = timezone.localtime(timezone.now())

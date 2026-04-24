@@ -10,11 +10,11 @@ from django.utils import timezone
 from decimal import Decimal
 from wallet.models import Wallet
 from offer.utils import get_best_offer
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
 
+@login_required
 def cart(request):
-    if not request.user.is_authenticated:
-        return redirect('signin')
-    
     user_cart =get_user_cart(request.user)
     items= user_cart.items.select_related('variant__product')
     
@@ -124,6 +124,7 @@ def cart(request):
         'total_offer_savings': total_offer_savings.quantize(Decimal("0.01")),
     })
 
+@login_required
 def update_cart(request):
     if request.method == "POST":
         item_id=request.POST.get('item_id')
@@ -157,6 +158,7 @@ def update_cart(request):
     
     return redirect('cart') 
 
+@login_required
 def remove_from_cart(request, item_id):
     if request.method == "POST":
         item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
@@ -165,6 +167,8 @@ def remove_from_cart(request, item_id):
     return redirect('cart')
 
 
+@never_cache
+@login_required
 def checkout(request):
     
     try :

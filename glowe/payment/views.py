@@ -8,10 +8,12 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import never_cache
 from django.utils import timezone
 from datetime import timedelta
 
 
+@never_cache
 @login_required
 def payment_page(request, order_id):
 
@@ -76,8 +78,13 @@ def verify_payment(request):
         messages.error(request, "Invalid payment request.")
         return redirect("home")
 
-    # Find the order
-    order = get_object_or_404(Order, id=order_id)
+    # Find the order (validate ownership if user is logged in)
+    if request.user.is_authenticated:
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+    else:
+        
+        order = get_object_or_404(Order, id=order_id)
+    
     payment = order.payment
 
     client = razorpay.Client(
@@ -127,6 +134,7 @@ def verify_payment(request):
         payment.save()
         return redirect("payment_failed", order_id=order.id)
 
+@never_cache
 @login_required
 def payment_failed(request, order_id):
 
