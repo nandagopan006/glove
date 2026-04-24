@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Glowé – Skincare{% endblock %}
 
@@ -39,31 +40,22 @@
   HERO
 ══════════════════════════════════ -->
 <section class="relative w-full overflow-hidden h-[100svh] min-h-[600px] md:h-[calc(100vh-64px)] md:min-h-[580px] md:max-h-[820px]">
-  <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1800&q=90&fit=crop"
+  <img src="{% static 'core/images/homepage_banner.jpg' %}"
        alt="Hero" class="absolute inset-0 w-full h-full object-cover object-[center_20%]"/>
   <div class="absolute inset-0 hidden md:block" style="background:linear-gradient(to right,rgba(14,9,3,0.38) 0%,rgba(14,9,3,0.12) 44%,transparent 66%);"></div>
   <div class="absolute inset-0 md:hidden" style="background:linear-gradient(to top,rgba(8,4,0,0.80) 0%,rgba(8,4,0,0.35) 35%,transparent 58%);"></div>
   <div class="relative z-10 h-full hidden md:flex items-center" style="padding-left:8%;">
     <div class="flex flex-col items-center max-w-[510px]">
-      <h1 class="font-cormorant font-bold italic text-white text-center leading-[1.1] mb-5" style="font-size:clamp(44px,5.2vw,70px); text-shadow:0 2px 30px rgba(6,2,0,0.22);">
-        Radiance Begins<br>With Ritual
-      </h1>
-      <p class="font-montserrat font-light text-white/90 text-[13px] text-center leading-[1.85] mb-8 max-w-[360px]" style="text-shadow:0 1px 8px rgba(0,0,0,0.16);">
-        Clean, science-backed formulas designed to restore<br>balance and reveal your natural glow.
-      </p>
-      <a href="#" class="btn-pill">SHOP THE PRODUCTS</a>
+      
+      
     </div>
   </div>
   <div class="absolute inset-0 z-10 flex flex-col justify-end md:hidden">
     <div class="px-6 pb-5">
-      <h1 class="font-cormorant font-bold italic text-white leading-[1.05] mb-3 text-[36px]" style="text-shadow:0 2px 20px rgba(4,1,0,0.4);">
-        Radiance Begins<br>With Ritual
-      </h1>
-      <p class="font-montserrat font-light text-white/90 leading-[1.8] mb-5 text-[12px] max-w-[270px]" style="text-shadow:0 1px 8px rgba(0,0,0,0.25);">
-        Clean, science-backed formulas designed to restore balance and reveal your natural glow.
-      </p>
+      
+      
     </div>
-    <a href="#" class="flex items-center justify-center w-full bg-white/93 text-[#1a1208] font-montserrat text-[10px] font-bold tracking-[0.22em] uppercase no-underline py-[18px]">EXPLORE MORE</a>
+    
     <div class="flex justify-center py-2.5 bg-white/93">
       <svg width="14" height="8" viewBox="0 0 14 8" fill="none" stroke="#1a1208" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6 6-6"/></svg>
     </div>
@@ -86,17 +78,30 @@
         </h2>
       </div>
 
-      <!-- Modern Image Overlap Layout -->
-      <div class="w-full md:w-7/12 relative h-[450px] md:h-[650px] mt-8 md:mt-0 reveal-up delay-200 group">
-        <!-- Back Image -->
-        <div class="absolute top-0 right-0 w-[75%] md:w-[70%] h-[75%] md:h-[80%] rounded-[2px] md:rounded-bl-[80px] md:rounded-tr-[80px] overflow-hidden shadow-2xl transition-all duration-[1s] ease-out group-hover:scale-[1.02] group-hover:translate-x-3 group-hover:-translate-y-3 z-10">
-          <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&q=90&fit=crop" alt="Philosophy Serum" class="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-[1.1]" style="object-position:center 25%;"/>
-        </div>
+      <!-- Modern Image Overlap Layout with 3 Images -->
+      <div class="w-full md:w-7/12 relative h-[480px] md:h-[680px] mt-10 md:mt-0 reveal-up delay-200 group perspective-[1000px]">
         
-        <!-- Front Image -->
-        <div class="absolute bottom-0 left-[5%] w-[55%] md:w-[45%] h-[55%] md:h-[60%] rounded-[2px] md:rounded-tl-[60px] md:rounded-br-[60px] overflow-hidden shadow-[0_30px_60px_rgba(26,18,8,0.15)] transition-all duration-[1s] ease-out group-hover:scale-[1.04] group-hover:-translate-x-3 group-hover:translate-y-3 z-20 border-[6px] border-[#f0ebe2]">
-          <img src="https://images.unsplash.com/photo-1600428610114-e9d4f8faebe2?w=900&q=90&fit=crop" alt="Philosophy Hands" class="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-[1.1]"/>
-        </div>
+        <!-- Image 1 (Left Large Background Video) -->
+        <a href="{% url 'product_detail_view' 'dior-forever-skin-glow' %}" class="absolute top-0 left-0 w-[55%] md:w-[52%] h-[60%] md:h-[72%] rounded-[16px] md:rounded-tl-[80px] md:rounded-br-[80px] overflow-hidden shadow-xl transition-all duration-[1.2s] cubic-bezier(0.2,0.8,0.2,1) ease-out group-hover:-translate-x-5 group-hover:-translate-y-3 group-hover:-rotate-2 z-10 block">
+          <video autoplay loop muted playsinline class="w-full h-full object-cover transition-transform duration-[2.5s] group-hover:scale-[1.1]">
+            <source src="{% static 'core/images/dior.mp4' %}" type="video/mp4">
+          </video>
+        </a>
+
+        <!-- Image 3 (Right Large Background Video) -->
+        <a href="{% url 'product_detail_view' 'santal-vetiver-body-wash' %}" class="absolute top-[8%] right-0 w-[55%] md:w-[52%] h-[60%] md:h-[72%] rounded-[16px] md:rounded-tr-[80px] md:rounded-bl-[80px] overflow-hidden shadow-2xl transition-all duration-[1.2s] ease-out group-hover:translate-x-5 group-hover:-translate-y-2 group-hover:rotate-2 z-15 block">
+          <video autoplay loop muted playsinline class="w-full h-full object-cover transition-transform duration-[2.5s] group-hover:scale-[1.1]" style="object-position:center 25%;">
+            <source src="{% static 'core/images/stone&salt.mp4' %}" type="video/mp4">
+          </video>
+        </a>
+        
+        <!-- Image 2 (Middle Small Foreground) -->
+        <a href="{% url 'product_detail_view' 'wet-n-wild-lip-oil' %}" class="absolute bottom-[-2%] left-[22.5%] md:left-[28%] w-[55%] md:w-[44%] h-[45%] md:h-[48%] rounded-[24px] md:rounded-[40px] overflow-hidden shadow-[0_40px_80px_rgba(26,18,8,0.25)] transition-all duration-[1.2s] ease-out delay-75 group-hover:translate-y-4 group-hover:scale-[1.06] z-20 block">
+          <img src="{% static 'core/images/lip.jpg' %}" alt="Philosophy Highlight" class="w-full h-full object-cover transition-transform duration-[2.5s] group-hover:scale-[1.12]"/>
+        </a>
+        
+        <!-- Decorative Glow / Shadow behind the group -->
+        <div class="absolute inset-0 bg-gradient-to-tr from-[#c8b89a]/20 to-transparent blur-3xl -z-10 opacity-0 transition-opacity duration-1000 group-hover:opacity-100 rounded-full scale-75 group-hover:scale-100"></div>
       </div>
       
     </div>
@@ -104,122 +109,227 @@
 </section>
 
 <div class="bg-[#f0ebe2] py-10 md:py-[52px] px-6 md:px-0 text-center">
-  <a href="#" class="flex md:inline-flex items-center justify-center bg-[#1a1208] text-white font-montserrat text-[10px] font-bold tracking-[0.22em] uppercase no-underline py-[18px] md:py-4 px-6 md:px-12 w-full md:w-auto transition-colors hover:bg-[#2d1f0e]">SHOP NOW</a>
+  <a href="{% url 'product_listing' %}" class="flex md:inline-flex items-center justify-center bg-[#1a1208] text-white font-montserrat text-[10px] font-bold tracking-[0.22em] uppercase no-underline py-[18px] md:py-4 px-6 md:px-12 w-full md:w-auto transition-colors hover:bg-[#2d1f0e]">SHOP NOW</a>
 </div>
 
 <!-- ══════════════════════════════════
   SHOP ALL PRODUCTS
+  Redesigned for a modern, premium feel
 ══════════════════════════════════ -->
-<section class="bg-[#f0ebe2] pb-14 md:pb-[72px]">
-  <h2 class="font-montserrat font-bold uppercase text-[#1a1208] text-center mb-8 md:mb-12 px-6 tracking-[0.22em]" style="font-size:clamp(16px,2.2vw,30px);">Shop All Products</h2>
-  <div class="grid grid-cols-2 md:grid-cols-4 w-full gap-[2px]">
-    <div class="bg-[#f0ebe2]">
-      <div class="iz h-[220px] md:h-[clamp(280px,32vw,460px)]"><img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=700&q=90&fit=crop" alt="Serum"/></div>
-      <div class="px-3 md:px-4 pt-4 pb-6">
-        <p class="font-montserrat text-[9px] font-semibold tracking-[0.18em] uppercase text-[#6a5e52] mb-2">SERUM</p>
-        <p class="font-cormorant text-[18px] md:text-[20px] text-[#1a1208] mb-2 leading-snug">Collagen and Retinol Serum</p>
-        <div class="flex items-baseline gap-2"><span class="font-montserrat text-[12px] font-semibold text-[#1a1208]">$45.00</span><span class="font-montserrat text-[12px] font-light text-[#b0a494] line-through">$55.00</span></div>
+<section class="bg-[#f0ebe2] pb-24 md:pb-32 px-6 md:px-12">
+  <div class="max-w-[1400px] mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-end mb-12 md:mb-16 gap-6">
+      <div class="reveal-up">
+        <p class="font-montserrat text-[10px] font-semibold tracking-[0.25em] uppercase text-[#8a7e72] mb-3">Our Collection</p>
+        <h2 class="font-cormorant text-[#1a1208] leading-tight" style="font-size:clamp(32px, 4vw, 48px);">Shop <em>All</em> Essentials</h2>
+      </div>
+      <div class="reveal-up delay-100">
+        <a href="{% url 'product_listing' %}" class="inline-flex items-center gap-3 font-montserrat text-[10px] font-bold tracking-[0.2em] uppercase text-[#1a1208] no-underline pb-1 border-b border-[#1a1208] hover:text-[#8a7e72] hover:border-[#8a7e72] transition-all">
+          View All Products
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
       </div>
     </div>
-    <div class="bg-[#f0ebe2]">
-      <div class="iz h-[220px] md:h-[clamp(280px,32vw,460px)]"><img src="https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=700&q=90&fit=crop" alt="Cleanser"/></div>
-      <div class="px-3 md:px-4 pt-4 pb-6">
-        <p class="font-montserrat text-[9px] font-semibold tracking-[0.18em] uppercase text-[#6a5e52] mb-2">CLEANSER</p>
-        <p class="font-cormorant text-[18px] md:text-[20px] text-[#1a1208] mb-2 leading-snug">Balancing Toner</p>
-        <div class="flex items-baseline gap-2"><span class="font-montserrat text-[12px] font-semibold text-[#1a1208]">$28.00</span><span class="font-montserrat text-[12px] font-light text-[#b0a494] line-through">$35.00</span></div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 ">
+      {% for product in featured_products|slice:"4:8" %}
+      {% with variant=product.variants.all.0 image=product.images.all.0 %}
+      <div class="group reveal-up" {% if forloop.counter > 1 %}style="--delay: {{ forloop.counter0 }}00ms"{% endif %}>
+        <a href="{% url 'product_detail_view' product.slug %}" class="block">
+          <div class="relative aspect-[3/4] overflow-hidden bg-[#ebe5d9] mb-6 transition-all duration-500 group-hover:-translate-y-2">
+            {% if image %}
+              <img src="{{ image.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"/>
+            {% else %}
+              <div class="w-full h-full flex items-center justify-center bg-[#dcd4c3]">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8a7e72" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              </div>
+            {% endif %}
+            <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div class="absolute bottom-6 left-6 right-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-75">
+               <span class="inline-flex items-center justify-center w-full bg-white/90 backdrop-blur-md text-[#1a1208] font-montserrat text-[9px] font-bold tracking-[0.2em] uppercase py-4 hover:bg-[#1a1208] hover:text-white transition-colors">View Product</span>
+            </div>
+          </div>
+        </a>
+        <div class="px-2">
+          <p class="font-montserrat text-[9px] font-semibold tracking-[0.2em] uppercase text-[#8a7e72] mb-2">{{ product.category.name|default:"Skincare" }}</p>
+          <a href="{% url 'product_detail_view' product.slug %}" class="no-underline">
+            <h3 class="font-cormorant text-[22px] text-[#1a1208] mb-2 leading-tight hover:text-[#8a7e72] transition-colors">{{ product.name }}</h3>
+          </a>
+          <div class="flex items-center gap-3">
+            <span class="font-montserrat text-[14px] font-semibold text-[#1a1208]">₹{{ variant.price|floatformat:2 }}</span>
+            {% if product.has_offer %}
+              <span class="font-montserrat text-[12px] font-light text-[#b0a494] line-through">₹{{ variant.original_price|floatformat:2 }}</span>
+            {% endif %}
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="bg-[#f0ebe2]">
-      <div class="iz h-[220px] md:h-[clamp(280px,32vw,460px)]"><img src="https://images.unsplash.com/photo-1601049676869-702ea24cfd58?w=700&q=90&fit=crop" alt="Moisturizer"/></div>
-      <div class="px-3 md:px-4 pt-4 pb-6">
-        <p class="font-montserrat text-[9px] font-semibold tracking-[0.18em] uppercase text-[#6a5e52] mb-2">MOISTURIZER</p>
-        <p class="font-cormorant text-[18px] md:text-[20px] text-[#1a1208] mb-2 leading-snug">ReBalance Sensitive</p>
-        <div class="flex items-baseline gap-2"><span class="font-montserrat text-[12px] font-semibold text-[#1a1208]">$37.00</span><span class="font-montserrat text-[12px] font-light text-[#b0a494] line-through">$45.00</span></div>
+      {% endwith %}
+      {% empty %}
+      <div class="col-span-full py-12 text-center">
+        <p class="font-cormorant italic text-[20px] text-[#8a7e72]">Discovering our latest collection...</p>
       </div>
-    </div>
-    <div class="bg-[#f0ebe2]">
-      <div class="iz h-[220px] md:h-[clamp(280px,32vw,460px)]"><img src="https://images.unsplash.com/photo-1614806687007-2215e7b3e3bb?w=700&q=90&fit=crop" alt="Suncream"/></div>
-      <div class="px-3 md:px-4 pt-4 pb-6">
-        <p class="font-montserrat text-[9px] font-semibold tracking-[0.18em] uppercase text-[#6a5e52] mb-2">SUNCREAM</p>
-        <p class="font-cormorant text-[18px] md:text-[20px] text-[#1a1208] mb-2 leading-snug">Belif Milky Niacinamide</p>
-        <div class="flex items-baseline gap-2"><span class="font-montserrat text-[12px] font-semibold text-[#1a1208]">$68.00</span><span class="font-montserrat text-[12px] font-light text-[#b0a494] line-through">$85.00</span></div>
-      </div>
+      {% endfor %}
     </div>
   </div>
 </section>
 
 <!-- ══════════════════════════════════
-  SEASONAL ESSENTIAL
+  SEASONAL ESSENTIAL (Exact Reference Match)
 ══════════════════════════════════ -->
-<section class="bg-[#f0ebe2] pt-14 md:pt-[68px] overflow-hidden">
-  <p class="hidden md:block font-cormorant italic text-[20px] text-[#1a1208] text-center mb-8">The Summer Glow Ritual</p>
-  <p class="md:hidden font-montserrat font-bold uppercase text-[#1a1208] text-center mb-6 text-[17px] tracking-[0.22em] px-6">SEASONAL ESSENTIAL</p>
-  <div class="flex flex-col md:flex-row md:items-start md:gap-10 md:pl-[7vw]">
-    <div class="iz mx-6 md:mx-0 md:shrink-0 md:w-[43vw] h-[240px] md:h-[clamp(280px,44vw,560px)]">
-      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&q=90&fit=crop" alt="Beach"/>
+<section class="bg-[#f0ebe2] py-16 md:py-24 overflow-hidden">
+  
+  <!-- Centered Title -->
+  <h2 class="font-cormorant text-[#1a1a1a] text-[32px] md:text-[42px] text-center mb-16 md:mb-20">The Summer Glow Ritual</h2>
+  
+  <div class="max-w-[1100px] mx-auto px-6 md:px-8 relative">
+    
+    <!-- Top Row: Small Image + Text -->
+    <div class="flex flex-col md:flex-row items-start justify-between">
+      
+      <!-- Left: Vertical Image (z-10: Behind bottom image) -->
+      <div class="w-full md:w-[42%] relative z-10 reveal-up">
+        <div class="aspect-[4/5] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1000&q=90&fit=crop" 
+               alt="Summer" 
+               class="w-full h-full object-cover"/>
+        </div>
+      </div>
+
+      <!-- Right: Text Content (z-30: Always above everything) -->
+      <div class="w-full md:w-[50%] pt-8 md:pt-4 relative z-30 reveal-up delay-100">
+        <h3 class="font-montserrat text-[18px] md:text-[20px] font-normal tracking-[0.08em] uppercase text-[#1a1208] mb-6">SEASONAL ESSENTIAL</h3>
+        
+        <p class="font-montserrat text-[13px] md:text-[13px] font-medium text-[#4a4a4a] leading-[2.2] mb-10 max-w-[380px]">
+          Lightweight hydration meets powerful<br>
+          protection.<br>
+          Our summer formulas defend against sun<br>
+          exposure<br>
+          while preserving your skin's natural luminosity.
+        </p>
+
+       
+      </div>
     </div>
-    <div class="flex flex-col items-center md:items-start text-center md:text-left px-6 md:px-0 pt-7 md:pt-1.5 md:flex-1 md:pr-[18%]">
-      <p class="hidden md:block font-montserrat font-bold uppercase text-[#1a1208] text-[11px] tracking-[0.22em] mb-4">Seasonal Essential</p>
-      <p class="md:hidden font-montserrat font-bold uppercase text-[#1a1208] text-[20px] tracking-[0.18em] mb-4">SUMMER HIT</p>
-      <p class="font-montserrat font-light text-[#3a3028] text-[12px] leading-[1.95] mb-8 max-w-full md:max-w-[265px]">Lightweight hydration meets powerful protection. Our summer formulas defend against sun exposure while preserving your skin's natural luminosity.</p>
-      <a href="#" class="flex md:hidden items-center justify-center w-full bg-[#1a1208] text-white font-montserrat text-[10px] font-bold tracking-[0.22em] uppercase no-underline py-[18px] hover:bg-[#2d1f0e]">DISCOVER RELEASE</a>
-      <a href="#" class="hidden md:inline-flex btn-dark">DISCOVER RELEASE</a>
+
+    <!-- Bottom: Large Overlapping Image (z-20: Above left image, Below text) -->
+    <div class="relative mt-[-10%] md:mt-[-12%] ml-auto w-[95%] md:w-[75%] z-20 reveal-up delay-300">
+      <div class="aspect-[16/12] overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=1600&q=95&fit=crop" 
+             alt="Summer Glow" 
+             class="w-full h-full object-cover object-[center_30%]"/>
+      </div>
     </div>
+
   </div>
-  <div class="iz md:hidden w-full h-[300px] mt-10"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=1600&q=90&fit=crop&crop=top" alt="Woman"/></div>
-  <div class="hidden md:block seas-woman"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=1600&q=90&fit=crop&crop=top" alt="Woman"/></div>
 </section>
 
 <!-- ══════════════════════════════════
   SUMMER 25 SEASON
 ══════════════════════════════════ -->
-<section class="bg-[#f0ebe2] md:pt-[72px] md:pb-[88px]">
-  <div class="hidden md:block">
-    <h2 class="font-montserrat font-bold uppercase text-[#1a1208] text-center mb-11 tracking-[0.24em]" style="font-size:clamp(14px,1.7vw,22px);">Summer 25 Season</h2>
-    <div class="s25-scene">
-      <div class="s25-a"><img src="https://images.unsplash.com/photo-1604654894610-df63bc536371?w=900&q=90&fit=crop&crop=faces,top" alt="Cleaners"/></div>
-      <div class="s25-b"><img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=700&q=90&fit=crop&crop=faces,top" alt="Serums"/></div>
-      <div class="s25-c"><img src="https://images.unsplash.com/photo-1526413232644-8a40f03cc03b?w=700&q=90&fit=crop&crop=faces" alt="Sun Cream"/></div>
-      <div class="s25-ca"><p class="font-montserrat font-semibold uppercase text-[11px] tracking-[0.2em] text-[#1a1208]">Cleaners</p></div>
-      <div class="s25-cb"><p class="font-montserrat font-semibold uppercase text-[11px] tracking-[0.2em] text-[#1a1208]">Serums</p></div>
-      <div class="s25-cc"><p class="font-montserrat font-semibold uppercase text-[11px] tracking-[0.2em] text-[#1a1208]">Sun Cream</p></div>
+<section class="bg-[#f0ebe2] pt-20 pb-24 font-montserrat overflow-hidden">
+  <div class="max-w-[1200px] mx-auto px-6 md:px-8">
+    
+   
+
+    <!-- Desktop & Tablet Layout -->
+    <div class="hidden md:flex flex-row justify-between items-start gap-6">
+      
+      {% for category in categories|slice:":3" %}
+        {% if forloop.counter == 1 %}
+          <!-- Left: Largest, top-aligned -->
+          <div class="w-[45%] flex flex-col items-center">
+            <a href="{% url 'product_listing' %}?category={{ category.id }}" class="w-full block aspect-[4/5] overflow-hidden mb-6 reveal-up">
+              <img src="{% if category.image %}{{ category.image.url }}{% else %}https://i.pinimg.com/736x/08/67/8f/08678f051e5160b4d8681511cd43692b.jpg{% endif %}" alt="{{ category.name }}" class="w-full h-full object-cover"/>
+            </a>
+            <p class="font-semibold uppercase text-[11px] tracking-[0.15em] text-[#1a1208]">{{ category.name }}</p>
+          </div>
+        {% elif forloop.counter == 2 %}
+          <!-- Middle: Smallest, pushed down significantly -->
+          <div class="w-[24%] flex flex-col items-center mt-[18%]">
+            <a href="{% url 'product_listing' %}?category={{ category.id }}" class="w-full block aspect-[3/4] overflow-hidden mb-6 reveal-up delay-100">
+              <img src="{% if category.image %}{{ category.image.url }}{% else %}https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&q=90&fit=crop{% endif %}" alt="{{ category.name }}" class="w-full h-full object-cover"/>
+            </a>
+            <p class="font-semibold uppercase text-[11px] tracking-[0.15em] text-[#1a1208]">{{ category.name }}</p>
+          </div>
+        {% elif forloop.counter == 3 %}
+          <!-- Right: Medium, pushed down slightly -->
+          <div class="w-[28%] flex flex-col items-center mt-[8%]">
+            <a href="{% url 'product_listing' %}?category={{ category.id }}" class="w-full block aspect-[3/4] overflow-hidden mb-6 reveal-up delay-200">
+              <img src="{% if category.image %}{{ category.image.url }}{% else %}https://i.pinimg.com/736x/ec/82/e7/ec82e79c348e515adfc16d113de60369.jpg{% endif %}" alt="{{ category.name }}" class="w-full h-full object-cover"/>
+            </a>
+            <p class="font-semibold uppercase text-[11px] tracking-[0.15em] text-[#1a1208]">{{ category.name }}</p>
+          </div>
+        {% endif %}
+      {% endfor %}
+
     </div>
-    <div class="text-center mt-14"><a href="#" class="btn-dark">SEE ALL CATEGORIES</a></div>
-  </div>
-  <div class="md:hidden">
-    <div class="text-center pt-9 pb-7 px-6"><p class="font-montserrat font-bold uppercase text-[#1a1208] text-[17px] tracking-[0.22em]">SUMMER 25 SEASON</p></div>
-    <div class="iz mx-6 h-[320px]"><img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=700&q=90&fit=crop&crop=faces,top" alt="Season"/></div>
-    <p class="font-montserrat font-semibold uppercase text-[#1a1208] text-center text-[11px] tracking-[0.2em] py-5">SANDALS</p>
-    <div class="px-6 pb-12"><a href="#" class="flex items-center justify-center w-full bg-[#1a1208] text-white font-montserrat text-[10px] font-bold tracking-[0.22em] uppercase no-underline py-[18px] hover:bg-[#2d1f0e]">SEE ALL CATEGORIES</a></div>
+
+    <!-- Mobile Layout -->
+    <div class="md:hidden flex flex-col gap-12">
+      {% for category in categories|slice:":3" %}
+        <div class="w-full flex flex-col items-center reveal-up">
+          <a href="{% url 'product_listing' %}?category={{ category.id }}" class="w-full block aspect-[4/5] overflow-hidden mb-6">
+            <img src="{% if category.image %}{{ category.image.url }}{% else %}https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=900&q=90&fit=crop{% endif %}" alt="{{ category.name }}" class="w-full h-full object-cover"/>
+          </a>
+          <p class="font-semibold uppercase text-[12px] tracking-[0.15em] text-[#1a1208]">{{ category.name }}</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Button -->
+    <div class="text-center mt-20 md:mt-24">
+      <a href="{% url 'product_listing' %}" class="inline-block bg-[#33312e] text-white font-montserrat text-[11px] font-medium tracking-[0.15em] uppercase py-[16px] px-10 no-underline hover:bg-black transition-colors">
+        SEE ALL CATEGORIES
+      </a>
+    </div>
+
   </div>
 </section>
-
-
 <!-- ══════════════════════════════════
   MOSTLY VIEWED
+  Dynamic best sellers loop
 ══════════════════════════════════ -->
-<section class="bg-[#f0ebe2] py-14 md:py-[72px] px-4 md:px-10">
-  <h2 class="font-montserrat font-bold uppercase text-[#1a1208] text-center mb-8 md:mb-10 tracking-[0.24em]" style="font-size:clamp(15px,1.8vw,22px);">Mostly Viewed</h2>
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-2.5 max-w-[1440px] mx-auto">
-    <div>
-      <div class="iz h-[170px] md:h-[clamp(140px,16vw,260px)]"><img src="https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=700&q=90&fit=crop" alt="Hydra Glow Serum"/></div>
-      <p class="font-cormorant text-[15px] md:text-[16px] text-[#1a1208] mt-3 mb-1 text-left md:text-center">Hydra Glow Serum</p>
-      <div class="flex items-baseline gap-2 pb-4 justify-start md:justify-center"><span class="font-montserrat text-[11px] md:text-[12px] font-semibold text-[#1a1208]">$30.00</span><span class="font-montserrat text-[11px] md:text-[12px] font-light text-[#b0a494] line-through">$43.00</span></div>
+<section class="bg-[#f0ebe2] py-20 md:py-24 px-6 md:px-12">
+  <div class="max-w-[1400px] mx-auto">
+    <div class="text-center mb-12 md:mb-16 reveal-up">
+      <p class="font-montserrat text-[10px] font-semibold tracking-[0.25em] uppercase text-[#8a7e72] mb-3">Customer Favorites</p>
+      <h2 class="font-cormorant text-[#1a1208] leading-tight" style="font-size:clamp(32px, 4vw, 48px);">Mostly Viewed</h2>
     </div>
-    <div>
-      <div class="iz h-[170px] md:h-[clamp(140px,16vw,260px)]"><img src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=700&q=90&fit=crop" alt="Vitamin C Cleanser"/></div>
-      <p class="font-cormorant text-[15px] md:text-[16px] text-[#1a1208] mt-3 mb-1 text-left md:text-center">Vitamin C Cleanser</p>
-      <div class="flex items-baseline gap-2 pb-4 justify-start md:justify-center"><span class="font-montserrat text-[11px] md:text-[12px] font-semibold text-[#1a1208]">$24.00</span><span class="font-montserrat text-[11px] md:text-[12px] font-light text-[#b0a494] line-through">$43.00</span></div>
-    </div>
-    <div>
-      <div class="iz h-[170px] md:h-[clamp(140px,16vw,260px)]"><img src="https://images.unsplash.com/photo-1631730486784-74757a9ea37f?w=700&q=90&fit=crop&crop=faces" alt="Barrier Repair Cream"/></div>
-      <p class="font-cormorant text-[15px] md:text-[16px] text-[#1a1208] mt-3 mb-1 text-left md:text-center">Barrier Repair Cream</p>
-      <div class="flex items-baseline gap-2 pb-4 justify-start md:justify-center"><span class="font-montserrat text-[11px] md:text-[12px] font-semibold text-[#1a1208]">$35.00</span><span class="font-montserrat text-[11px] md:text-[12px] font-light text-[#b0a494] line-through">$43.00</span></div>
-    </div>
-    <div>
-      <div class="iz h-[170px] md:h-[clamp(140px,16vw,260px)]"><img src="https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=700&q=90&fit=crop" alt="Daily Shield SPF 55+"/></div>
-      <p class="font-cormorant text-[15px] md:text-[16px] text-[#1a1208] mt-3 mb-1 text-left md:text-center">Daily Shield SPF 55+</p>
-      <div class="flex items-baseline gap-2 pb-4 justify-start md:justify-center"><span class="font-montserrat text-[11px] md:text-[12px] font-semibold text-[#1a1208]">$35.00</span><span class="font-montserrat text-[11px] md:text-[12px] font-light text-[#b0a494] line-through">$43.00</span></div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10">
+      {% for product in best_sellers %}
+      {% with variant=product.variants.all.0 image=product.images.all.0 %}
+      <div class="group reveal-up" {% if forloop.counter > 1 %}style="--delay: {{ forloop.counter0 }}00ms"{% endif %}>
+        <a href="{% url 'product_detail_view' product.slug %}" class="block">
+          <div class="relative aspect-square overflow-hidden bg-[#ebe5d9] mb-5 transition-all duration-500 group-hover:-translate-y-1">
+            {% if image %}
+              <img src="{{ image.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"/>
+            {% else %}
+              <div class="w-full h-full flex items-center justify-center bg-[#dcd4c3]">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8a7e72" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              </div>
+            {% endif %}
+            <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          </div>
+        </a>
+        <div class="text-center">
+          <a href="{% url 'product_detail_view' product.slug %}" class="no-underline">
+            <h3 class="font-cormorant text-[18px] md:text-[20px] text-[#1a1208] mb-1.5 leading-tight hover:text-[#8a7e72] transition-colors">{{ product.name }}</h3>
+          </a>
+          <div class="flex items-center justify-center gap-3">
+            <span class="font-montserrat text-[13px] font-semibold text-[#1a1208]">₹{{ variant.price|floatformat:2 }}</span>
+            {% if product.has_offer %}
+              <span class="font-montserrat text-[11px] font-light text-[#b0a494] line-through">₹{{ variant.original_price|floatformat:2 }}</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endwith %}
+      {% empty %}
+      <div class="col-span-full py-12 text-center">
+        <p class="font-cormorant italic text-[18px] text-[#8a7e72]">Curating our most-loved rituals...</p>
+      </div>
+      {% endfor %}
     </div>
   </div>
 </section>
@@ -235,7 +345,7 @@
       our expertly crafted formulas restore balance, defend your barrier,<br>
       and unveil a radiance that lingers long after the light fades.
     </p>
-    <a href="#" class="btn-dark">SHOP NOW</a>
+    <a href="{% url 'product_listing' %}" class="btn-dark">SHOP NOW</a>
   </div>
   <div class="grid grid-cols-2">
     <div class="glow-img"><img src="https://i.pinimg.com/1200x/96/fb/25/96fb2565dce46ddf8455524b2ae3d0b1.jpg" alt="Ritual"/></div>
@@ -247,7 +357,7 @@
   <div class="px-6 text-center mb-0">
     <h2 class="font-montserrat font-bold uppercase text-[#1a1208] text-[24px] tracking-[0.1em] leading-[1.2] mb-4">GET READY FOR<br>SUMMER</h2>
     <p class="font-montserrat font-light text-[#3a3028] text-[12px] leading-[1.85] mb-6">Dive into a world of vibrant colors, breezy silhouettes, and timeless elegance tailored for the sun-soaked days and balmy nights ahead.</p>
-    <a href="#" class="flex items-center justify-center w-full bg-[#1a1208] text-white font-montserrat text-[10px] font-bold tracking-[0.22em] uppercase no-underline py-[18px] mb-7 hover:bg-[#2d1f0e]">SHOP NOW</a>
+    <a href="{% url 'product_listing' %}" class="flex items-center justify-center w-full bg-[#1a1208] text-white font-montserrat text-[10px] font-bold tracking-[0.22em] uppercase no-underline py-[18px] mb-7 hover:bg-[#2d1f0e]">SHOP NOW</a>
   </div>
   <div class="iz w-full h-[300px]"><img src="https://i.pinimg.com/1200x/96/fb/25/96fb2565dce46ddf8455524b2ae3d0b1.jpg" alt="Collection 1"/></div>
   <div class="iz w-full h-[300px]"><img src="https://images.unsplash.com/photo-1523381294911-8d3cead13475?w=900&q=90&fit=crop&crop=top" alt="Collection 2"/></div>

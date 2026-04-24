@@ -732,7 +732,7 @@ def product_listing(request):
         ),  # only the default true   appo load less fast kiitum
     )
 
-    paginator = Paginator(products, 9)
+    paginator = Paginator(products, 12)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 

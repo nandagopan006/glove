@@ -43,3 +43,6 @@ def home(request):
 def signout(request):
     logout(request)
     return redirect('signin')
+
+def custom_404(request, exception):
+    return render(request, '404.html', status=404)
