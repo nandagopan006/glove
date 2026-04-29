@@ -16,55 +16,56 @@ from django.contrib.auth.decorators import login_required
 @never_cache
 @admin_required
 def coupon_list(request):
-    coupons=Coupon.objects.filter(is_deleted=False).order_by('-created_at')
-
-    search =request.GET.get('search')
-    if search:
-        coupons=coupons.filter(code__icontains=search)
-
-    status_filter =request.GET.get('status')
+    status = request.GET.get('status', 'live')
+    search = request.GET.get('search', '')
+    active_status = request.GET.get('active_status', '')
     today = timezone.now().date()
 
-    if status_filter == "active":
-        coupons= coupons.filter(is_active=True, end_date__gte=today)
+    if status == 'archived':
+        coupons = Coupon.objects.filter(is_deleted=True).order_by('-created_at')
+    else:
+        coupons = Coupon.objects.filter(is_deleted=False).order_by('-created_at')
+        if active_status == 'active':
+            coupons = coupons.filter(is_active=True, end_date__gte=today)
+        elif active_status == 'inactive':
+            coupons = coupons.filter(models.Q(is_active=False) | models.Q(end_date__lt=today))
 
-    elif status_filter == "expired":
-        coupons=coupons.filter(end_date__lt=today)
+    if search:
+        coupons = coupons.filter(code__icontains=search)
 
-    elif status_filter == "inactive":
-        coupons=coupons.filter(is_active=False, end_date__gte=today)
+    paginator = Paginator(coupons, 4 )
+    page = request.GET.get('page')
+    coupons_page = paginator.get_page(page)
 
-    paginator = Paginator(coupons,4)
-    page =request.GET.get('page')
-    coupons=paginator.get_page(page)
-
-    for c in coupons:
+    for c in coupons_page:
         # status
         if c.end_date < today:
             c.status = "Expired"
-            
         elif not c.is_active:
             c.status = "Inactive"
-            
         else:
             c.status = "Active"
 
         # usage 
         if c.total_usage_limit and c.total_usage_limit > 0:
-            c.usage_percent=int((c.used_count / c.total_usage_limit) * 100)
+            c.usage_percent = int((c.used_count / c.total_usage_limit) * 100)
         else:
             c.usage_percent = 0
 
-    total_active=Coupon.objects.filter(is_active=True,is_deleted=False,
-                                         end_date__gte=today).count()
-
-    total_used=Coupon.objects.filter(is_deleted=False).aggregate(total=models.Sum('used_count'))['total'] or 0
+    total_active = Coupon.objects.filter(is_active=True, is_deleted=False, end_date__gte=today).count()
+    total_used = Coupon.objects.filter(is_deleted=False).aggregate(total=models.Sum('used_count'))['total'] or 0
+    archived_count = Coupon.objects.filter(is_deleted=True).count()
+    total_coupons = Coupon.objects.filter(is_deleted=False).count()
 
     return render(request,'coupons_list.html',{
-        'coupons':coupons,
-        'search':search,
-        'total_active':total_active,
-        'total_used':total_used
+        'coupons': coupons_page,
+        'search': search,
+        'status': status,
+        'active_status': active_status,
+        'total_active': total_active,
+        'total_used': total_used,
+        'archived_count': archived_count,
+        'total_coupons': total_coupons
     })
     
 @never_cache
@@ -113,10 +114,33 @@ def delete_coupon(request, id):
     coupon = get_object_or_404(Coupon, id=id, is_deleted=False)
 
     if request.method == "POST":
-        coupon.is_deleted =True
+        coupon.is_deleted = True
         coupon.save()
+        messages.success(request, f"Coupon '{coupon.code}' moved to archive.")
 
-        messages.success(request, "Coupon deleted successfully ")
+    return redirect('coupon_list')
+
+@never_cache
+@admin_required
+def restore_coupon(request, id):
+    coupon = get_object_or_404(Coupon, id=id, is_deleted=True)
+
+    if request.method == "POST":
+        coupon.is_deleted = False
+        coupon.save()
+        messages.success(request, f"Coupon '{coupon.code}' restored successfully.")
+
+    return redirect('coupon_list')
+
+@never_cache
+@admin_required
+def permanent_delete_coupon(request, id):
+    coupon = get_object_or_404(Coupon, id=id, is_deleted=True)
+
+    if request.method == "POST":
+        code = coupon.code
+        coupon.delete()
+        messages.success(request, f"Coupon '{code}' permanently deleted.")
 
     return redirect('coupon_list')
 
@@ -235,7 +259,7 @@ def calculate_discount(request, cart_total):
             if usage and usage.used_count >= coupon.usage_limit_per_user:
                 del request.session['coupon_id']
                 return Decimal('0.00')
-            
+        
         if coupon.min_purchase and cart_total < coupon.min_purchase:
             return Decimal('0.00')
 
