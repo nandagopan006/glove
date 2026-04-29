@@ -8,6 +8,8 @@ from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.views.decorators.http import require_POST
+from django.db import transaction
 # Create your views here.
 
 
@@ -88,3 +90,132 @@ def delete_review(request, review_id):
     messages.success(request, "Your review has been deleted")
 
     return redirect('product_detail', slug=review.product.slug)
+
+
+
+def admin_review_list(request):
+
+    status = request.GET.get('status')
+    search = request.GET.get('search')
+    rating = request.GET.get('rating')
+    sort = request.GET.get('sort')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    reviews = Review.objects.filter(is_deleted=False).select_related('user', 'product')
+
+    #Status Filter
+    if status in ['pending', 'approved', 'rejected']:
+        reviews = reviews.filter(status=status)
+
+    # Search
+    if search:
+        reviews = reviews.filter(
+            Q(comment__icontains=search) |
+            Q(title__icontains=search) |
+            Q(user__full_name__icontains=search) |
+            Q(product__name__icontains=search)
+        )
+
+    # Rating Filter
+    if rating:
+        try:
+            reviews = reviews.filter(rating=int(rating))
+        except ValueError:
+            pass
+
+    #Date Filter
+    if start_date and end_date:
+        reviews = reviews.filter(created_at__date__range=[start_date, end_date])
+
+    #Sorting 
+    if sort == "rating_high":
+        reviews = reviews.order_by('-rating')
+    elif sort == "rating_low":
+        reviews = reviews.order_by('rating')
+    else:
+        reviews = reviews.order_by('-created_at')  # default
+
+    #Pagination
+    paginator = Paginator(reviews, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    
+    review_all=Review.objects.filter(is_deleted=False).count(),
+    pending=Review.objects.filter(status='pending', is_deleted=False).count(),
+    approved=Review.objects.filter(status='approved', is_deleted=False).count(),
+    rejected=Review.objects.filter(status='rejected', is_deleted=False).count(),
+    
+
+    return render(request, 'admin/reviews/list.html', {
+        'reviews': page_obj,
+        "review_all":review_all,
+        'pending':pending,
+        'approved':approved,
+        'rejected':rejected,
+         'current_status': status,
+        'search_query': search,
+        'current_rating': rating,
+        'current_sort': sort,
+        'start_date': start_date,
+        'end_date': end_date,
+    })
+    
+def admin_review_detail(request, review_id):
+
+    review = get_object_or_404(
+        Review.objects.select_related('user', 'product', 'order')
+                      .prefetch_related('images'),
+        id=review_id,
+        is_deleted=False
+    )
+
+    
+    is_low_rating = review.rating <= 2
+    has_images = review.images.exists()
+
+    return render(request, 'admin/reviews/detail.html', {
+        'review': review,
+        'is_low_rating': is_low_rating,
+        'has_images': has_images,
+    })
+
+@require_POST
+def approve_review(request, review_id):
+    review = get_object_or_404(
+        Review,
+        id=review_id,
+        is_deleted=False
+    )
+
+    # prevent unnecessary update
+    if review.status == "approved":
+        messages.info(request, "Review already approved")
+        return redirect(request.META.get('HTTP_REFERER', 'admin_review_list'))
+
+    with transaction.atomic():
+        review.status = "approved"
+        review.save()
+
+    messages.success(request, "Review approved successfully")
+    return redirect(request.META.get('HTTP_REFERER', 'admin_review_list'))
+
+@require_POST
+def reject_review(request, review_id):
+    review = get_object_or_404(
+        Review,
+        id=review_id,
+        is_deleted=False
+    )
+
+    if review.status == "rejected":
+        messages.info(request, "Review already rejected")
+        return redirect(request.META.get('HTTP_REFERER', 'admin_review_list'))
+
+    with transaction.atomic():
+        review.status = "rejected"
+        review.save()
+
+    messages.success(request, "Review rejected successfully")
+    return redirect(request.META.get('HTTP_REFERER', 'admin_review_list'))
