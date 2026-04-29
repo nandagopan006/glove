@@ -6,14 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Glowé Admin — Coupon Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600;700&family=Montserrat:wght@600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['DM Sans', 'sans-serif'],
-                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
                     },
                     colors: {
                         sage: {
@@ -29,7 +28,7 @@
         }
     </script>
     <style>
-        * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
+        * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
         body { background: #fdfdfd; margin: 0; overflow-x: hidden; color: #1a1a1a; }
         .admin-main-content { margin-left:0; transition:margin-left .3s ease-in-out; }
         @media(min-width:1024px){ .admin-main-content { margin-left:240px; } }
@@ -416,34 +415,34 @@
                     </tbody>
                 </table>
             </div>
-            
-            <!-- Pagination -->
-            {% if coupons.has_other_pages %}
-            <div class="mt-6 flex items-center justify-center gap-2 pb-6">
-                {% if coupons.has_previous %}
-                <a href="?page={{ coupons.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pg-btn">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 18l-6-6 6-6"/></svg>
-                </a>
-                {% else %}
-                <span class="pg-btn disabled"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 18l-6-6 6-6"/></svg></span>
+        </div>
+
+        <!-- Pagination (Separated from Table Card) -->
+        {% if coupons.has_other_pages %}
+        <div class="mt-8 flex items-center justify-center gap-2 animate-fade-in-up stagger-4">
+            {% if coupons.has_previous %}
+            <a href="?page={{ coupons.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pg-btn">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 18l-6-6 6-6"/></svg>
+            </a>
+            {% else %}
+            <span class="pg-btn disabled"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 18l-6-6 6-6"/></svg></span>
+            {% endif %}
+            {% for i in coupons.paginator.page_range %}
+                {% if coupons.number == i %}
+                <span class="pg-btn active">{{ i }}</span>
+                {% elif i >= coupons.number|add:"-2" and i <= coupons.number|add:"2" %}
+                <a href="?page={{ i }}{% if search %}&search={{ search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pg-btn">{{ i }}</a>
                 {% endif %}
-                {% for i in coupons.paginator.page_range %}
-                    {% if coupons.number == i %}
-                    <span class="pg-btn active">{{ i }}</span>
-                    {% elif i >= coupons.number|add:"-2" and i <= coupons.number|add:"2" %}
-                    <a href="?page={{ i }}{% if search %}&search={{ search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pg-btn">{{ i }}</a>
-                    {% endif %}
-                {% endfor %}
-                {% if coupons.has_next %}
-                <a href="?page={{ coupons.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pg-btn">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 18l6-6-6-6"/></svg>
-                </a>
-                {% else %}
-                <span class="pg-btn disabled"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 18l6-6-6-6"/></svg></span>
-                {% endif %}
-            </div>
+            {% endfor %}
+            {% if coupons.has_next %}
+            <a href="?page={{ coupons.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pg-btn">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 18l6-6-6-6"/></svg>
+            </a>
+            {% else %}
+            <span class="pg-btn disabled"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 18l6-6-6-6"/></svg></span>
             {% endif %}
         </div>
+        {% endif %}
     </main>
 </div>
 

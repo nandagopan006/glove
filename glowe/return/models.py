@@ -31,6 +31,7 @@ class ReturnRequest(models.Model):
     picked_at=models.DateTimeField(null=True,blank=True)
 
     created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
     
 class ReturnImage(models.Model):
     return_request=models.ForeignKey(ReturnRequest, on_delete=models.CASCADE, related_name="images")
