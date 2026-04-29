@@ -1,0 +1,401 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glowé Admin — Product Reviews</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 20px; transition: background 0.2s; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+
+        /* Pagination styles */
+        .pg-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 42px; height: 42px; border-radius: 14px;
+            font-size: 13px; font-weight: 700; color: #374151;
+            border: 1px solid #e5e7eb; background: #fff;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            text-decoration: none;
+        }
+        .pg-btn:hover { background: #111827; color: #fff !important; border-color: #111827; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .pg-btn.active { background: #111827; color: #fff; border-color: #111827; cursor: default; }
+
+        /* Status Pills */
+        .status-pill {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;
+        }
+        .status-approved { background: #dcfce7; color: #166534; }
+        .status-pending { background: #fef3c7; color: #b45309; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        
+        .action-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .btn-approve { background: #f0fdf4; color: #16a34a; }
+        .btn-approve:hover { background: #dcfce7; transform: scale(1.05); }
+        .btn-reject { background: #fef2f2; color: #dc2626; }
+        .btn-reject:hover { background: #fee2e2; transform: scale(1.05); }
+        .btn-view { background: #f8fafc; color: #64748b; }
+        .btn-view:hover { background: #f1f5f9; color: #0f172a; transform: scale(1.05); }
+
+        /* Star Rating */
+        .star-filled { color: #fbbf24; }
+        .star-empty { color: #e2e8f0; }
+
+        /* Row Highlighting */
+        .row-low-rating { background-color: #fef2f2 !important; }
+        .row-low-rating:hover { background-color: #fee2e2 !important; }
+    </style>
+</head>
+<body class="bg-[#F6F7F5]">
+<!-- Include Sidebar -->
+{% include 'admin_sidebar.html' %}
+
+<div class="admin-main-content min-h-screen lg:ml-[240px] bg-[#F6F7F5] admin-mobile-offset">
+    <main class="px-6 py-10 lg:px-12 max-w-[1600px] mx-auto">
+        
+        <!-- Header Section -->
+        <div class="mb-10">
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight leading-none">Product Reviews</h1>
+            <p class="text-[15px] text-gray-500 mt-2 font-medium">Manage and moderate customer feedback effectively.</p>
+        </div>
+
+        <!-- Toolbar: Tabs & Search/Filter -->
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8">
+            
+            <!-- Tabs -->
+            <div class="inline-flex bg-white rounded-full p-1.5 shadow-sm border border-gray-100">
+                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if current_rating %}rating={{ current_rating }}&{% endif %}{% if current_sort %}sort={{ current_sort }}&{% endif %}" 
+                   class="px-6 py-2 rounded-full text-[13px] font-bold transition-all duration-200 {% if not current_status %}bg-[#111827] text-white shadow-md{% else %}text-gray-500 hover:text-gray-900 hover:bg-gray-50{% endif %}">
+                    All Reviews <span class="ml-1 opacity-70">({{ review_all|default:0 }})</span>
+                </a>
+                <a href="?status=pending{% if search_query %}&search={{ search_query }}{% endif %}{% if current_rating %}&rating={{ current_rating }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" 
+                   class="px-6 py-2 rounded-full text-[13px] font-bold transition-all duration-200 {% if current_status == 'pending' %}bg-[#111827] text-white shadow-md{% else %}text-gray-500 hover:text-gray-900 hover:bg-gray-50{% endif %}">
+                    Pending <span class="ml-1 opacity-70">({{ pending|default:0 }})</span>
+                </a>
+                <a href="?status=approved{% if search_query %}&search={{ search_query }}{% endif %}{% if current_rating %}&rating={{ current_rating }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" 
+                   class="px-6 py-2 rounded-full text-[13px] font-bold transition-all duration-200 {% if current_status == 'approved' %}bg-[#111827] text-white shadow-md{% else %}text-gray-500 hover:text-gray-900 hover:bg-gray-50{% endif %}">
+                    Approved <span class="ml-1 opacity-70">({{ approved|default:0 }})</span>
+                </a>
+                <a href="?status=rejected{% if search_query %}&search={{ search_query }}{% endif %}{% if current_rating %}&rating={{ current_rating }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" 
+                   class="px-6 py-2 rounded-full text-[13px] font-bold transition-all duration-200 {% if current_status == 'rejected' %}bg-[#111827] text-white shadow-md{% else %}text-gray-500 hover:text-gray-900 hover:bg-gray-50{% endif %}">
+                    Rejected <span class="ml-1 opacity-70">({{ rejected|default:0 }})</span>
+                </a>
+            </div>
+
+            <!-- Search & Filter Trigger -->
+            <div class="flex items-center gap-3">
+                <form method="GET" class="relative" id="quickSearchForm">
+                    {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+                    {% if current_rating %}<input type="hidden" name="rating" value="{{ current_rating }}">{% endif %}
+                    {% if current_sort %}<input type="hidden" name="sort" value="{{ current_sort }}">{% endif %}
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" name="search" value="{{ search_query|default:'' }}" placeholder="Search by user, product, or content..." 
+                           class="w-full sm:w-[320px] pl-10 pr-4 py-2.5 bg-white border border-white rounded-full text-[13px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent shadow-sm transition-all placeholder:text-gray-400 font-medium">
+                </form>
+                <button type="button" onclick="document.getElementById('filterModal').classList.remove('hidden')" 
+                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-white hover:border-gray-200 text-gray-700 text-[13px] font-bold rounded-full shadow-sm transition-all active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                    Filter
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Modal -->
+        <div id="filterModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-md px-4 transition-all duration-300">
+            <div class="relative bg-white rounded-[32px] shadow-2xl w-full max-w-[500px] overflow-hidden">
+                <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
+                    <h3 class="text-xl font-extrabold text-gray-900 tracking-tight">Advanced Filters</h3>
+                    <button type="button" onclick="document.getElementById('filterModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <form method="GET" class="p-8">
+                    {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+                    <input type="hidden" name="search" value="{{ search_query|default:'' }}">
+                    
+                    <div class="space-y-6">
+                        <!-- Rating Filter -->
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-2">Rating</label>
+                            <select name="rating" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#111827]">
+                                <option value="">All Ratings</option>
+                                <option value="5" {% if current_rating == "5" %}selected{% endif %}>5 Stars</option>
+                                <option value="4" {% if current_rating == "4" %}selected{% endif %}>4 Stars</option>
+                                <option value="3" {% if current_rating == "3" %}selected{% endif %}>3 Stars</option>
+                                <option value="2" {% if current_rating == "2" %}selected{% endif %}>2 Stars</option>
+                                <option value="1" {% if current_rating == "1" %}selected{% endif %}>1 Star</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Sorting -->
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-2">Sort By</label>
+                            <select name="sort" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#111827]">
+                                <option value="">Latest First</option>
+                                <option value="rating_high" {% if current_sort == "rating_high" %}selected{% endif %}>Highest Rating</option>
+                                <option value="rating_low" {% if current_sort == "rating_low" %}selected{% endif %}>Lowest Rating</option>
+                            </select>
+                        </div>
+
+                        <!-- Date Range -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[13px] font-bold text-gray-700 mb-2">Start Date</label>
+                                <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#111827]">
+                            </div>
+                            <div>
+                                <label class="block text-[13px] font-bold text-gray-700 mb-2">End Date</label>
+                                <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#111827]">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex gap-3">
+                        <a href="?" class="flex-1 px-4 py-3 text-center bg-gray-100 hover:bg-gray-200 text-gray-900 text-[14px] font-bold rounded-2xl transition-colors">Clear All</a>
+                        <button type="submit" class="flex-1 px-4 py-3 bg-[#111827] hover:bg-black text-white text-[14px] font-bold rounded-2xl transition-all shadow-lg">Apply Filters</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Table -->
+        <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse whitespace-nowrap">
+                    <thead>
+                        <tr class="bg-white border-b border-gray-50 text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">
+                            <th class="py-5 px-6">SL No</th>
+                            <th class="py-5 px-6">User</th>
+                            <th class="py-5 px-6">Product</th>
+                            <th class="py-5 px-6">Rating</th>
+                            <th class="py-5 px-6 min-w-[250px]">Review Comment</th>
+                            <th class="py-5 px-6">Date</th>
+                            <th class="py-5 px-6">Status</th>
+                            <th class="py-5 px-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        {% for review in reviews %}
+                        <tr class="group hover:bg-gray-50/50 transition-colors duration-200 {% if review.rating <= 2 %}row-low-rating{% endif %}" id="review-row-{{ review.id }}">
+                            <td class="py-4 px-6 text-[13px] font-medium text-gray-400">
+                                {{ forloop.counter0|add:reviews.start_index|stringformat:"02d" }}
+                            </td>
+                            
+                            <!-- User -->
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-[14px]">
+                                        {{ review.user.first_name|default:review.user.username|make_list|first|upper }}
+                                    </div>
+                                    <div>
+                                        <p class="text-[14px] font-bold text-gray-900">{{ review.user.full_name|default:review.user.username }}</p>
+                                        {% if review.order %}
+                                        <p class="text-[11px] font-bold text-green-600 mt-0.5">Verified Buyer</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Product -->
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
+                                        {% if review.product.images.all %}
+                                            <img src="{{ review.product.images.all.0.image.url }}" alt="{{ review.product.name }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                            <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <p class="text-[14px] font-bold text-gray-900 max-w-[150px] truncate" title="{{ review.product.name }}">{{ review.product.name }}</p>
+                                        <p class="text-[12px] font-medium text-gray-400 mt-0.5">SKU: {{ review.product.sku|default:"N/A" }}</p>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Rating -->
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-0.5">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <svg class="w-4 h-4 star-filled" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                        {% else %}
+                                            <svg class="w-4 h-4 star-empty" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </td>
+
+                            <!-- Comment -->
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-2 max-w-[250px]">
+                                    <p class="text-[13px] font-medium text-gray-600 truncate" title="{{ review.comment }}">
+                                        {% if review.title %}<span class="font-bold text-gray-900 mr-1">{{ review.title }} -</span>{% endif %}
+                                        {{ review.comment|truncatechars:50 }}
+                                    </p>
+                                    {% if review.images.all %}
+                                    <span title="Contains images" class="text-blue-500 shrink-0">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </td>
+
+                            <!-- Date -->
+                            <td class="py-4 px-6 text-[13px] font-medium text-gray-500">
+                                {{ review.created_at|date:"M d, Y" }}
+                            </td>
+
+                            <!-- Status -->
+                            <td class="py-4 px-6" id="status-cell-{{ review.id }}">
+                                {% if review.status == "approved" %}
+                                    <span class="status-pill status-approved">Approved</span>
+                                {% elif review.status == "pending" %}
+                                    <span class="status-pill status-pending">Pending</span>
+                                {% else %}
+                                    <span class="status-pill status-rejected">Rejected</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Actions -->
+                            <td class="py-4 px-6">
+                                <div class="flex items-center justify-end gap-2" id="action-cell-{{ review.id }}">
+                                    <!-- Always show View button -->
+                                    <a href="{% url 'admin_review_detail' review.id %}" class="action-btn btn-view" title="View Details">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    </a>
+
+                                    <!-- Approve/Reject available for Pending -->
+                                    {% if review.status == 'pending' %}
+                                    <form method="POST" action="{% url 'approve_review' review.id %}" class="ajax-action-form inline-block">
+                                        {% csrf_token %}
+                                        <button type="submit" class="action-btn btn-approve" title="Approve">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                        </button>
+                                    </form>
+                                    
+                                    <form method="POST" action="{% url 'reject_review' review.id %}" class="ajax-action-form inline-block">
+                                        {% csrf_token %}
+                                        <button type="submit" class="action-btn btn-reject" title="Reject">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="py-24 text-center">
+                                <div class="flex flex-col items-center justify-center opacity-50">
+                                    <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                                    <p class="text-[15px] font-bold text-gray-500">No reviews found.</p>
+                                    {% if search_query or current_status or current_rating %}
+                                    <a href="?" class="mt-4 text-[13px] font-bold text-[#111827] hover:underline">Clear Filters</a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Separate Pagination Component -->
+        {% if reviews.has_other_pages %}
+        <div class="mt-10 mb-12 flex items-center justify-between">
+            <p class="text-[13px] text-gray-500 font-medium ml-2">Showing {{ reviews.start_index }}-{{ reviews.end_index }} of {{ reviews.paginator.count }} reviews</p>
+            <div class="flex items-center gap-3">
+                {% if reviews.has_previous %}
+                <a href="?page={{ reviews.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_rating %}&rating={{ current_rating }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" class="pg-btn shadow-sm hover:shadow-lg">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+                </a>
+                {% endif %}
+                
+                {% for i in reviews.paginator.page_range %}
+                    {% if reviews.number == i %}
+                    <span class="pg-btn active">{{ i }}</span>
+                    {% elif i >= reviews.number|add:"-2" and i <= reviews.number|add:"2" %}
+                    <a href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_rating %}&rating={{ current_rating }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" class="pg-btn">{{ i }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if reviews.has_next %}
+                <a href="?page={{ reviews.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_rating %}&rating={{ current_rating }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" class="pg-btn shadow-sm hover:shadow-lg">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+    </main>
+</div>
+
+<!-- AJAX Scripts for Approve/Reject Without Reload -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const forms = document.querySelectorAll('.ajax-action-form');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const url = this.action;
+            const isApprove = url.includes('approve_review');
+            const rowId = this.closest('tr').id.split('-')[2];
+            const csrfToken = this.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => {
+                if(response.ok) {
+                    // Update UI smoothly without reload
+                    const statusCell = document.getElementById(`status-cell-${rowId}`);
+                    const actionCell = document.getElementById(`action-cell-${rowId}`);
+                    
+                    if (isApprove) {
+                        statusCell.innerHTML = '<span class="status-pill status-approved">Approved</span>';
+                    } else {
+                        statusCell.innerHTML = '<span class="status-pill status-rejected">Rejected</span>';
+                    }
+                    
+                    // Keep only View button
+                    const viewUrl = actionCell.querySelector('.btn-view').closest('a').href;
+                    actionCell.innerHTML = `
+                        <a href="${viewUrl}" class="action-btn btn-view" title="View Details">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        </a>
+                    `;
+                } else {
+                    alert("Error updating review status.");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+});
+</script>
+
+</body>
+</html>

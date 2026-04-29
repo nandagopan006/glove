@@ -10,6 +10,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.views.decorators.http import require_POST
 from django.db import transaction
+from django.http import JsonResponse
 # Create your views here.
 
 
@@ -142,13 +143,13 @@ def admin_review_list(request):
     page_obj = paginator.get_page(page_number)
 
     
-    review_all=Review.objects.filter(is_deleted=False).count(),
-    pending=Review.objects.filter(status='pending', is_deleted=False).count(),
-    approved=Review.objects.filter(status='approved', is_deleted=False).count(),
-    rejected=Review.objects.filter(status='rejected', is_deleted=False).count(),
+    review_all = Review.objects.filter(is_deleted=False).count()
+    pending = Review.objects.filter(status='pending', is_deleted=False).count()
+    approved = Review.objects.filter(status='approved', is_deleted=False).count()
+    rejected = Review.objects.filter(status='rejected', is_deleted=False).count()
     
 
-    return render(request, 'admin/reviews/list.html', {
+    return render(request, 'admin/review_list.html', {
         'reviews': page_obj,
         "review_all":review_all,
         'pending':pending,
@@ -175,11 +176,13 @@ def admin_review_detail(request, review_id):
     is_low_rating = review.rating <= 2
     has_images = review.images.exists()
 
-    return render(request, 'admin/reviews/detail.html', {
+    return render(request, 'admin/detail.html', {
         'review': review,
         'is_low_rating': is_low_rating,
         'has_images': has_images,
     })
+
+
 
 @require_POST
 def approve_review(request, review_id):
@@ -191,15 +194,20 @@ def approve_review(request, review_id):
 
     # prevent unnecessary update
     if review.status == "approved":
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({"status": "success", "message": "Review already approved"})
         messages.info(request, "Review already approved")
-        return redirect(request.META.get('HTTP_REFERER', 'admin_review_list'))
+        return redirect(request.META.get('HTTP_REFERER', 'review_list'))
 
     with transaction.atomic():
         review.status = "approved"
         review.save()
 
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({"status": "success", "message": "Review approved successfully"})
+        
     messages.success(request, "Review approved successfully")
-    return redirect(request.META.get('HTTP_REFERER', 'admin_review_list'))
+    return redirect(request.META.get('HTTP_REFERER', 'review_list'))
 
 @require_POST
 def reject_review(request, review_id):
@@ -210,12 +218,17 @@ def reject_review(request, review_id):
     )
 
     if review.status == "rejected":
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({"status": "success", "message": "Review already rejected"})
         messages.info(request, "Review already rejected")
-        return redirect(request.META.get('HTTP_REFERER', 'admin_review_list'))
+        return redirect(request.META.get('HTTP_REFERER', 'review_list'))
 
     with transaction.atomic():
         review.status = "rejected"
         review.save()
 
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({"status": "success", "message": "Review rejected successfully"})
+        
     messages.success(request, "Review rejected successfully")
-    return redirect(request.META.get('HTTP_REFERER', 'admin_review_list'))
+    return redirect(request.META.get('HTTP_REFERER', 'review_list'))
