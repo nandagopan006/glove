@@ -3,7 +3,7 @@
 {% block title %}Glowé – My Account{% endblock %}
 
 {% block extra_css %}
-body { background:#F5F1EC !important; }
+body { background:#F5F1EC !important; overflow-x:hidden; width:100%; }
 
 @keyframes fadeUp { from{opacity:0;transform:translateY(18px);} to{opacity:1;transform:translateY(0);} }
 .fu1{animation:fadeUp .5s .05s both;} .fu2{animation:fadeUp .5s .12s both;} .fu3{animation:fadeUp .5s .2s both;} .fu4{animation:fadeUp .5s .28s both;}
@@ -11,7 +11,7 @@ body { background:#F5F1EC !important; }
 .card { background:#fff; border:1px solid #ede8e0; border-radius:20px; transition:box-shadow .3s,transform .3s; }
 .card:hover { box-shadow:0 12px 32px rgba(26,18,8,.08); transform:translateY(-3px); }
 
-.stat-chip { border-radius:14px; padding:1.4rem 1.6rem; display:flex; align-items:center; gap:14px; }
+.stat-chip { border-radius:14px; padding:1.4rem 1.6rem; display:flex; align-items:center; gap:14px; min-width:0; }
 .stat-chip .ic { width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
 
 .nav-link { display:flex;align-items:center;gap:12px;padding:13px 18px;border-left:2px solid transparent;transition:all .2s;text-decoration:none;color:#4a3728; }
@@ -33,6 +33,19 @@ body { background:#F5F1EC !important; }
 .signout-overlay.open .signout-modal{transform:scale(1) translateY(0);}
 
 @media(max-width:1023px){.desktop-sidebar{display:none!important;}}
+
+/* ── MOBILE FIXES ── */
+@media (max-width: 640px) {
+  .stat-chip { padding:.9rem .8rem; gap:8px; }
+  .stat-chip .ic { width:34px; height:34px; border-radius:10px; }
+  .stat-chip .ic svg { width:16px; height:16px; }
+  .stat-num { font-size:22px !important; }
+  .stat-label { font-size:8px !important; letter-spacing:.06em !important; }
+  .hero-banner { padding:1.4rem !important; border-radius:16px !important; }
+  .hero-explore-btn { padding:11px 18px !important; font-size:9px !important; }
+  .action-card { padding:1.1rem; border-radius:14px; }
+  .action-card .ac-icon { width:40px; height:40px; margin-bottom:.7rem; }
+}
 {% endblock %}
 
 {% block content %}
@@ -129,48 +142,48 @@ body { background:#F5F1EC !important; }
     <div class="flex-1 flex flex-col gap-6">
 
       <!-- Hero Banner -->
-      <div class="fu2" style="background:linear-gradient(135deg,#1a1208 0%,#3a2414 100%);border-radius:22px;padding:2.5rem;position:relative;overflow:hidden;">
+      <div class="fu2 hero-banner" style="background:linear-gradient(135deg,#1a1208 0%,#3a2414 100%);border-radius:22px;padding:2.5rem;position:relative;overflow:hidden;">
         <div style="position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;border:1px solid rgba(255,255,255,.06);"></div>
         <div style="position:absolute;top:20px;right:40px;width:120px;height:120px;border-radius:50%;border:1px solid rgba(255,255,255,.06);"></div>
-        <div style="position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;">
+        <div style="position:relative;z-index:2;display:flex;flex-direction:column;gap:1.2rem;">
           <div>
             <p class="font-montserrat text-[10px] font-semibold tracking-[.22em] uppercase text-white/50 mb-2">Welcome back</p>
-            <h1 class="font-cormorant text-[clamp(28px,4vw,46px)] font-medium text-white leading-tight mb-3">{{ user.full_name }} ✨</h1>
-            <p class="font-montserrat text-[12px] font-light text-white/60 leading-[1.8] max-w-sm">Your radiance journey continues. Discover new arrivals curated just for your skin.</p>
+            <h1 class="font-cormorant text-[clamp(26px,5vw,46px)] font-medium text-white leading-tight mb-2">{{ user.full_name }} ✨</h1>
+            <p class="font-montserrat text-[11px] font-light text-white/60 leading-[1.8]">Your radiance journey continues. Discover new arrivals curated just for your skin.</p>
           </div>
-          <a href="{% url 'product_listing' %}" class="font-montserrat text-[10px] font-bold tracking-[.18em] uppercase no-underline shrink-0" style="background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);color:#fff;padding:14px 28px;border-radius:100px;transition:all .3s;display:inline-block;">
+          <a href="{% url 'product_listing' %}" class="hero-explore-btn font-montserrat text-[10px] font-bold tracking-[.18em] uppercase no-underline" style="background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);color:#fff;padding:14px 28px;border-radius:100px;transition:all .3s;display:inline-block;align-self:flex-start;">
             Explore Arrivals →
           </a>
         </div>
       </div>
 
       <!-- Stats Row -->
-      <div class="grid grid-cols-3 gap-4 fu3">
+      <div class="grid grid-cols-3 gap-2 sm:gap-4 fu3">
         <div class="stat-chip card">
           <div class="ic" style="background:#f0f8f4;">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
           </div>
-          <div>
-            <p class="font-montserrat text-[9px] font-semibold tracking-[.12em] uppercase text-[#8C7F77]">Orders</p>
-            <p class="font-cormorant text-[32px] font-semibold text-[#1a1208] leading-none">{{ order_count }}</p>
+          <div class="min-w-0">
+            <p class="stat-label font-montserrat text-[9px] font-semibold tracking-[.12em] uppercase text-[#8C7F77] truncate">Orders</p>
+            <p class="stat-num font-cormorant text-[32px] font-semibold text-[#1a1208] leading-none">{{ order_count }}</p>
           </div>
         </div>
         <div class="stat-chip card">
           <div class="ic" style="background:#fdf0f4;">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#993556" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </div>
-          <div>
-            <p class="font-montserrat text-[9px] font-semibold tracking-[.12em] uppercase text-[#8C7F77]">Wishlist</p>
-            <p class="font-cormorant text-[32px] font-semibold text-[#1a1208] leading-none">{{ wishlist_count }}</p>
+          <div class="min-w-0">
+            <p class="stat-label font-montserrat text-[9px] font-semibold tracking-[.12em] uppercase text-[#8C7F77] truncate">Wishlist</p>
+            <p class="stat-num font-cormorant text-[32px] font-semibold text-[#1a1208] leading-none">{{ wishlist_count }}</p>
           </div>
         </div>
         <div class="stat-chip" style="background:linear-gradient(135deg,#022c22,#064e3b);border:1px solid rgba(16,185,129,.2);border-radius:14px;">
           <div class="ic" style="background:rgba(16,185,129,.15);">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5"/><line x1="16" y1="12" x2="22" y2="12"/></svg>
           </div>
-          <div>
-            <p class="font-montserrat text-[9px] font-semibold tracking-[.12em] uppercase text-emerald-300">Wallet</p>
-            <p class="font-cormorant text-[32px] font-semibold text-white leading-none">₹{{ wallet_balance }}</p>
+          <div class="min-w-0">
+            <p class="stat-label font-montserrat text-[9px] font-semibold tracking-[.12em] uppercase text-emerald-300 truncate">Wallet</p>
+            <p class="stat-num font-cormorant text-[32px] font-semibold text-white leading-none truncate">₹{{ wallet_balance }}</p>
           </div>
         </div>
       </div>
