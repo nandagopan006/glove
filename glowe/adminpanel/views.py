@@ -8,24 +8,26 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from accounts.models import OTPVerification, ProfileUser
 from user.models import Address
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
 import random
-from django.core.mail import send_mail
-from django.conf import settings
 import re
 from django.core.paginator import Paginator
 from django.db.models import Q
 from accounts.email_utils import send_admin_otp_email
 from django.utils.timezone import make_aware
 from datetime import datetime, timedelta
-from django.db.models import Sum, Count
-from django.db.models.functions import TruncDate, TruncMonth
-from order.models import Order, OrderItem, Payment
+from django.db.models import Sum
+from django.db.models.functions import TruncMonth
+from order.models import Order, OrderItem
 from product.models import Product, Variant
-from category.models import Category
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer,
+)
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
@@ -48,21 +50,29 @@ def admin_signin(request):
 
         if not email:
             messages.error(request, "Email is required")
-            return render(request, "auth/admin_signin.html", {"submitted_email": email})
+            return render(
+                request, "auth/admin_signin.html", {"submitted_email": email}
+            )
         if not password:
             messages.error(request, "password is required")
-            return render(request, "auth/admin_signin.html", {"submitted_email": email})
+            return render(
+                request, "auth/admin_signin.html", {"submitted_email": email}
+            )
 
         user = authenticate(request, username=email, password=password)
 
         if user is None:
             messages.error(request, "Invalid email or password")
-            return render(request, "auth/admin_signin.html", {"submitted_email": email})
+            return render(
+                request, "auth/admin_signin.html", {"submitted_email": email}
+            )
 
         # admin acces not normal usr
         if not user.is_superuser:
             messages.error(request, "Access denied.Admin only.")
-            return render(request, "auth/admin_signin.html", {"submitted_email": email})
+            return render(
+                request, "auth/admin_signin.html", {"submitted_email": email}
+            )
 
         login(request, user)
 
@@ -97,12 +107,17 @@ def admin_dashboard(request):
         end_str = request.GET.get("end_date")
         if start_str and end_str:
             try:
-                start_date = make_aware(datetime.strptime(start_str, "%Y-%m-%d"))
+                start_date = make_aware(
+                    datetime.strptime(start_str, "%Y-%m-%d")
+                )
                 end_date = make_aware(datetime.strptime(end_str, "%Y-%m-%d"))
-                
-                #Start must be before or equal to End
+
+                # Start must be before or equal to End
                 if start_date > end_date:
-                    messages.error(request, "Invalid Date Range: End date cannot be before start date.")
+                    messages.error(
+                        request,
+                        "Invalid Date Range: End date cannot be before start date.",  # noqa: E501
+                    )
                     # Default back to month if validation fails
                     filter_type = "month"
                     start_date = now.replace(day=1, hour=0, minute=0, second=0)
@@ -123,11 +138,15 @@ def admin_dashboard(request):
         start_date = now.replace(day=1, hour=0, minute=0, second=0)
 
     if filter_type == "custom":
-        filtered_orders = Order.objects.filter(created_at__range=[start_date, end_date])
+        filtered_orders = Order.objects.filter(
+            created_at__range=[start_date, end_date]
+        )
     else:
         filtered_orders = Order.objects.filter(created_at__gte=start_date)
 
-    total_revenue = filtered_orders.aggregate(total=Sum("total_amount"))["total"] or 0
+    total_revenue = (
+        filtered_orders.aggregate(total=Sum("total_amount"))["total"] or 0
+    )
 
     today_start = now.replace(hour=0, minute=0, second=0)
     today_revenue = (
@@ -155,8 +174,12 @@ def admin_dashboard(request):
     cancelled_orders = filtered_orders.filter(order_status="CANCELLED").count()
     return_orders = filtered_orders.filter(order_status="RETURNED").count()
 
-    out_of_stock_variants = Variant.objects.filter(stock=0, is_active=True).select_related('product')
-    low_stock_variants = Variant.objects.filter(stock__lt=5, stock__gt=0, is_active=True).select_related('product')
+    out_of_stock_variants = Variant.objects.filter(
+        stock=0, is_active=True
+    ).select_related("product")
+    low_stock_variants = Variant.objects.filter(
+        stock__lt=5, stock__gt=0, is_active=True
+    ).select_related("product")
     out_of_stock_products = out_of_stock_variants.count()
     low_stock_products = low_stock_variants.count()
 
@@ -201,7 +224,9 @@ def admin_dashboard(request):
     if filter_type == "day":
         # Hourly data for today
         for hour in range(24):
-            hour_start = now.replace(hour=hour, minute=0, second=0, microsecond=0)
+            hour_start = now.replace(
+                hour=hour, minute=0, second=0, microsecond=0
+            )
             hour_end = hour_start + timedelta(hours=1)
             hour_revenue = (
                 filtered_orders.filter(
@@ -210,7 +235,9 @@ def admin_dashboard(request):
                 or 0
             )
 
-            chart_data.append({"label": f"{hour:02d}:00", "total": float(hour_revenue)})
+            chart_data.append(
+                {"label": f"{hour:02d}:00", "total": float(hour_revenue)}
+            )
 
     elif filter_type == "week":
         # Daily data for last 7 days
@@ -258,7 +285,9 @@ def admin_dashboard(request):
         for month in range(1, 13):
             month_date = year_start.replace(month=month)
             if month == 12:
-                month_end = year_start.replace(year=year_start.year + 1, month=1, day=1)
+                month_end = year_start.replace(
+                    year=year_start.year + 1, month=1, day=1
+                )
             else:
                 month_end = year_start.replace(month=month + 1, day=1)
 
@@ -270,40 +299,82 @@ def admin_dashboard(request):
             )
 
             chart_data.append(
-                {"label": month_date.strftime("%b"), "total": float(month_revenue)}
+                {
+                    "label": month_date.strftime("%b"),
+                    "total": float(month_revenue),
+                }
             )
 
     elif filter_type == "custom":
         delta = end_date - start_date
         if delta.days <= 3:
             # Hourly data for short ranges (up to 3 days) to make it "perfect"
-            temp_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            temp_date = start_date.replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
             while temp_date <= end_date:
                 for hour in [0, 4, 8, 12, 16, 20]:
                     h_start = temp_date + timedelta(hours=hour)
                     h_end = h_start + timedelta(hours=4)
-                    if h_start > end_date: continue
-                    h_revenue = filtered_orders.filter(created_at__gte=h_start, created_at__lt=h_end).aggregate(total=Sum("total_amount"))["total"] or 0
-                    chart_data.append({"label": h_start.strftime("%b %d %H:%M"), "total": float(h_revenue)})
+                    if h_start > end_date:
+                        continue
+                    h_revenue = (
+                        filtered_orders.filter(
+                            created_at__gte=h_start, created_at__lt=h_end
+                        ).aggregate(total=Sum("total_amount"))["total"]
+                        or 0
+                    )
+                    chart_data.append(
+                        {
+                            "label": h_start.strftime("%b %d %H:%M"),
+                            "total": float(h_revenue),
+                        }
+                    )
                 temp_date += timedelta(days=1)
         elif delta.days <= 60:
             # Daily data for custom range (4 to 60 days)
             temp_date = start_date
             while temp_date <= end_date:
-                day_start = temp_date.replace(hour=0, minute=0, second=0, microsecond=0)
+                day_start = temp_date.replace(
+                    hour=0, minute=0, second=0, microsecond=0
+                )
                 day_end = day_start + timedelta(days=1)
-                day_revenue = filtered_orders.filter(created_at__gte=day_start, created_at__lt=day_end).aggregate(total=Sum("total_amount"))["total"] or 0
-                chart_data.append({"label": temp_date.strftime("%b %d"), "total": float(day_revenue)})
+                day_revenue = (
+                    filtered_orders.filter(
+                        created_at__gte=day_start, created_at__lt=day_end
+                    ).aggregate(total=Sum("total_amount"))["total"]
+                    or 0
+                )
+                chart_data.append(
+                    {
+                        "label": temp_date.strftime("%b %d"),
+                        "total": float(day_revenue),
+                    }
+                )
                 temp_date += timedelta(days=1)
         else:
             # Monthly data for ranges > 60 days
-            temp_date = start_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            temp_date = start_date.replace(
+                day=1, hour=0, minute=0, second=0, microsecond=0
+            )
             while temp_date <= end_date:
                 m_start = temp_date
-                if temp_date.month == 12: m_end = temp_date.replace(year=temp_date.year + 1, month=1)
-                else: m_end = temp_date.replace(month=temp_date.month + 1)
-                m_revenue = filtered_orders.filter(created_at__gte=m_start, created_at__lt=m_end).aggregate(total=Sum("total_amount"))["total"] or 0
-                chart_data.append({"label": temp_date.strftime("%b %Y"), "total": float(m_revenue)})
+                if temp_date.month == 12:
+                    m_end = temp_date.replace(year=temp_date.year + 1, month=1)
+                else:
+                    m_end = temp_date.replace(month=temp_date.month + 1)
+                m_revenue = (
+                    filtered_orders.filter(
+                        created_at__gte=m_start, created_at__lt=m_end
+                    ).aggregate(total=Sum("total_amount"))["total"]
+                    or 0
+                )
+                chart_data.append(
+                    {
+                        "label": temp_date.strftime("%b %Y"),
+                        "total": float(m_revenue),
+                    }
+                )
                 temp_date = m_end
     else:
         # Default: show monthly data for current year
@@ -317,7 +388,10 @@ def admin_dashboard(request):
 
         for entry in chart_data_raw:
             chart_data.append(
-                {"label": entry["month"].strftime("%b"), "total": float(entry["total"])}
+                {
+                    "label": entry["month"].strftime("%b"),
+                    "total": float(entry["total"]),
+                }
             )
 
     context = {
@@ -364,7 +438,9 @@ def admin_forget_password(request):
         if not email:
             messages.error(request, "Email required")
             return render(
-                request, "auth/admin_forget_password.html", {"submitted_email": email}
+                request,
+                "auth/admin_forget_password.html",
+                {"submitted_email": email},
             )
 
         try:
@@ -380,7 +456,9 @@ def admin_forget_password(request):
         except ProfileUser.DoesNotExist:
             messages.error(request, "Email not found")
             return render(
-                request, "auth/admin_forget_password.html", {"submitted_email": email}
+                request,
+                "auth/admin_forget_password.html",
+                {"submitted_email": email},
             )
 
         # if old otp have it will dlt
@@ -388,7 +466,9 @@ def admin_forget_password(request):
         otp = str(random.randint(1000, 9999))
 
         OTPVerification.objects.create(
-            user=user, otp_code=otp, expires_at=timezone.now() + timedelta(minutes=2)
+            user=user,
+            otp_code=otp,
+            expires_at=timezone.now() + timedelta(minutes=2),
         )
 
         # Send premium admin OTP email
@@ -397,7 +477,9 @@ def admin_forget_password(request):
         request.session["reset_user"] = user.id
         return redirect("admin_otp_verification")
 
-    return render(request, "auth/admin_forget_password.html", {"submitted_email": ""})
+    return render(
+        request, "auth/admin_forget_password.html", {"submitted_email": ""}
+    )
 
 
 @never_cache
@@ -415,7 +497,9 @@ def admin_otp_verification(request):
         entered_otp = request.POST.get("otp")
 
         otp_obj = (
-            OTPVerification.objects.filter(user=user).order_by("-created_at").first()
+            OTPVerification.objects.filter(user=user)
+            .order_by("-created_at")
+            .first()
         )
 
         if not otp_obj:
@@ -457,7 +541,9 @@ def admin_resend_otp(request):
     otp = str(random.randint(1000, 9999))
 
     OTPVerification.objects.create(
-        user=user, otp_code=otp, expires_at=timezone.now() + timedelta(minutes=2)
+        user=user,
+        otp_code=otp,
+        expires_at=timezone.now() + timedelta(minutes=2),
     )
 
     # Send premium admin OTP email
@@ -514,7 +600,9 @@ def user_management(request):
     q = request.GET.get("q", "")
     status = request.GET.get("status", "")
 
-    users = ProfileUser.objects.filter(is_superuser=False).order_by("-date_joined")
+    users = ProfileUser.objects.filter(is_superuser=False).order_by(
+        "-date_joined"
+    )
 
     if q:
         users = users.filter(Q(full_name__icontains=q) | Q(email__icontains=q))
@@ -645,7 +733,7 @@ def sales_report(request):
             try:
                 start_date = make_aware(datetime.strptime(start, "%Y-%m-%d"))
                 end_date = make_aware(datetime.strptime(end, "%Y-%m-%d"))
-            except:
+            except Exception:
                 start_date = now - timedelta(days=30)
                 end_date = now
         else:
@@ -721,7 +809,8 @@ def sales_report(request):
 
         prev_rev_sum = (
             Order.objects.filter(
-                created_at__range=[prev_start, prev_end], order_status="DELIVERED"
+                created_at__range=[prev_start, prev_end],
+                order_status="DELIVERED",
             ).aggregate(total=Sum("total_amount"))["total"]
             or 0
         )
@@ -729,7 +818,9 @@ def sales_report(request):
 
     # Growth percentage calculation
     if previous_revenue > 0:
-        growth = round(((total_revenue - previous_revenue) / previous_revenue) * 100, 2)
+        growth = round(
+            ((total_revenue - previous_revenue) / previous_revenue) * 100, 2
+        )
     else:
         growth = 100.0 if total_revenue > 0 else 0.0
 
@@ -738,7 +829,9 @@ def sales_report(request):
         used_count__gt=0, is_deleted=False
     ).order_by("-used_count")
 
-    order_page_obj = Paginator(orders_list, 4).get_page(request.GET.get("order_page"))
+    order_page_obj = Paginator(orders_list, 4).get_page(
+        request.GET.get("order_page")
+    )
     coupon_page_obj = Paginator(coupon_stats, 4).get_page(
         request.GET.get("coupon_page")
     )
@@ -780,7 +873,7 @@ def export_sales_excel(request):
             try:
                 start_date = make_aware(datetime.strptime(start, "%Y-%m-%d"))
                 end_date = make_aware(datetime.strptime(end, "%Y-%m-%d"))
-            except:
+            except Exception:
                 start_date, end_date = now - timedelta(days=30), now
         else:
             start_date, end_date = now - timedelta(days=30), now
@@ -863,7 +956,7 @@ def export_sales_excel(request):
         ws.column_dimensions[col[0].column_letter].width = max_len + 5
 
     response = HttpResponse(
-        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  # noqa: E501
     )
     response["Content-Disposition"] = (
         f'attachment; filename="Glowe_Sales_{filter_type}.xlsx"'
@@ -891,7 +984,7 @@ def export_sales_pdf(request):
             try:
                 start_date = make_aware(datetime.strptime(start, "%Y-%m-%d"))
                 end_date = make_aware(datetime.strptime(end, "%Y-%m-%d"))
-            except:
+            except Exception:
                 start_date, end_date = now - timedelta(days=30), now
         else:
             start_date, end_date = now - timedelta(days=30), now
@@ -934,7 +1027,7 @@ def export_sales_pdf(request):
     elements.append(Paragraph("GLOWÉ — SALES REPORT", title_style))
     elements.append(
         Paragraph(
-            f"Period: {start_date.strftime('%b %d, %Y')} to {end_date.strftime('%b %d, %Y')}",
+            f"Period: {start_date.strftime('%b %d, %Y')} to {end_date.strftime('%b %d, %Y')}",  # noqa: E501
             styles["Normal"],
         )
     )
@@ -942,7 +1035,11 @@ def export_sales_pdf(request):
 
     summary_data = [
         ["Total Orders", "Total Revenue", "Total Savings"],
-        [str(orders.count()), f"₹{total_revenue:,.2f}", f"₹{total_discount:,.2f}"],
+        [
+            str(orders.count()),
+            f"₹{total_revenue:,.2f}",
+            f"₹{total_discount:,.2f}",
+        ],
     ]
     summary_table = Table(summary_data, colWidths=[150, 150, 150])
     summary_table.setStyle(
@@ -961,7 +1058,9 @@ def export_sales_pdf(request):
     elements.append(summary_table)
     elements.append(Spacer(1, 30))
 
-    table_data = [["Order Number", "Date", "Subtotal", "Discount", "Total Amount"]]
+    table_data = [
+        ["Order Number", "Date", "Subtotal", "Discount", "Total Amount"]
+    ]
     for o in orders:
         table_data.append(
             [

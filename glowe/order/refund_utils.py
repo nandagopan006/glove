@@ -1,10 +1,9 @@
-
 from django.db import transaction
 from decimal import Decimal
 
 
 def process_refund(order, refund_amount=None, description=None):
- 
+
     from wallet.models import Wallet, WalletTransaction
     from order.models import Payment
 
@@ -13,37 +12,24 @@ def process_refund(order, refund_amount=None, description=None):
 
     refund_amount = Decimal(str(refund_amount))
 
-    if refund_amount <= Decimal('0'):
+    if refund_amount <= Decimal("0"):
         return False
 
     # Get payment method
-    payment = getattr(order, 'payment', None)
+    payment = getattr(order, "payment", None)
     payment_method = payment.payment_method if payment else None
 
-    # COD cancellation → no refund (customer never paid online)
-    # COD returns → DO refund (order was delivered, payment collected on delivery)
     if payment_method == Payment.Method.COD:
         # Check if this is a cancellation (order never delivered) or return
-        from order.models import Order
-        # If the order was never delivered (cancelled before delivery), no refund
-        non_refundable_statuses = [
-            Order.Status.CANCELLED,
-            Order.Status.CONFIRMED,
-            Order.Status.PROCESSING,
-            Order.Status.SHIPPED,
-            Order.Status.OUT_FOR_DELIVERY,
-        ]
- 
         if not order.delivered_date:
             # Never delivered → COD → no refund
             return False
 
-  
     existing = WalletTransaction.objects.filter(
         order=order,
-        transaction_type='REFUND',
+        transaction_type="REFUND",
         amount=refund_amount,
-        status='COMPLETED',
+        status="COMPLETED",
     ).exists()
 
     if existing and description is None:
@@ -56,10 +42,10 @@ def process_refund(order, refund_amount=None, description=None):
     # Check for exact duplicate (same order + same description + same amount)
     duplicate = WalletTransaction.objects.filter(
         order=order,
-        transaction_type='REFUND',
+        transaction_type="REFUND",
         amount=refund_amount,
         description=description,
-        status='COMPLETED',
+        status="COMPLETED",
     ).exists()
 
     if duplicate:
@@ -75,9 +61,9 @@ def process_refund(order, refund_amount=None, description=None):
         WalletTransaction.objects.create(
             wallet=wallet,
             order=order,
-            transaction_type='REFUND',
+            transaction_type="REFUND",
             amount=refund_amount,
-            status='COMPLETED',
+            status="COMPLETED",
             description=description,
         )
 

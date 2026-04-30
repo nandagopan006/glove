@@ -83,7 +83,10 @@ class Migration(migrations.Migration):
                 ),
                 ("size", models.CharField(max_length=20)),
                 ("sku", models.CharField(max_length=100, unique=True)),
-                ("price", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "price",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
                 ("stock", models.PositiveIntegerField()),
                 ("is_default", models.BooleanField(default=False)),
                 ("is_active", models.BooleanField(default=True)),

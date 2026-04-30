@@ -1,11 +1,9 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
 from .forms import SignupForm
 from django.utils import timezone
 from datetime import timedelta
 import random
 from django.contrib.auth.decorators import login_required
-from django.conf import settings
 from django.contrib import messages
 from .models import ProfileUser, OTPVerification
 from .email_utils import send_otp_email, send_password_reset_email
@@ -62,12 +60,14 @@ def signup_page(request):
                 if referrer and referrer != user:
                     user.referred_by = referrer
 
-            # Crucial: user remains unverified and inactive until OTP is verified
+            # Crucial: user remains unverified and inactive until OTP is verified  # noqa: E501
             user.is_active = False
             user.is_verified = False
             user.save()
 
-            OTPVerification.objects.filter(user=user, is_verified=False).delete()
+            OTPVerification.objects.filter(
+                user=user, is_verified=False
+            ).delete()
 
             otp_code = str(random.randint(1000, 9999))
             OTPVerification.objects.create(
@@ -78,7 +78,9 @@ def signup_page(request):
 
             send_otp_email(request, user, otp_code)
             # in signup view — SAVE the email before redirecting
-            request.session["email"] = user.email  # it will store in broswer session
+            request.session["email"] = (
+                user.email
+            )  # it will store in broswer session
             request.session["otp_msg"] = "OTP sent! Check your email."
 
             return redirect("signup_otp_verify")
@@ -100,7 +102,9 @@ def signup_otp_verify(request):
         return redirect("signup")
 
     # get the latest unverified OTP record for this user
-    otp_record = OTPVerification.objects.filter(user=user, is_verified=False).first()
+    otp_record = OTPVerification.objects.filter(
+        user=user, is_verified=False
+    ).first()
 
     if not otp_record:
         return redirect("signup")
@@ -151,7 +155,9 @@ def signup_otp_verify(request):
                     # Give referral bonus if applicable
                     if user.referred_by:
                         referrer = user.referred_by
-                        referrer_wallet, _ = Wallet.objects.get_or_create(user=referrer)
+                        referrer_wallet, _ = Wallet.objects.get_or_create(
+                            user=referrer
+                        )
 
                         referrer_wallet.balance += 500
                         referrer_wallet.save()
@@ -199,7 +205,10 @@ def signup_resend_otp(request):
         return redirect("signup")
 
     # check if blocked
-    if user.resend_blocked_until and timezone.now() < user.resend_blocked_until:
+    if (
+        user.resend_blocked_until
+        and timezone.now() < user.resend_blocked_until
+    ):
         remaining = round(
             (user.resend_blocked_until - timezone.now()).total_seconds() / 60
         )
@@ -207,13 +216,16 @@ def signup_resend_otp(request):
             request,
             "signup_otp_verify.html",
             {
-                "error": f"Too many attempts. Try again after {remaining} minute(s).",
+                "error": f"Too many attempts. Try again after {remaining} minute(s).",  # noqa: E501
                 "seconds_left": 0,
             },
         )
 
     # Check if currently block and reset
-    if user.resend_blocked_until and timezone.now() >= user.resend_blocked_until:
+    if (
+        user.resend_blocked_until
+        and timezone.now() >= user.resend_blocked_until
+    ):
         user.resend_blocked_until = None
         user.resend_count = 0
 
@@ -235,7 +247,9 @@ def signup_resend_otp(request):
 
     otp_code = str(random.randint(1000, 9999))
     OTPVerification.objects.create(
-        user=user, otp_code=otp_code, expires_at=timezone.now() + timedelta(minutes=1)
+        user=user,
+        otp_code=otp_code,
+        expires_at=timezone.now() + timedelta(minutes=1),
     )
 
     user.is_active = False
@@ -261,7 +275,9 @@ def signin_page(request):
         password = request.POST.get("password")
 
         if not email:
-            return render(request, "signin.html", {"error": "Please enter your email."})
+            return render(
+                request, "signin.html", {"error": "Please enter your email."}
+            )
 
         if not password:
             return render(
@@ -291,7 +307,7 @@ def signin_page(request):
                 request,
                 "signin.html",
                 {
-                    "error": "Your email is not verified. Please complete signup first.",
+                    "error": "Your email is not verified. Please complete signup first.",  # noqa: E501
                     "submitted_email": email,
                 },
             )
@@ -301,7 +317,7 @@ def signin_page(request):
                 request,
                 "signin.html",
                 {
-                    "error": "Your account is disabled. Please contact support.",
+                    "error": "Your account is disabled. Please contact support.",  # noqa: E501
                     "submitted_email": email,
                 },
             )
@@ -344,24 +360,32 @@ def forget_password(request):
 
             if user.is_active and user.is_verified:  # both checks
                 # check block FIRST before anything else
-                if user.reset_block_until and timezone.now() < user.reset_block_until:
+                if (
+                    user.reset_block_until
+                    and timezone.now() < user.reset_block_until
+                ):
 
                     # still blocked  do not send email
                     remaining_minutes = round(
-                        (user.reset_block_until - timezone.now()).total_seconds() / 60
+                        (
+                            user.reset_block_until - timezone.now()
+                        ).total_seconds()
+                        / 60
                     )
                     return render(
                         request,
                         "forget_password.html",
                         {
-                            "error": f"Too many attempts. Please try again after {remaining_minutes} minute(s).",
+                            "error": f"Too many attempts. Please try again after {remaining_minutes} minute(s).",  # noqa: E501
                             "submitted_email": email,
                         },
                     )
 
                 # save user first before generating token
                 user.reset_attempts = 0
-                user.reset_block_until = None  # fresh request remove any existing block
+                user.reset_block_until = (
+                    None  # fresh request remove any existing block
+                )
                 user.save()
 
                 uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -373,14 +397,17 @@ def forget_password(request):
 
                 #  reset link
                 reset_link = request.build_absolute_uri(
-                    reverse("reset_password", kwargs={"uidb64": uid, "token": token})
+                    reverse(
+                        "reset_password",
+                        kwargs={"uidb64": uid, "token": token},
+                    )
                 )
 
                 send_password_reset_email(request, user, reset_link)
 
                 request.session["reset_email"] = user.email
 
-                # Store a flag so reset_password knows to redirect to change_password
+                # Store a flag so reset_password knows to redirect to change_password  # noqa: E501
                 if request.user.is_authenticated:
                     request.session["reset_from_change_password"] = True
                 return redirect("forget_password_link")
@@ -390,7 +417,7 @@ def forget_password(request):
                     request,
                     "forget_password.html",
                     {
-                        "error": "Please verify your email before resetting your password.",
+                        "error": "Please verify your email before resetting your password.",  # noqa: E501
                         "submitted_email": email,
                     },
                 )
@@ -405,7 +432,9 @@ def forget_password(request):
                 },
             )
 
-    return render(request, "forget_password.html", {"prefill_email": prefill_email})
+    return render(
+        request, "forget_password.html", {"prefill_email": prefill_email}
+    )
 
 
 def forget_password_link(request):
@@ -470,7 +499,7 @@ def resend_reset_email(request):
             )
             messages.warning(
                 request,
-                f"Too many attempts. Try again after {remaining_minutes} minute(s).",
+                f"Too many attempts. Try again after {remaining_minutes} minute(s).",  # noqa: E501
             )
             return redirect("forget_password_link")
         else:
@@ -483,7 +512,9 @@ def resend_reset_email(request):
         user.reset_block_until = timezone.now() + timedelta(minutes=15)
         user.reset_attempts = 0
         user.save()
-        messages.warning(request, "Too many attempts. Try again after 15 minutes.")
+        messages.warning(
+            request, "Too many attempts. Try again after 15 minutes."
+        )
         return redirect("forget_password_link")
 
     user.reset_attempts += 1
@@ -510,7 +541,7 @@ def resend_reset_email(request):
 @never_cache
 def reset_password(request, uidb64, token):
 
-    # Do NOT block authenticated users — they arrive here from the change password flow
+    # Do NOT block authenticated users — they arrive here from the change password flow  # noqa: E501
 
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -544,7 +575,7 @@ def reset_password(request, uidb64, token):
                 request,
                 "reset_password.html",
                 {
-                    "error": "Password must contain upper,lower,number(8+ chars)",
+                    "error": "Password must contain upper,lower,number(8+ chars)",  # noqa: E501
                     "uidb64": uidb64,
                     "token": token,
                 },
@@ -563,7 +594,9 @@ def reset_password(request, uidb64, token):
 
         # Store authentication status before password change
         is_authenticated = request.user.is_authenticated
-        from_change_password = request.session.get("reset_from_change_password", False)
+        from_change_password = request.session.get(
+            "reset_from_change_password", False
+        )
 
         user.set_password(new_password)
 
@@ -574,7 +607,7 @@ def reset_password(request, uidb64, token):
         user.reset_block_until = None
         user.save()
 
-        # If user was authenticated, keep them logged in (password change invalidates session otherwise)
+        # If user was authenticated, keep them logged in (password change invalidates session otherwise)  # noqa: E501
         if is_authenticated:
             update_session_auth_hash(request, user)
             messages.success(request, "Password updated successfully.")
@@ -582,13 +615,14 @@ def reset_password(request, uidb64, token):
             # Clean up session flag
             request.session.pop("reset_from_change_password", None)
 
-            # Redirect to change_password if they came from there, otherwise profile
+            # Redirect to change_password if they came from there, otherwise profile  # noqa: E501
             if from_change_password:
                 return redirect("change_password")
             return redirect("profile_overview")
 
         messages.success(
-            request, "Password reset successful. Please sign in with your new password."
+            request,
+            "Password reset successful. Please sign in with your new password.",  # noqa: E501
         )
         return redirect("signin")
 
@@ -610,7 +644,7 @@ def reset_password_invalid(request):
 def referral_page(request):
     user = request.user
 
-    # saving the user will automatically generate one via the models.py save() method.
+    # saving the user will automatically generate one via the models.py save() method.  # noqa: E501
     if not user.referral_code:
         user.save()
 

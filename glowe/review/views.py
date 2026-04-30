@@ -8,11 +8,8 @@ from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.views.decorators.http import require_POST
-from django.db import transaction
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.cache import never_cache
 from core.decorators import admin_required
 
 # Create your views here.
@@ -81,9 +78,6 @@ def create_review(request, product_id, order_id):
         return redirect("product_detail_view", slug=product.slug)
 
 
-
-
-
 @admin_required
 def admin_review_list(request):
 
@@ -96,9 +90,9 @@ def admin_review_list(request):
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
 
-    reviews = Review.objects.filter(is_deleted=is_deleted_filter).select_related(
-        "user", "product"
-    )
+    reviews = Review.objects.filter(
+        is_deleted=is_deleted_filter
+    ).select_related("user", "product")
 
     # Status Filter
     if status in ["pending", "approved", "rejected"]:
@@ -122,7 +116,9 @@ def admin_review_list(request):
 
     # Date Filter
     if start_date and end_date:
-        reviews = reviews.filter(created_at__date__range=[start_date, end_date])
+        reviews = reviews.filter(
+            created_at__date__range=[start_date, end_date]
+        )
 
     # Sorting
     if sort == "rating_high":
@@ -168,14 +164,13 @@ def admin_review_list(request):
     )
 
 
-
 @admin_required
 def admin_review_detail(request, review_id):
 
     review = get_object_or_404(
-        Review.objects.select_related("user", "product", "order").prefetch_related(
-            "images"
-        ),
+        Review.objects.select_related(
+            "user", "product", "order"
+        ).prefetch_related("images"),
         id=review_id,
         is_deleted=False,
     )
@@ -192,7 +187,6 @@ def admin_review_detail(request, review_id):
             "has_images": has_images,
         },
     )
-
 
 
 @admin_required
@@ -248,7 +242,6 @@ def reject_review(request, review_id):
     return redirect(request.META.get("HTTP_REFERER", "review_list"))
 
 
-
 @admin_required
 @require_POST
 def archive_review(request, review_id):
@@ -261,7 +254,6 @@ def archive_review(request, review_id):
     return redirect(request.META.get("HTTP_REFERER", "review_list"))
 
 
-
 @admin_required
 @require_POST
 def restore_review(request, review_id):
@@ -272,7 +264,6 @@ def restore_review(request, review_id):
 
     messages.success(request, "Review restored successfully")
     return redirect(request.META.get("HTTP_REFERER", "review_list"))
-
 
 
 @admin_required

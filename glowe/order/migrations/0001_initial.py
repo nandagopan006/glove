@@ -29,16 +29,26 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("order_number", models.CharField(max_length=20, unique=True)),
-                ("subtotal", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "subtotal",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
                 (
                     "delivery_charge",
-                    models.DecimalField(decimal_places=2, default=0, max_digits=10),
+                    models.DecimalField(
+                        decimal_places=2, default=0, max_digits=10
+                    ),
                 ),
                 (
                     "discount_amount",
-                    models.DecimalField(decimal_places=2, default=0, max_digits=10),
+                    models.DecimalField(
+                        decimal_places=2, default=0, max_digits=10
+                    ),
                 ),
-                ("total_amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "total_amount",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
                 (
                     "order_status",
                     models.CharField(
@@ -57,7 +67,10 @@ class Migration(migrations.Migration):
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
-                ("delivered_date", models.DateTimeField(blank=True, null=True)),
+                (
+                    "delivered_date",
+                    models.DateTimeField(blank=True, null=True),
+                ),
                 (
                     "address",
                     models.ForeignKey(
@@ -87,7 +100,10 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("price_at_time", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "price_at_time",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
                 ("quantity", models.PositiveIntegerField()),
                 (
                     "item_status",
@@ -167,7 +183,10 @@ class Migration(migrations.Migration):
                     "transaction_id",
                     models.CharField(blank=True, max_length=100, null=True),
                 ),
-                ("amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "amount",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
                 (
                     "payment_status",
                     models.CharField(
@@ -184,7 +203,8 @@ class Migration(migrations.Migration):
                 (
                     "order",
                     models.OneToOneField(
-                        on_delete=django.db.models.deletion.CASCADE, to="order.order"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="order.order",
                     ),
                 ),
             ],

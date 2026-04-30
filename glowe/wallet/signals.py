@@ -5,6 +5,7 @@ from .models import Wallet
 
 User = get_user_model()
 
+
 @receiver(post_save, sender=User)
 def create_wallet(sender, instance, created, **kwargs):
     if created:

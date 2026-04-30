@@ -30,7 +30,9 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "balance",
-                    models.DecimalField(decimal_places=2, default=0, max_digits=10),
+                    models.DecimalField(
+                        decimal_places=2, default=0, max_digits=10
+                    ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
@@ -68,9 +70,14 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "transaction_id",
-                    models.CharField(default=uuid.uuid4, max_length=100, unique=True),
+                    models.CharField(
+                        default=uuid.uuid4, max_length=100, unique=True
+                    ),
                 ),
-                ("amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "amount",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
                 (
                     "status",
                     models.CharField(

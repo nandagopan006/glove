@@ -6,7 +6,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("order", "0007_alter_order_order_status_alter_orderitem_item_status_and_more"),
+        (
+            "order",
+            "0007_alter_order_order_status_alter_orderitem_item_status_and_more",
+        ),
     ]
 
     operations = [

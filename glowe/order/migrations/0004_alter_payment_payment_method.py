@@ -14,7 +14,10 @@ class Migration(migrations.Migration):
             model_name="payment",
             name="payment_method",
             field=models.CharField(
-                choices=[("COD", "Cash on Delivery"), ("RAZORPAY", "Razorpay")],
+                choices=[
+                    ("COD", "Cash on Delivery"),
+                    ("RAZORPAY", "Razorpay"),
+                ],
                 default="COD",
                 max_length=20,
             ),

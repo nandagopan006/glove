@@ -30,7 +30,10 @@ class Migration(migrations.Migration):
                 (
                     "discount_type",
                     models.CharField(
-                        choices=[("PERCENTAGE", "Percentage"), ("FLAT", "Flat")],
+                        choices=[
+                            ("PERCENTAGE", "Percentage"),
+                            ("FLAT", "Flat"),
+                        ],
                         max_length=20,
                     ),
                 ),
@@ -72,7 +75,10 @@ class Migration(migrations.Migration):
                 (
                     "apply_to",
                     models.CharField(
-                        choices=[("PRODUCT", "Product"), ("CATEGORY", "Category")],
+                        choices=[
+                            ("PRODUCT", "Product"),
+                            ("CATEGORY", "Category"),
+                        ],
                         max_length=20,
                     ),
                 ),

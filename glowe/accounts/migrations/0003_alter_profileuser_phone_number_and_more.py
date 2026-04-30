@@ -13,7 +13,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="profileuser",
             name="phone_number",
-            field=models.CharField(blank=True, max_length=15, null=True, unique=True),
+            field=models.CharField(
+                blank=True, max_length=15, null=True, unique=True
+            ),
         ),
         migrations.AlterField(
             model_name="profileuser",

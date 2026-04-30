@@ -1,14 +1,13 @@
-
 from .models import Review
 
 
-def can_user_review(user,product,order):
-    if order.user != user :
+def can_user_review(user, product, order):
+    if order.user != user:
         return False
-    
-    if order.order_status != 'DELIVERED':
+
+    if order.order_status != "DELIVERED":
         return False
-    
+
     if not order.items.filter(variant__product=product).exists():
         return False
 

@@ -30,7 +30,10 @@ class Migration(migrations.Migration):
                 (
                     "discount_type",
                     models.CharField(
-                        choices=[("percentage", "Percentage"), ("flat", "Flat")],
+                        choices=[
+                            ("percentage", "Percentage"),
+                            ("flat", "Flat"),
+                        ],
                         max_length=20,
                     ),
                 ),
@@ -50,7 +53,10 @@ class Migration(migrations.Migration):
                         blank=True, decimal_places=2, max_digits=10, null=True
                     ),
                 ),
-                ("total_usage_limit", models.IntegerField(blank=True, null=True)),
+                (
+                    "total_usage_limit",
+                    models.IntegerField(blank=True, null=True),
+                ),
                 ("usage_limit_per_user", models.IntegerField(default=1)),
                 ("used_count", models.IntegerField(default=0)),
                 ("start_date", models.DateField()),
@@ -77,7 +83,8 @@ class Migration(migrations.Migration):
                 (
                     "coupon",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="coupons.coupon"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="coupons.coupon",
                     ),
                 ),
                 (

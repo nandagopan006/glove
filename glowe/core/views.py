@@ -1,54 +1,56 @@
-from django.shortcuts import render,redirect
-from django.contrib.auth import authenticate,logout
+from django.shortcuts import render, redirect
+from django.contrib.auth import logout
 from product.models import Product, Category
-from django.db.models import Q, Count, Avg
-from order.models import OrderItem
+from django.db.models import Count
 
 from django.views.decorators.cache import never_cache
 
+
 # Create your views here.
 def home(request):
-    
+
     if request.user.is_authenticated and request.user.is_superuser:
-        return redirect('admin_dashboard')
-    
-    welcome = request.session.pop('welcome', None)
-    
+        return redirect("admin_dashboard")
+
+    welcome = request.session.pop("welcome", None)
+
     # Get featured/new products (latest 8 products)
-    featured_products = Product.objects.filter(
-        is_deleted=False,
-        is_active=True
-    ).prefetch_related('images', 'variants').order_by('-created_at')[:8]
-    
+    featured_products = (
+        Product.objects.filter(is_deleted=False, is_active=True)
+        .prefetch_related("images", "variants")
+        .order_by("-created_at")[:8]
+    )
+
     # Get best selling products (top 4 by order count)
-    best_sellers = Product.objects.filter(
-        is_deleted=False,
-        is_active=True
-    ).annotate(
-        order_count=Count('variants__orderitem')
-    ).filter(order_count__gt=0).order_by('-order_count')[:4]
-    
+    best_sellers = (
+        Product.objects.filter(is_deleted=False, is_active=True)
+        .annotate(order_count=Count("variants__orderitem"))
+        .filter(order_count__gt=0)
+        .order_by("-order_count")[:4]
+    )
+
     # Get all active categories
-    categories = Category.objects.filter(
-        is_deleted=False
-    ).order_by('name')[:6]
-    
+    categories = Category.objects.filter(is_deleted=False).order_by("name")[:6]
+
     context = {
-        'welcome': welcome,
-        'featured_products': featured_products,
-        'best_sellers': best_sellers,
-        'categories': categories,
+        "welcome": welcome,
+        "featured_products": featured_products,
+        "best_sellers": best_sellers,
+        "categories": categories,
     }
-    
-    return render(request, 'home.html', context)
+
+    return render(request, "home.html", context)
+
 
 @never_cache
 def signout(request):
     logout(request)
-    return redirect('home')
+    return redirect("home")
+
 
 def contact_page(request):
-    return render(request, 'user/contact.html')
+    return render(request, "user/contact.html")
+
 
 def custom_404(request, exception):
-    return render(request, '404.html', status=404)
+    return render(request, "404.html", status=404)

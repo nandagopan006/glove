@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include, re_path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from core.views import custom_404
@@ -8,27 +8,27 @@ handler404 = custom_404
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('', include("accounts.urls")),
-    path('', include("core.urls")),
-    path('accounts/', include('allauth.urls')),
-    path('', include("user.urls")),
-    path('', include('adminpanel.urls')),
-    path('', include('category.urls')),
-    path('', include('product.urls')),
-    path('', include('cart.urls')),
-    path('', include('wishlist.urls')),
-    path('', include('order.urls')),
-    path('', include('payment.urls')),
-    path('', include('return.urls')),
-    path('', include('coupons.urls')),
-    path('', include('wallet.urls')),
-    path('', include('offer.urls')),
-    path('', include('search.urls')),
-    path('', include('review.urls')),
-
-   
-    # re_path(r'^(?!admin/).*$', custom_404, {'exception': Exception('Page not found')}),
+    path("", include("accounts.urls")),
+    path("", include("core.urls")),
+    path("accounts/", include("allauth.urls")),
+    path("", include("user.urls")),
+    path("", include("adminpanel.urls")),
+    path("", include("category.urls")),
+    path("", include("product.urls")),
+    path("", include("cart.urls")),
+    path("", include("wishlist.urls")),
+    path("", include("order.urls")),
+    path("", include("payment.urls")),
+    path("", include("return.urls")),
+    path("", include("coupons.urls")),
+    path("", include("wallet.urls")),
+    path("", include("offer.urls")),
+    path("", include("search.urls")),
+    path("", include("review.urls")),
+    # re_path(r'^(?!admin/).*$', custom_404, {'exception': Exception('Page not found')}),  # noqa: E501
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(
+        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    )

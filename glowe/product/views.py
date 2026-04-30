@@ -19,7 +19,6 @@ from django.views.decorators.cache import never_cache
 from core.decorators import admin_required
 
 
-
 @never_cache
 @admin_required
 def add_product(request):
@@ -40,7 +39,12 @@ def add_product(request):
                     {"form": form, "categories": categories},
                 )
 
-            valid_types = ["image/jpeg", "image/png", "image/webp", "image/jpg"]
+            valid_types = [
+                "image/jpeg",
+                "image/png",
+                "image/webp",
+                "image/jpg",
+            ]
 
             for img in images:
                 if img.content_type not in valid_types:
@@ -60,7 +64,7 @@ def add_product(request):
                     )
 
             product = form.save()  # for save product
-            primary_index = int(request.POST.get('primary_index', 0))
+            primary_index = int(request.POST.get("primary_index", 0))
             # Save images
             for i, img in enumerate(images):
                 ProductImage.objects.create(
@@ -75,7 +79,9 @@ def add_product(request):
         form = ProductForm()
 
     return render(
-        request, "admin/add_product.html", {"form": form, "categories": categories}
+        request,
+        "admin/add_product.html",
+        {"form": form, "categories": categories},
     )
 
 
@@ -102,24 +108,43 @@ def edit_product(request, id):
                 return render(
                     request,
                     "admin/edit_product.html",
-                    {"form": form, "product": product, "categories": categories},
+                    {
+                        "form": form,
+                        "product": product,
+                        "categories": categories,
+                    },
                 )
 
-            valid_types = ["image/jpeg", "image/png", "image/webp", "image/jpg"]
+            valid_types = [
+                "image/jpeg",
+                "image/png",
+                "image/webp",
+                "image/jpg",
+            ]
             for img in images:
                 if img.content_type not in valid_types:
-                    messages.error(request, f"{img.name} is not a valid image type.")
+                    messages.error(
+                        request, f"{img.name} is not a valid image type."
+                    )
                     return render(
                         request,
                         "admin/edit_product.html",
-                        {"form": form, "product": product, "categories": categories},
+                        {
+                            "form": form,
+                            "product": product,
+                            "categories": categories,
+                        },
                     )
                 if img.size > 2 * 1024 * 1024:
                     messages.error(request, f"{img.name} must be under 2MB.")
                     return render(
                         request,
                         "admin/edit_product.html",
-                        {"form": form, "product": product, "categories": categories},
+                        {
+                            "form": form,
+                            "product": product,
+                            "categories": categories,
+                        },
                     )
 
             product = form.save(commit=False)
@@ -263,7 +288,7 @@ def permanent_delete_product(request, id):
     if request.method == "POST":
         product = get_object_or_404(Product, id=id)
 
-        if not product.is_deleted == True:
+        if not product.is_deleted:
             messages.error(
                 request, "Please soft delete the product first then only allow"
             )
@@ -327,7 +352,9 @@ def product_management(request):
     all_products = Product.objects.all()
 
     total_products = all_products.count()
-    active_products = all_products.filter(is_active=True, is_deleted=False).count()
+    active_products = all_products.filter(
+        is_active=True, is_deleted=False
+    ).count()
     archived_products = all_products.filter(is_deleted=True).count()
 
     for p in products:
@@ -338,7 +365,9 @@ def product_management(request):
 
         primary_image = p.images.filter(is_primary=True).first()
         p.display_image = (
-            primary_image.image.url if primary_image and primary_image.image else None
+            primary_image.image.url
+            if primary_image and primary_image.image
+            else None
         )  # primary_image is object and primary_image.image is file
 
     categories = Category.objects.all()
@@ -382,17 +411,21 @@ def product_detail(request, id):
 
     low_stock = total_stock < 10
     skin_types_list = (
-        [s.strip() for s in product.skin_type.split(",")] if product.skin_type else []
+        [s.strip() for s in product.skin_type.split(",")]
+        if product.skin_type
+        else []
     )
     skin_types_list = (
-        [s.strip() for s in product.skin_type.split(",")] if product.skin_type else []
+        [s.strip() for s in product.skin_type.split(",")]
+        if product.skin_type
+        else []
     )
     how_to_use_steps = []
 
     if product.how_to_use:
         try:
             how_to_use_steps = json.loads(product.how_to_use)
-        except:
+        except Exception:
             how_to_use_steps = []
 
     return render(
@@ -430,7 +463,9 @@ def add_variant(request, product_id):
 
             # if select as default true  and change pervies default false
             if variant.is_default:
-                product.variants.filter(is_default=True).update(is_default=False)
+                product.variants.filter(is_default=True).update(
+                    is_default=False
+                )
 
             if not product.variants.filter(is_default=True).exists():
                 variant.is_default = True
@@ -473,9 +508,9 @@ def edit_variant(request, id):
 
             #  if user select default remove other defaults
             if updated_variant.is_default:
-                product.variants.exclude(id=variant.id).filter(is_default=True).update(
-                    is_default=False
-                )
+                product.variants.exclude(id=variant.id).filter(
+                    is_default=True
+                ).update(is_default=False)
 
             # if no default exists so that make this default
             if (
@@ -589,7 +624,8 @@ def variant_management(request, product_id):
     q = request.GET.get("q", "").strip()
     variants = product.variants.all()
     primary_image = (
-        product.images.filter(is_primary=True).first() or product.images.first()
+        product.images.filter(is_primary=True).first()
+        or product.images.first()
     )
 
     if q:
@@ -732,14 +768,14 @@ def product_listing(request):
     sort = request.GET.get("sort", "").strip()
 
     if sort == "price_low":
-        products = products.annotate(min_price=Min("variants__price")).order_by(
-            "min_price"
-        )
+        products = products.annotate(
+            min_price=Min("variants__price")
+        ).order_by("min_price")
 
     elif sort == "price_high":
-        products = products.annotate(min_price=Min("variants__price")).order_by(
-            "-min_price"
-        )
+        products = products.annotate(
+            min_price=Min("variants__price")
+        ).order_by("-min_price")
 
     elif sort == "a_z":
         products = products.order_by("name")
@@ -754,8 +790,15 @@ def product_listing(request):
 
     # Annotate avg rating and review count for product cards
     products = products.annotate(
-        avg_rating=Avg('review__rating', filter=Q(review__is_deleted=False, review__status='approved')),
-        review_count=Count('review', filter=Q(review__is_deleted=False, review__status='approved'), distinct=True),
+        avg_rating=Avg(
+            "review__rating",
+            filter=Q(review__is_deleted=False, review__status="approved"),
+        ),
+        review_count=Count(
+            "review",
+            filter=Q(review__is_deleted=False, review__status="approved"),
+            distinct=True,
+        ),
     )
 
     products = products.prefetch_related(
@@ -799,7 +842,9 @@ def product_listing(request):
 
         except Exception:
             product.final_price = (
-                product_price if "product_price" in locals() else Decimal("0.00")
+                product_price
+                if "product_price" in locals()
+                else Decimal("0.00")
             )
             product.discount = Decimal("0.00")
             product.has_offer = False
@@ -955,11 +1000,10 @@ def product_detail_view(request, slug):
     if how_to_use:
         try:
             how_to_use_steps = json.loads(how_to_use)
-        except:
+        except Exception:
             how_to_use_steps = []
 
     # not use now  ok appo venda
-    delivery_info = "Free delivery in 3-5 days"
 
     images = product.images.all()
     primary_image = images.filter(is_primary=True).first()
@@ -971,10 +1015,13 @@ def product_detail_view(request, slug):
     for rel in related_products:
         try:
             rel_variant = (
-                rel.variants.filter(is_default=True).first() or rel.variants.first()
+                rel.variants.filter(is_default=True).first()
+                or rel.variants.first()
             )
             rel_price = (
-                Decimal(str(rel_variant.price)) if rel_variant else Decimal("0.00")
+                Decimal(str(rel_variant.price))
+                if rel_variant
+                else Decimal("0.00")
             )
 
             rel_offer, rel_disc = get_best_offer(rel, rel_price)
@@ -1019,27 +1066,36 @@ def product_detail_view(request, slug):
 
     # Fetch reviews
     from django.db.models import Avg, Count
-    reviews = product.review_set.filter(status='approved', is_deleted=False).order_by('-created_at')
-    
+
+    reviews = product.review_set.filter(
+        status="approved", is_deleted=False
+    ).order_by("-created_at")
+
     # Calculate stats
     total_reviews = reviews.count()
-    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
-    
+    avg_rating = reviews.aggregate(Avg("rating"))["rating__avg"] or 0
+
     # Rating distribution
     rating_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
-    for r in reviews.values('rating').annotate(count=Count('id')):
-        rating_counts[r['rating']] = r['count']
-        
+    for r in reviews.values("rating").annotate(count=Count("id")):
+        rating_counts[r["rating"]] = r["count"]
+
     rating_distribution = {}
     if total_reviews > 0:
         for star in range(5, 0, -1):
-            rating_distribution[star] = int((rating_counts[star] / total_reviews) * 100)
+            rating_distribution[star] = int(
+                (rating_counts[star] / total_reviews) * 100
+            )
     else:
         rating_distribution = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
 
     # Combined rows for template (star, pct, count)
     rating_rows = [
-        {'star': star, 'pct': rating_distribution[star], 'count': rating_counts[star]}
+        {
+            "star": star,
+            "pct": rating_distribution[star],
+            "count": rating_counts[star],
+        }
         for star in range(5, 0, -1)
     ]
 
@@ -1048,15 +1104,18 @@ def product_detail_view(request, slug):
     if request.user.is_authenticated:
         from order.models import Order
         from review.models import Review
+
         # Find a delivered order with this product
         orders_with_product = Order.objects.filter(
-            user=request.user, 
-            order_status='DELIVERED', 
-            items__variant__product=product
+            user=request.user,
+            order_status="DELIVERED",
+            items__variant__product=product,
         ).distinct()
-        
+
         for ord_obj in orders_with_product:
-            if not Review.objects.filter(user=request.user, product=product, order=ord_obj).exists():
+            if not Review.objects.filter(
+                user=request.user, product=product, order=ord_obj
+            ).exists():
                 reviewable_order = ord_obj
                 break
 
@@ -1109,7 +1168,7 @@ def add_to_cart(request):
     try:
 
         quantity = int(request.POST.get("quantity", 1))
-    except:
+    except Exception:
         quantity = 1
     # if neg or 0 not aloow
     if quantity <= 0:
@@ -1140,7 +1199,7 @@ def add_to_cart(request):
     cart_item = CartItem.objects.filter(cart=cart, variant=variant).first()
 
     original_qty = cart_item.quantity if cart_item else 0
-    
+
     if original_qty >= max_qty:
         msg = "Max quantity reached"
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
@@ -1171,15 +1230,29 @@ def add_to_cart(request):
     if limit_hit:
         msg = "Max quantity reached"
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
-            return JsonResponse({"status": "warning", "message": msg, "cart_count": cart.items.count()})
+            return JsonResponse(
+                {
+                    "status": "warning",
+                    "message": msg,
+                    "cart_count": cart.items.count(),
+                }
+            )
         messages.warning(request, msg)
     else:
         msg = "Cart updated"
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
-            return JsonResponse({"status": "success", "message": msg, "cart_count": cart.items.count()})
+            return JsonResponse(
+                {
+                    "status": "success",
+                    "message": msg,
+                    "cart_count": cart.items.count(),
+                }
+            )
         messages.success(request, msg)
 
-    return redirect(f"{reverse('product_detail_view', kwargs={'slug': product.slug})}?variant={variant.id}")
+    return redirect(
+        f"{reverse('product_detail_view', kwargs={'slug': product.slug})}?variant={variant.id}"  # noqa: E501
+    )
 
 
 @login_required

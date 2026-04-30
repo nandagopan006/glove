@@ -2,6 +2,7 @@ from decimal import Decimal
 from django.utils import timezone
 from .models import OfferItem
 
+
 def calculate_discount(price, offer):
 
     price = Decimal(price)
@@ -13,24 +14,25 @@ def calculate_discount(price, offer):
         # apply max limit
         if offer.max_discount:
             if discount > offer.max_discount:
-                discount=offer.max_discount
+                discount = offer.max_discount
 
     # Flat discount
     else:
-        discount =offer.discount_value
+        discount = offer.discount_value
 
     # prevent discount more than price
     if discount > price:
-        discount =price
+        discount = price
 
-    #round to 2 decimal
-    discount=discount.quantize(Decimal("0.01"))
+    # round to 2 decimal
+    discount = discount.quantize(Decimal("0.01"))
 
     return discount
 
+
 def get_best_offer(product, price):
 
-    now =timezone.now()
+    now = timezone.now()
 
     # Product offers
     product_offers = OfferItem.objects.filter(
@@ -38,7 +40,7 @@ def get_best_offer(product, price):
         product=product,
         offer__is_active=True,
         offer__start_date__lte=now,
-        offer__end_date__gte=now
+        offer__end_date__gte=now,
     )
 
     # Category offers
@@ -47,19 +49,19 @@ def get_best_offer(product, price):
         category=product.category,
         offer__is_active=True,
         offer__start_date__lte=now,
-        offer__end_date__gte=now
+        offer__end_date__gte=now,
     )
 
     all_items = list(product_offers) + list(category_offers)
 
-    best_discount=Decimal("0.00")
+    best_discount = Decimal("0.00")
     best_offer = None
 
     for item in all_items:
-        discount=calculate_discount(price, item.offer)
+        discount = calculate_discount(price, item.offer)
 
         if discount > best_discount:
-            best_discount =discount
+            best_discount = discount
             best_offer = item.offer
 
-    return best_offer,best_discount
+    return best_offer, best_discount

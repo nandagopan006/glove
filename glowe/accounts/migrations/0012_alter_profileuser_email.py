@@ -6,7 +6,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("accounts", "0011_alter_profileuser_email_alter_profileuser_full_name"),
+        (
+            "accounts",
+            "0011_alter_profileuser_email_alter_profileuser_full_name",
+        ),
     ]
 
     operations = [
