@@ -7,16 +7,14 @@
   <title>Glowé Admin — Order Management</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600;700&family=Montserrat:wght@600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['DM Sans', 'sans-serif'],
-            serif: ['Playfair Display', 'serif'],
-            montserrat: ['Montserrat', 'sans-serif'],
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
           },
           colors: {
             sage: {
@@ -31,7 +29,7 @@
   </script>
   
   <style>
-    * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
     body { background: #fdfdfd; margin: 0; overflow-x: hidden; color: #1a1a1a; }
     
     /* Sidebar Transition */
@@ -86,8 +84,15 @@
     .popover-item:hover { background:#f8fafc; }
 
     /* Toast */
+    /* Animations */
     @keyframes toastIn { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
     .toast { animation: toastIn 0.3s ease-out forwards; }
+    .animate-fade-in { animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+    /* Editorial Table Style */
+    .order-table th { padding: 24px 32px !important; border-bottom: 1px solid #f3f4f6; }
+    .order-table td { padding: 24px 32px !important; vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -128,64 +133,104 @@
         </div>
       </div>
 
-      <!-- Action Card (Search + Table) -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col pt-2">
+      <!-- Filter & Search Area (Clean - No Section Background) -->
+      <div class="flex flex-col lg:flex-row items-center justify-between gap-6 mb-10 fu d1 relative z-20">
         
-        <!-- Toolbar -->
-        <div class="px-6 py-4 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-end gap-3">
-          <div class="flex items-center gap-3 w-full md:w-auto">
-            <form id="searchForm" method="GET" class="relative w-full md:w-[280px]">
-              {% if filter_by and filter_by != 'all' %}
-              <input type="hidden" name="filter" value="{{ filter_by }}">
-              {% endif %}
-              <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 z-10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              <input type="text" id="searchInput" name="search" value="{{ search }}" placeholder="Search orders..." class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#f8fafc] border border-gray-100 text-sm font-medium text-gray-700 focus:bg-white focus:border-sage-300 focus:ring-4 focus:ring-sage-50 transition-all outline-none placeholder:text-gray-400 shadow-sm"/>
-              
-              <button type="button" id="clearSearchBtn" onclick="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-gray-200 text-gray-500 hover:bg-gray-300 hover:text-gray-700 flex items-center justify-center transition-all {% if not search %}hidden{% endif %}">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-              </button>
-            </form>
-            
-            <div class="relative">
-              <button type="button" onclick="toggleFilterDropdown(event)" class="px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 hover:border-gray-300 flex items-center gap-2 transition-all shadow-sm focus:ring-4 focus:ring-gray-100 outline-none flex-shrink-0">
-                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-                {% if filter_by == 'pending' %}
-                  Pending
-                {% elif filter_by == 'confirmed' %}
-                  Confirmed
-                {% elif filter_by == 'processing' %}
-                  Processing
-                {% elif filter_by == 'shipped' %}
-                  Shipped
-                {% elif filter_by == 'out_of_delivery' %}
-                  Out for Delivery
-                {% elif filter_by == 'delivered' %}
-                  Delivered
-                {% elif filter_by == 'cancelled' %}
-                  Cancelled
-                {% elif filter_by == 'all' or not filter_by %}
-                  All Orders
-                {% else %}
-                  Filters
-                {% endif %}
-              </button>
+        <!-- Status Filter -->
+        <div class="flex items-center gap-4 w-full lg:w-auto">
+          <div class="relative group" id="statusFilterContainer">
+            <button type="button" onclick="toggleFilterDropdown(event)" class="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-white border border-gray-100 text-[13px] font-bold text-gray-700 hover:border-sage-400 hover:shadow-sm transition-all duration-300 min-w-[160px] justify-between shadow-sm focus:ring-4 focus:ring-sage-50 outline-none">
+              <div class="flex items-center gap-2.5">
+                <span class="w-1.5 h-1.5 rounded-full {% if filter_by == 'pending' %}bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]{% elif filter_by == 'delivered' %}bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]{% elif filter_by == 'cancelled' %}bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]{% else %}bg-gray-400{% endif %}"></span>
+                <span class="truncate">
+                  {% if filter_by == 'pending' %}Pending
+                  {% elif filter_by == 'confirmed' %}Confirmed
+                  {% elif filter_by == 'processing' %}Processing
+                  {% elif filter_by == 'shipped' %}Shipped
+                  {% elif filter_by == 'out_of_delivery' %}Out for Delivery
+                  {% elif filter_by == 'delivered' %}Delivered
+                  {% elif filter_by == 'cancelled' %}Cancelled
+                  {% else %}All Orders{% endif %}
+                </span>
+              </div>
+              <svg class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 group-hover:text-sage-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
 
-              <div id="filterDropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
-                <div class="px-4 py-2 border-b border-gray-50 mb-1">
-                  <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Filter By Status</p>
-                </div>
-                <a href="?filter=all{% if search %}&search={{ search }}{% endif %}" class="block px-4 py-2 text-sm {% if filter_by == 'all' or not filter_by %}font-bold text-sage-600 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %}">All Orders</a>
-                <a href="?filter=pending{% if search %}&search={{ search }}{% endif %}" class="block px-4 py-2 text-sm {% if filter_by == 'pending' %}font-bold text-sage-600 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %}">Pending</a>
-                <a href="?filter=confirmed{% if search %}&search={{ search }}{% endif %}" class="block px-4 py-2 text-sm {% if filter_by == 'confirmed' %}font-bold text-sage-600 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %}">Confirmed</a>
-                <a href="?filter=processing{% if search %}&search={{ search }}{% endif %}" class="block px-4 py-2 text-sm {% if filter_by == 'processing' %}font-bold text-sage-600 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %}">Processing</a>
-                <a href="?filter=shipped{% if search %}&search={{ search }}{% endif %}" class="block px-4 py-2 text-sm {% if filter_by == 'shipped' %}font-bold text-sage-600 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %}">Shipped</a>
-                <a href="?filter=out_of_delivery{% if search %}&search={{ search }}{% endif %}" class="block px-4 py-2 text-sm {% if filter_by == 'out_of_delivery' %}font-bold text-sage-600 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %}">Out for Delivery</a>
-                <a href="?filter=delivered{% if search %}&search={{ search }}{% endif %}" class="block px-4 py-2 text-sm {% if filter_by == 'delivered' %}font-bold text-sage-600 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %}">Delivered</a>
-                <a href="?filter=cancelled{% if search %}&search={{ search }}{% endif %}" class="block px-4 py-2 text-sm {% if filter_by == 'cancelled' %}font-bold text-sage-600 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %}">Cancelled</a>
+            <!-- Dropdown Menu -->
+            <div id="filterDropdownMenu" class="hidden absolute top-full left-0 mt-3 w-60 bg-white rounded-2xl shadow-2xl border border-gray-100 py-3 z-50 animate-fade-in">
+              <div class="px-5 py-2 mb-2 border-b border-gray-50">
+                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-[0.15em]">Filter by Status</p>
+              </div>
+              <div class="max-h-72 overflow-y-auto custom-scrollbar">
+                <a href="?filter=all{% if search %}&search={{ search }}{% endif %}" class="flex items-center gap-3 px-5 py-2.5 text-[13px] {% if filter_by == 'all' or not filter_by %}font-bold text-sage-700 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+                  <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> All Orders
+                </a>
+                <a href="?filter=pending{% if search %}&search={{ search }}{% endif %}" class="flex items-center gap-3 px-5 py-2.5 text-[13px] {% if filter_by == 'pending' %}font-bold text-sage-700 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+                  <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Pending
+                </a>
+                <!-- ... other links (shortened for replacement) ... -->
+                <a href="?filter=confirmed{% if search %}&search={{ search }}{% endif %}" class="flex items-center gap-3 px-5 py-2.5 text-[13px] {% if filter_by == 'confirmed' %}font-bold text-sage-700 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+                  <span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> Confirmed
+                </a>
+                <a href="?filter=processing{% if search %}&search={{ search }}{% endif %}" class="flex items-center gap-3 px-5 py-2.5 text-[13px] {% if filter_by == 'processing' %}font-bold text-sage-700 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Processing
+                </a>
+                <a href="?filter=shipped{% if search %}&search={{ search }}{% endif %}" class="flex items-center gap-3 px-5 py-2.5 text-[13px] {% if filter_by == 'shipped' %}font-bold text-sage-700 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span> Shipped
+                </a>
+                <a href="?filter=out_of_delivery{% if search %}&search={{ search }}{% endif %}" class="flex items-center gap-3 px-5 py-2.5 text-[13px] {% if filter_by == 'out_of_delivery' %}font-bold text-sage-700 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+                  <span class="w-1.5 h-1.5 rounded-full bg-orange-600"></span> Out for Delivery
+                </a>
+                <a href="?filter=delivered{% if search %}&search={{ search }}{% endif %}" class="flex items-center gap-3 px-5 py-2.5 text-[13px] {% if filter_by == 'delivered' %}font-bold text-sage-700 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+                  <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span> Delivered
+                </a>
+                <a href="?filter=cancelled{% if search %}&search={{ search }}{% endif %}" class="flex items-center gap-3 px-5 py-2.5 text-[13px] {% if filter_by == 'cancelled' %}font-bold text-sage-700 bg-sage-50{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+                  <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span> Cancelled
+                </a>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- Search Input -->
+        <div class="flex items-center w-full lg:w-[320px] relative group">
+          <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sage-600 transition-colors duration-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+          </div>
+          <form id="searchForm" method="GET" class="w-full">
+            {% if filter_by and filter_by != 'all' %}
+            <input type="hidden" name="filter" value="{{ filter_by }}">
+            {% endif %}
+            <input
+              id="searchInput"
+              name="search"
+              type="text"
+              value="{{ search }}"
+              placeholder="Search orders…"
+              autocomplete="off"
+              class="w-full pl-10 pr-20 py-3 text-[13px] bg-white border border-gray-100 rounded-2xl focus:ring-4 focus:ring-sage-50 focus:border-sage-400 transition-all duration-300 placeholder-gray-400 outline-none font-medium shadow-sm"/>
+          </form>
+          
+          <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <button 
+              id="clearSearchBtn"
+              type="button"
+              onclick="clearSearch()"
+              class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all active:scale-90 {% if not search %}hidden{% endif %}">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <button
+              onclick="document.getElementById('searchForm').submit()"
+              class="px-3 py-1.5 bg-sage-600 hover:bg-sage-700 text-white text-[10px] font-bold rounded-lg shadow-sm hover:shadow-md transition-all duration-200 active:scale-95 uppercase tracking-wider">
+              Search
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Table Card (Clean) -->
+      <div class="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-sm mb-10">
 
         <!-- Desktop Table Content (No restricted height) -->
         <div class="hidden lg:block">

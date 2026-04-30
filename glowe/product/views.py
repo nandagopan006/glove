@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse
+from django.http import JsonResponse
 from django.contrib import messages
 from .forms import ProductForm, VariantForm
 from .models import ProductImage, Product, Variant, Category
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
-from django.db.models import Q, Sum, Min
+from django.db.models import Q, Sum, Min, Avg, Count
 from django.db.models import Prefetch
 import json
 from cart.models import CartItem
@@ -15,6 +17,7 @@ from decimal import Decimal
 from offer.utils import get_best_offer
 from django.views.decorators.cache import never_cache
 from core.decorators import admin_required
+
 
 
 @never_cache
@@ -57,12 +60,13 @@ def add_product(request):
                     )
 
             product = form.save()  # for save product
+            primary_index = int(request.POST.get('primary_index', 0))
             # Save images
             for i, img in enumerate(images):
                 ProductImage.objects.create(
                     product=product,
                     image=img,
-                    is_primary=(i == 0),  # first image = primary ak kumm
+                    is_primary=(i == primary_index),
                 )
 
             messages.success(request, "Product added successfully")
@@ -428,7 +432,6 @@ def add_variant(request, product_id):
             if variant.is_default:
                 product.variants.filter(is_default=True).update(is_default=False)
 
-           
             if not product.variants.filter(is_default=True).exists():
                 variant.is_default = True
 
@@ -452,7 +455,7 @@ def add_variant(request, product_id):
 @never_cache
 @admin_required
 def edit_variant(request, id):
-    variant =get_object_or_404(Variant, id=id)
+    variant = get_object_or_404(Variant, id=id)
     product = variant.product
 
     if request.method == "POST":
@@ -631,6 +634,7 @@ def variant_management(request, product_id):
 
 # ---== user side  statinggg--
 
+
 def product_listing(request):
 
     products = Product.objects.filter(
@@ -644,48 +648,40 @@ def product_listing(request):
     if search:
         products = products.filter(name__icontains=search)
 
-    
     category_param = request.GET.get("category", "")
     selected_categories = []
-    
-    
+
     if category_param != "":
-        
+
         items = category_param.split(",")
         for item in items:
             clean_item = item.strip()
             if clean_item != "":
                 selected_categories.append(clean_item)
-                
+
     # Filter products if we have any categories selected
     if len(selected_categories) > 0:
         products = products.filter(category__id__in=selected_categories)
 
-
-  
     skin_param = request.GET.get("skin_type", "")
     selected_skin_types = []
-    
-   
+
     if skin_param != "":
-        # Split the string by comma 
+        # Split the string by comma
         items = skin_param.split(",")
         for item in items:
             clean_item = item.strip()
             if clean_item != "":
                 selected_skin_types.append(clean_item)
-                
-    
+
     if len(selected_skin_types) > 0:
         # We create an empty query first
         skin_query = Q()
-        
-        
+
         for skin in selected_skin_types:
             skin_query = skin_query | Q(skin_type__icontains=skin)
-            
-        products = products.filter(skin_query)
 
+        products = products.filter(skin_query)
 
     min_price_param = request.GET.get("min_price", "").strip()
     max_price_param = request.GET.get("max_price", "").strip()
@@ -700,7 +696,6 @@ def product_listing(request):
         except ValueError:
             pass
 
-   
     if max_price_param != "":
         try:
             max_price = int(max_price_param)
@@ -720,19 +715,17 @@ def product_listing(request):
         products = products.filter(
             variants__is_default=True,
             variants__price__gte=min_price,
-            variants__price__lte=max_price
+            variants__price__lte=max_price,
         )
     elif min_price is not None:
         # Only min exists
         products = products.filter(
-            variants__is_default=True,
-            variants__price__gte=min_price
+            variants__is_default=True, variants__price__gte=min_price
         )
     elif max_price is not None:
         # Only max exists
         products = products.filter(
-            variants__is_default=True,
-            variants__price__lte=max_price
+            variants__is_default=True, variants__price__lte=max_price
         )
 
     # sortingg
@@ -759,6 +752,12 @@ def product_listing(request):
 
     total_count = products.count()
 
+    # Annotate avg rating and review count for product cards
+    products = products.annotate(
+        avg_rating=Avg('review__rating', filter=Q(review__is_deleted=False, review__status='approved')),
+        review_count=Count('review', filter=Q(review__is_deleted=False, review__status='approved'), distinct=True),
+    )
+
     products = products.prefetch_related(
         Prefetch("images", queryset=ProductImage.objects.order_by("id")),
         Prefetch(
@@ -782,30 +781,23 @@ def product_listing(request):
             # Call get_best_offer
             offer, discount = get_best_offer(product, product_price)
 
-            # Apply rules
             if offer:
                 if discount > product_price:
-                    discount = product_price  # Discount cannot exceed price
-
+                    discount = product_price
                 final_price = product_price - discount
-
                 if final_price < Decimal("0.00"):
-                    final_price = Decimal("0.00")  # No negative price
-
-                # Attach to product
+                    final_price = Decimal("0.00")
                 product.final_price = final_price
                 product.discount = discount
                 product.has_offer = True
                 product.offer = offer
             else:
-                # no offer
                 product.final_price = product_price
                 product.discount = Decimal("0.00")
                 product.has_offer = False
                 product.offer = None
 
-        except Exception as e:
-            # If anything fails, set default values
+        except Exception:
             product.final_price = (
                 product_price if "product_price" in locals() else Decimal("0.00")
             )
@@ -857,7 +849,6 @@ def product_listing(request):
     )
 
 
-
 def product_detail_view(request, slug):
 
     product = get_object_or_404(
@@ -888,37 +879,26 @@ def product_detail_view(request, slug):
     low_stock_count = stock if 0 < stock <= 5 else None
     all_out_of_stock = not variants.filter(stock__gt=0).exists()
 
-
     sv_price = Decimal("0.00")
-    
+
     try:
         if selected_variant:
-            # Get price
             sv_price = Decimal(str(selected_variant.price))
-
-            #  Call get_best_offer
             best_offer, best_discount = get_best_offer(product, sv_price)
 
-            # Apply rules
             if best_offer:
                 if best_discount > sv_price:
-                    best_discount = sv_price  # Discount cannot exceed price
-
+                    best_discount = sv_price
                 final_price = sv_price - best_discount
-
                 if final_price < Decimal("0.00"):
-                    final_price = Decimal("0.00")  # No negative price
-
+                    final_price = Decimal("0.00")
                 has_offer = True
                 offer_discount = best_discount
-
-                # Build simple offer text
                 if best_offer.discount_type == "PERCENTAGE":
                     offer_text = f"{best_offer.discount_value:g}% OFF"
                 else:
                     offer_text = f"Flat ₹{best_offer.discount_value:g} OFF"
             else:
-                # If no offer
                 final_price = sv_price
                 has_offer = False
                 offer_discount = Decimal("0.00")
@@ -930,9 +910,7 @@ def product_detail_view(request, slug):
             offer_discount = Decimal("0.00")
             offer_text = ""
             best_offer = None
-
-    except Exception as e:
-        # Default to regular price if anything fails
+    except Exception:
         final_price = sv_price
         has_offer = False
         offer_discount = Decimal("0.00")
@@ -943,24 +921,19 @@ def product_detail_view(request, slug):
         try:
             v_price = Decimal(str(v.price))
             v_offer, v_disc = get_best_offer(product, v_price)
-
             if v_offer:
                 if v_disc > v_price:
                     v_disc = v_price
-
                 v_final = v_price - v_disc
                 if v_final < Decimal("0.00"):
                     v_final = Decimal("0.00")
-
-                if v_offer.discount_type == "PERCENTAGE":
-                    v_text = f"{v_offer.discount_value:g}% OFF"
-                else:
-                    v_text = f"Flat ₹{v_offer.discount_value:g} OFF"
-
                 v.final_price = v_final
                 v.discount = v_disc
                 v.has_offer = True
-                v.offer_text = v_text
+                if v_offer.discount_type == "PERCENTAGE":
+                    v.offer_text = f"{v_offer.discount_value:g}% OFF"
+                else:
+                    v.offer_text = f"Flat ₹{v_offer.discount_value:g} OFF"
                 v.offer_name = v_offer.name
             else:
                 v.final_price = v_price
@@ -969,7 +942,6 @@ def product_detail_view(request, slug):
                 v.offer_text = ""
                 v.offer_name = ""
         except Exception:
-            # If error, set default price
             v.final_price = v.price
             v.discount = Decimal("0.00")
             v.has_offer = False
@@ -996,46 +968,40 @@ def product_detail_view(request, slug):
         category=product.category, is_active=True, is_deleted=False
     ).exclude(id=product.id)[:7]
 
-
-    
     for rel in related_products:
-        rel_price = Decimal("0.00")
         try:
-            rel_variant = rel.variants.filter(is_default=True).first() or rel.variants.first()
-            if rel_variant:
-                rel_price = Decimal(str(rel_variant.price))
-                
+            rel_variant = (
+                rel.variants.filter(is_default=True).first() or rel.variants.first()
+            )
+            rel_price = (
+                Decimal(str(rel_variant.price)) if rel_variant else Decimal("0.00")
+            )
+
             rel_offer, rel_disc = get_best_offer(rel, rel_price)
-            
             if rel_offer:
                 if rel_disc > rel_price:
-                    rel_disc = rel_price  # Discount cannot exceed price
-                    
-                final_rel_price = rel_price - rel_disc
-                
-                if final_rel_price < Decimal("0.00"):
-                    final_rel_price = Decimal("0.00")  # No negative price
-                    
-                rel.final_price = final_rel_price
+                    rel_disc = rel_price
+                rel_final = rel_price - rel_disc
+                if rel_final < Decimal("0.00"):
+                    rel_final = Decimal("0.00")
+                rel.final_price = rel_final
                 rel.discount = rel_disc
                 rel.has_offer = True
-                rel.original_price = rel_price
             else:
-                # If no offer
                 rel.final_price = rel_price
                 rel.discount = Decimal("0.00")
                 rel.has_offer = False
-                rel.original_price = rel_price
-                
-        except Exception:
-            # Default to normal price if error
-            rel.final_price = rel_price
-            rel.discount = Decimal("0.00")
-            rel.has_offer = False
             rel.original_price = rel_price
 
-    # wishlisted variant 
+        except Exception:
+            rel.final_price = Decimal("0.00")
+            rel.discount = Decimal("0.00")
+            rel.has_offer = False
+            rel.original_price = Decimal("0.00")
+
+    # wishlisted variant
     wishlisted_ids = []
+    cart_variant_ids = []
 
     if request.user.is_authenticated:
         wishlisted_ids = list(
@@ -1043,6 +1009,56 @@ def product_detail_view(request, slug):
                 "variant_id", flat=True
             )
         )
+
+        # Get variants already in cart
+        cart_variant_ids = list(
+            CartItem.objects.filter(cart__user=request.user).values_list(
+                "variant_id", flat=True
+            )
+        )
+
+    # Fetch reviews
+    from django.db.models import Avg, Count
+    reviews = product.review_set.filter(status='approved', is_deleted=False).order_by('-created_at')
+    
+    # Calculate stats
+    total_reviews = reviews.count()
+    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    
+    # Rating distribution
+    rating_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+    for r in reviews.values('rating').annotate(count=Count('id')):
+        rating_counts[r['rating']] = r['count']
+        
+    rating_distribution = {}
+    if total_reviews > 0:
+        for star in range(5, 0, -1):
+            rating_distribution[star] = int((rating_counts[star] / total_reviews) * 100)
+    else:
+        rating_distribution = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
+
+    # Combined rows for template (star, pct, count)
+    rating_rows = [
+        {'star': star, 'pct': rating_distribution[star], 'count': rating_counts[star]}
+        for star in range(5, 0, -1)
+    ]
+
+    # Find reviewable order
+    reviewable_order = None
+    if request.user.is_authenticated:
+        from order.models import Order
+        from review.models import Review
+        # Find a delivered order with this product
+        orders_with_product = Order.objects.filter(
+            user=request.user, 
+            order_status='DELIVERED', 
+            items__variant__product=product
+        ).distinct()
+        
+        for ord_obj in orders_with_product:
+            if not Review.objects.filter(user=request.user, product=product, order=ord_obj).exists():
+                reviewable_order = ord_obj
+                break
 
     return render(
         request,
@@ -1063,12 +1079,19 @@ def product_detail_view(request, slug):
             "primary_image": primary_image,
             "related_products": related_products,
             "wishlisted_ids": wishlisted_ids,
-            
+            "cart_variant_ids": cart_variant_ids,
             "final_price": final_price,
             "has_offer": has_offer,
             "offer_discount": offer_discount,
             "offer_text": offer_text,
             "offer": best_offer,
+            "reviews": reviews,
+            "total_reviews": total_reviews,
+            "avg_rating": avg_rating,
+            "rating_distribution": rating_distribution,
+            "rating_counts": rating_counts,
+            "rating_rows": rating_rows,
+            "reviewable_order": reviewable_order,
         },
     )
 
@@ -1114,21 +1137,58 @@ def add_to_cart(request):
 
     cart = get_user_cart(request.user)
 
-    cart_item, created = CartItem.objects.get_or_create(cart=cart, variant=variant)
+    cart_item = CartItem.objects.filter(cart=cart, variant=variant).first()
 
-    new_qty = cart_item.quantity + quantity if not created else quantity
-
-    if new_qty > stock:
-        messages.error(request, f"Only {stock} available")
+    original_qty = cart_item.quantity if cart_item else 0
+    
+    if original_qty >= max_qty:
+        msg = "Max quantity reached"
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"status": "error", "message": msg})
+        messages.warning(request, msg)
         return redirect("product_detail_view", slug=product.slug)
 
+    new_qty = original_qty + quantity
+
+    if new_qty > stock:
+        msg = f"Only {stock} available"
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"status": "error", "message": msg})
+        messages.error(request, msg)
+        return redirect("product_detail_view", slug=product.slug)
+
+    limit_hit = False
     if new_qty > max_qty:
         new_qty = max_qty
-        messages.warning(request, f"Max {max_qty} items allowed")
+        limit_hit = True
 
-    cart_item.quantity = new_qty
-    cart_item.save()
+    if cart_item:
+        cart_item.quantity = new_qty
+        cart_item.save()
+    else:
+        CartItem.objects.create(cart=cart, variant=variant, quantity=new_qty)
 
-    messages.success(request, "Cart updated")
+    if limit_hit:
+        msg = "Max quantity reached"
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"status": "warning", "message": msg, "cart_count": cart.items.count()})
+        messages.warning(request, msg)
+    else:
+        msg = "Cart updated"
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"status": "success", "message": msg, "cart_count": cart.items.count()})
+        messages.success(request, msg)
 
-    return redirect("product_detail_view", slug=product.slug)
+    return redirect(f"{reverse('product_detail_view', kwargs={'slug': product.slug})}?variant={variant.id}")
+
+
+@login_required
+def check_cart_status(request):
+    variant_id = request.GET.get("variant_id")
+    if not variant_id:
+        return JsonResponse({"in_cart": False})
+
+    in_cart = CartItem.objects.filter(
+        cart__user=request.user, variant_id=variant_id
+    ).exists()
+    return JsonResponse({"in_cart": in_cart})

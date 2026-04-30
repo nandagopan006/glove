@@ -235,13 +235,13 @@ def admin_return_list(request):
     today = timezone.now().date()
     
 
-    pending_count = ReturnRequest.objects.filter(return_status="PENDING").count()
+    pending_count = ReturnRequest.objects.filter(return_status=ReturnRequest.Status.REQUESTED).count()
     
     approved_today = ReturnRequest.objects.filter(
-        return_status="APPROVED", created_at__date=today).count()
+        return_status=ReturnRequest.Status.APPROVED, updated_at__date=today).count()
     
     rejected_today = ReturnRequest.objects.filter(
-        return_status="REJECTED", created_at__date=today).count()
+        return_status=ReturnRequest.Status.REJECTED, updated_at__date=today).count()
     
     total_returns = ReturnRequest.objects.count()
 
