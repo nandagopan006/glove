@@ -53,28 +53,15 @@ def contact_page(request):
 
 
 def custom_404(request, exception):
-    # Admin-side URL patterns
-    ADMIN_PREFIXES = (
-        "/admin-panel/",
-        "/admin-dashboard/",
-        "/adminpanel/",
-        "/user-management/",
-        "/categories/",
-        "/products/",
-        "/admin-signout/",
-        "/offers/",
-    )
-
-    # Check if this is an admin path
-    is_admin_path = any(request.path.startswith(prefix) for prefix in ADMIN_PREFIXES)
+    # Match the exact keywords in your 404.html template
+    ADMIN_KEYWORDS = ["admin", "management", "offers"]
+    
+    is_admin_path = any(key in request.path for key in ADMIN_KEYWORDS)
 
     if is_admin_path:
-        # If user is logged in as admin, show admin 404
-        if request.user.is_authenticated and request.user.is_superuser:
-            return render(request, "admin/404_admin.html", status=404)
-        # If not logged in, redirect to admin login
-        else:
+        # If not an authenticated admin, redirect to sign-in
+        if not (request.user.is_authenticated and request.user.is_superuser):
             return redirect("admin_signin")
-
-    # Regular user 404
+        
+    # Always use the combined 404.html template
     return render(request, "404.html", status=404)
