@@ -11,8 +11,6 @@ def export_data():
         with open('db_export.json', 'w', encoding='utf-8') as f:
             subprocess.run([
                 sys.executable, 'manage.py', 'dumpdata', 
-                '--exclude', 'contenttypes', 
-                '--exclude', 'auth.Permission',
                 '--exclude', 'socialaccount',
                 '--exclude', 'account',
                 '--exclude', 'sites',
