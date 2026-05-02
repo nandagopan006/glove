@@ -53,15 +53,12 @@ def contact_page(request):
 
 
 def custom_404(request, exception):
-    # Match the exact keywords in your 404.html template
     ADMIN_KEYWORDS = ["admin", "management", "offers"]
-    
     is_admin_path = any(key in request.path for key in ADMIN_KEYWORDS)
 
     if is_admin_path:
-        # If not an authenticated admin, redirect to sign-in
         if not (request.user.is_authenticated and request.user.is_superuser):
             return redirect("admin_signin")
-        
-    # Always use the combined 404.html template
+        return render(request, "404_admin.html", status=404)
+
     return render(request, "404.html", status=404)
