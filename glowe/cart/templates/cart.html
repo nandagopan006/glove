@@ -99,8 +99,9 @@ body { background: var(--cream); overflow-x: hidden; width: 100%; }
 /* ── PRODUCT IMAGE ── */
 .cart-img-wrap {
   width: 100px; height: 100px; border-radius: 14px; overflow: hidden; flex-shrink: 0;
-  background: var(--cream-dk); position: relative;
-  box-shadow: 0 4px 16px rgba(44,31,20,.1);
+  background: #fff; position: relative;
+  border: 1px solid rgba(196,168,130,0.12);
+  box-shadow: 0 4px 12px rgba(44,31,20,0.02);
   display: block; text-decoration: none;
 }
 .cart-img-wrap img {
@@ -111,7 +112,8 @@ body { background: var(--cream); overflow-x: hidden; width: 100%; }
 .cart-img-ph {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  color: var(--accent);
+  color: #A48F73;
+  background: #fff;
 }
 
 /* ── QTY CONTROL ── */
@@ -562,10 +564,13 @@ body { background: var(--cream); overflow-x: hidden; width: 100%; }
         <!-- Product image -->
         <a href="{% url 'product_detail_view' entry.product.slug %}" class="cart-img-wrap">
           {% if entry.product.images.first %}
-            <img src="{{ entry.product.images.first.image.url }}" alt="{{ entry.product.name }}" loading="lazy">
+            <img src="{{ entry.product.images.first.image.url }}" alt="{{ entry.product.name }}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="cart-img-ph" style="display: none;">
+              <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
           {% else %}
             <div class="cart-img-ph">
-              <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
             </div>
           {% endif %}
         </a>
