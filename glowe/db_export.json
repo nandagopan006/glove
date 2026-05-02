@@ -1,166 +1,4 @@
-  [
-{
-  "model": "sessions.session",
-  "pk": "036ybvhjvx923xix93vqhrqwopals79w",
-  "fields": {
-    "session_data": ".eJytVdlu4zgQ_Jbls-zovoAFVpPEie048ZnYWQwEiqIl2pRIi5QjJ_C_LyQr10wwAyzmkWSrqrq7uvUCBEMEUogQK3MZCgklFsB_AYeHnrV7CMjDzTm16JQB_98XwAuGsBDAB5QlJAcKiKGEwM9LShXAtwiHiMU43OOCrAkuTi9HRXMcSzMN3fK6ruF5nmV-V4CuX80Xrj177g0Pl9sF_yMMnte1LV3XLef7UfkxueZ0wvUbqj2Ja4gXQGLgg4SxhGKgAMh5F1GCcxk2D4apW66labrjuZ2dw6ltRV4RGSr2Nh6C-0RuHXe9TdOdYcVdyLnonrBKgQvEcolz2UUsA0cFtGJeSU951XENVZvmm7J3TWWjRNNUx1BNU3Uc19UMU3U1TwcKoFDIsM3shBFDicMNIzl-g8WVLGB4qucLIE2VUym58M_OWlmvwhu1CoDP_E-mrwBY_tF6KkCU0S_KgjNIKPBBDvM4LTMWEYrxP0l9237fRLy6KQa-LEqsACjDFIoU-OC6z8zZoPyWGqtNPrPEPaejYQAUkMMMAx_cwjyGCeOwtionSJYF_lBWmhpfSz-DZ8F54jI0LC26SDe9UfG8nl2rYpgYg8EiPiQrJ0uGLl9oGRlRGsT3m29hsQ3-Fp7dQUABCdnjPPxKBoES-O1AmKpdN56_Xjiqah-PJ8d99iCHQjyxou7PX5N0j2gaVQmv5tXN8MYWGPbN8d3YPqwOZXmN7qO1bayfvnQeEaEoOS5OFGtIBT7xtVqBAtakEPJL7Q3ce-DvG1izSbhevzF9Mj7QVd3uqGZH1eea5euGr-td1XYfaxElpR-oeMpyHOZlFr1ulWYQ14TikGQwqcPa81mM17Ckssvz5CTh3UCtCiJCiCTZ41dLoQJDieOw7s0JvMAC53HYrgP17SKiDG1xHJa5rHN_D5ahZFucf74q8K7E4mdkecL5CgVKiTMuBfDVekfWK7_dh_9r9bYzBOO4wELUf49_f7Hbft_RH4eRFySDxeF0PH5vO_Wmq2nbT_VvK_VRCOS80aG9LeEPstp4cIC614VqAJ3Riuz266vJuNebn9tyqUfOczJbJLiKvt0sn8ppf0OSq-ftbBWJSkOeiaYHep3Hptu_i9Bt_FzB3j0MmEeS8eVtGMzV1fCRefZqKYzFoGLuIU70_mjbSRfVJECPdMajfKb1rxduv_eAqks2XhhmqY_uynXVuTqsVslurnqem6Qdp8Oci6fVjnbsCj2gIOPn6Y70XcOQBQ2ti500D1DeGqP-ZjzmF0HV0y5nm-1QjAf7YBqJ3vRxOGfzLZoOxMzMOsVy0M-xvnhkqriZ6uFg1TvHS3ajlnfJMpvAcXV3cW-z8GHjWXfkCZ4nq2EAR7NgOpn1JtdXS31EtiOjPw0yebOYTCvobNloJvFE1T0DtOUNBUYFlu1kV5wUWDSu_TSldjOlale1nUdwPB7_AwHs5IE:1w8JtC:jcg6dU_BCnkaI1JERD_yoZQjwzGKcDYqA42M8YuI5mQ",
-    "expire_date": "2026-04-16T15:23:22.077Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "1dbet97ueiudx203u3jmj9ytv98toeyk",
-  "fields": {
-    "session_data": ".eJxVjDkOwjAQAP-yNbJsJ17HKel5Q7SHjQMokXJUiL-jSCmgnRnNGwbatzrsa16GUaGH4OHyC5nkmafD6IOm-2xknrZlZHMk5rSruc2aX9ez_RtUWiv0QL61jfjEnJGEk2JsCzIGGywGkeQ6Lk1ELdpFhwGtYiJhcRx8KwyfLxGuOGU:1w2VUa:vKAAYCFJOvrr8cmCoalStdTCL2-W5VHynKSdgIXowHI",
-    "expire_date": "2026-03-31T14:33:56.257Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "5i3jjee3ii9xt14f0k6drc8bljr4cwh5",
-  "fields": {
-    "session_data": ".eJxVjMsOwiAQAP9lzw2BUqD0ZLz7DWQXVqm2kPRxMv67adKDXmcm84aA-5bDvvISxgQDOAvNLySMLy6HSU8sjypiLdsykjgScdpV3Gri6Xq2f4OMa4YBiCyqqBWT8m2PMimtW9LYWmm1lz151UXdGRmd72WHloxxd_YuSkZnEBpYeOUt8IzjBAMULCnvc6VxYr48DipineHzBb8LRfA:1wG18b:c-Zb4U_w1wfDCD_mXJ7QWLTJBexwvJ4MaRQnTNVTsBg",
-    "expire_date": "2026-05-07T20:59:05.709Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "66p2ybafw9j1nuh1ig7bsak9xp2cv3iv",
-  "fields": {
-    "session_data": ".eJxVj0FuwyAQRe8ya8vyGLADqyr7ngENMNgkDkRgL6qqd6-spots33v60v8GflDawADd6OteYkyecRQfy4l7Xx7QgaVjX-3RuNoUwACieKeO_J3zqcKN8lJ6X_Jek-vPpH_Z1n-WwNv11b4NrNRWMKCV1jOTUloOYkAt5BTnMJBm50WQc0QdvLrgNNPkHAk1Si3jpKMkdYnsoINSA1f7rMVzaykvYCJtjf-FL8ezZIuIYMYONmq7_TPnM8Tx5xdjJ1qb:1wINzR:p696iqdG5j_0r0TrzOpbSy46RHmSESYGHVDBUnh2QHQ",
-    "expire_date": "2026-05-14T09:47:25.430Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "79r5g7eyoov2btrxmp34733k6v65pk47",
-  "fields": {
-    "session_data": ".eJxVj0EOgyAQRe8ya0NABMRl9z0DmYGx2hppQFdN796Yumi3_7285L8g4L5NYa9cwpxgAGeh-R0J44PXg6Q7rrcsYl63MpM4FHHSKq458XI53b_AhHWCAYgsqqgVk_JtjzIprVvS2FpptZc9edVF3RkZne9lh5aMcSN7FyWjMwgN5JK4hGfJkWud1xsMIy6VG1iwbuFLjw9K6fcHKcJHbQ:1wIOrg:kL5BJz08mvY5emP1if9Q20wetYBD9Dc9eJzfb5Uzd4A",
-    "expire_date": "2026-05-14T10:43:28.969Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "7k4n1khqdllji547fh0igmvl130twdrx",
-  "fields": {
-    "session_data": ".eJxVjMsOwiAQAP9lz4ZsobDQo3e_gfBYpGpoUtqT8d9Nkx70OjOZN_iwb9XvnVc_Z5iADFx-YQzpye0w-RHafRFpads6R3Ek4rRd3JbMr-vZ_g1q6BUmSMXQaBIOoQxRRtSZCcdsZEEbdNGJSTFJJbMljIlRW46GlVPk0BUHny8WPjgX:1w8jyV:EQt0ZjYzbTWAnx_tAYMX6MYkU7nI1FEadHeOTmIoosU",
-    "expire_date": "2026-04-17T19:14:35.638Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "axkqvqchlilhfyl3kfc21ishttkndwgs",
-  "fields": {
-    "session_data": ".eJxVjMsOwiAQAP9lz4ZsobDQo3e_gfBYpGpoUtqT8d9Nkx70OjOZN_iwb9XvnVc_Z5iADFx-YQzpye0w-RHafRFpads6R3Ek4rRd3JbMr-vZ_g1q6BUmSMXQaBIOoQxRRtSZCcdsZEEbdNGJSTFJJbMljIlRW46GlVPk0BUHny8WPjgX:1w7TmE:7ardY2kcggqjvA4Mh3uhbjiC3YJ7ETgWxxAecuQ6cIg",
-    "expire_date": "2026-04-14T07:44:42.374Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "hvzvn7i7tkeb2ea0ewln4umzr99aq9qq",
-  "fields": {
-    "session_data": ".eJxVkD1vgzAURf_LmxGyjY3BYxWpS5O9rSrkjxdwQu3INl0Q_71CZMl0pXuO7nBXyNF6PWtr4xLKkIsumEGt8HuKX-kU3sfzcvn8oBdQ3ys8UrSYMyiY4-gDVOB00aDCMs8VPO4WBxsdDn-Y_NVjOshWUSl5JxgnpGak4bLvfrYKBr2UaVgypsE7UCAZvJRG2zuGnbibDmOsbQwleVPvSv2kuT5Hh_Pb030ZmHSeQAEVxDiBKFl7lcxcZcetY6Q1TaMNM5RxKzlhTdca6bRpTSeIE23fSUTZYwsVWJ3K_gqloEQFtDmCHyFAsW37B9XcaRw:1w7AnC:fymVzUOXDAUoBlko7-JUY18d1YiSpSyY8zjh8-o18JU",
-    "expire_date": "2026-04-13T11:28:26.816Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "jk2xpu7j3lf2tm1qq1g3zgbnar9esct7",
-  "fields": {
-    "session_data": ".eJxVjMsOwiAQAP9lz4ZsobDQo3e_gfBYpGpoUtqT8d9Nkx70OjOZN_iwb9XvnVc_Z5iADFx-YQzpye0w-RHafRFpads6R3Ek4rRd3JbMr-vZ_g1q6BUmSMXQaBIOoQxRRtSZCcdsZEEbdNGJSTFJJbMljIlRW46GlVPk0BUHny8WPjgX:1w8k4F:ZqCVpu6TOc1fEFz5JB1x1pHa-4CvGdO-iQUHeMN8kyQ",
-    "expire_date": "2026-04-17T19:20:31.827Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "jtj76hox6th4ibow7m0ys9tbmqvicdgy",
-  "fields": {
-    "session_data": ".eJxVjU0OwiAQRu_C2hCgFAZ3ehEyTCEQG5oIrIx3N5gudPve9_NiHkfPfrT49GVjV2Ytu_zCgPSIdRrc94k5Eh2jdv7NnLrx2-g51l4Ieznq_Wz9TWVseT4IXIGUXTRCICE2ZeIaBNkEwmhtbArKBQRYonbJUQKQKUiphEtL1MTeH9oVPF0:1wHKL3:uJTKeUhQ_sYSxNZcS7dpKTmL6g0Kpgu_XhAdKWJiZwg",
-    "expire_date": "2026-05-11T11:41:21.826Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "jzpsd67i9lxvja5s4dzrn6l5tmsws6dx",
-  "fields": {
-    "session_data": ".eJxVjU0OwiAQRu_C2hCgFAZ3ehEyTCEQG5oIrIx3N5gudPve9_NiHkfPfrT49GVjV2Ytu_zCgPSIdRrc94k5Eh2jdv7NnLrx2-g51l4Ieznq_Wz9TWVseT4IXIGUXTRCICE2ZeIaBNkEwmhtbArKBQRYonbJUQKQKUiphEtL1MTeH9oVPF0:1wHLlD:KvCSAtipU8NUP6GafL3ovwXarEFXTa98pU37IOIimfs",
-    "expire_date": "2026-05-11T13:12:27.754Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "mazd7cqg1khmzdomc1q4hi0u2v7nd1jf",
-  "fields": {
-    "session_data": "eyJlbWFpbCI6Im5hbmRodW1vYmlsZWVAZ21haWwuY29tIiwib3RwX21zZyI6Ik9UUCBzZW50ISBDaGVjayB5b3VyIGVtYWlsLiJ9:1w2miZ:Y8_bOyczOeKTyiHg9LErs34MLWuwcNykTi8qQAwaibg",
-    "expire_date": "2026-04-01T08:57:31.389Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "o06pg4c2xy1966xma4x3yuf3k24afx1a",
-  "fields": {
-    "session_data": ".eJxVjEEOwiAQAP-yZ0OAFYEevfsGssAiVQNJaU_Gv5smPeh1ZjJvCLStNWyDlzBnmMB6OP3CSOnJbTf5Qe3eReptXeYo9kQcdohbz_y6Hu3foNKoMEEpkpE80sV673QsWMgleeaiM7mEiTUZJqm4GIeZYmK2mKU3EhU7BZ8vPTg5LA:1w7Xc4:pzdo3FahtX2MMYQReDV4sTj5KaM7TsG6hafoanmtVvE",
-    "expire_date": "2026-04-14T11:50:28.478Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "qbbls9ppajxw35oble5n181clja1iyoi",
-  "fields": {
-    "session_data": ".eJxVzMFqxCAUheF3uesQJmrUuCqFLkv3LSXcMdfEiaODmlIIefcydDazPd_P2aEk6zGgtWmLdSwVKxUwO6S34fNDzMPlV29arDOYrx1uOVkqBQyENPsIDUxYEUzcQmjgtloabZpo_KHsnaf8L0fTKdWrXnElW85YdxLq-2iArugDGMhp8XVZS8QZQ8BSKPuX-Y6tTVdoYMStLuNWKI9-AgOaPY9ntCvFu0wXjHNqbYo1-3N7T9qHlvY9TRReH-3TwYJlAQNODoKzzgoSjvWuY1pyq5C7XpJgg5Z47k5KSWKaHArOSWg52En2HSJTDo4_vxxvaQ:1wAth0:FSY9TOmnJTSDL_Si2p_WrdgBLPaj-h4jcvN1UazpDos",
-    "expire_date": "2026-04-23T18:01:26.199Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "tunkt5op3namxpaskktxayhxr95639rf",
-  "fields": {
-    "session_data": ".eJxVjU0OgyAQhe_CujGI6Azu6kXMMA7B1GAisGp690bjxuX73t9XHZKlzDXLoUaAl5qplnjpeV3UqADUA3rij6TToW07cUPMe02luTK3nZt3LVFSWZnKuqfpbj2mIuV4PmjqkQ10ltCz1osZpPeaIaAerB0geOM8IXZiXXAcENvg29ZoFzqxrH5_24xBtg:1wAwPO:mvx-UKfzCXWIMEU20ntd4xfBE41oEy6vrEMsjBk6KbQ",
-    "expire_date": "2026-04-23T20:55:26.695Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "ub0hnjpztt98wupsoj5m7ddojf4svlz9",
-  "fields": {
-    "session_data": ".eJxVjMsKwjAQAP9lzxKypM2jR-9-Q8hutqYqCTTtSfx3KfSg15lh3hDTvpW4d1njkmECZ-DyCynxU-ph8iPVe1Pc6rYupI5EnbarW8vyup7t36CkXmACOxgkPaMNWnNAPWa03ujsmQcWISMoISA5ZG-F3EzeCMuYLDORCfD5AvsrOJU:1w4XbP:9tB1RuvSGuI-LbclGFdholZwhSmTid_RFIB7ikahWNc",
-    "expire_date": "2026-04-06T05:13:23.895Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "vix6owsqz71lpb7ai0p0gu1rc8kbvhz5",
-  "fields": {
-    "session_data": ".eJxVjMsOwiAQAP9lz4ZsobDQo3e_gfBYpGpoUtqT8d9Nkx70OjOZN_iwb9XvnVc_Z5iADFx-YQzpye0w-RHafRFpads6R3Ek4rRd3JbMr-vZ_g1q6BUmSMXQaBIOoQxRRtSZCcdsZEEbdNGJSTFJJbMljIlRW46GlVPk0BUHny8WPjgX:1w8rzE:WLSeSqUaTi4iBYSvsq0mHB6TK63Kf4q40Vh_ZQ96R2U",
-    "expire_date": "2026-04-18T03:47:52.506Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "wxnxeuap9vx0j1161svkl9gv7nm88119",
-  "fields": {
-    "session_data": ".eJxVjMsOwiAQAP9lz4ZsobDQo3e_gfBYpGpoUtqT8d9Nkx70OjOZN_iwb9XvnVc_Z5iADFx-YQzpye0w-RHafRFpads6R3Ek4rRd3JbMr-vZ_g1q6BUmSMXQaBIOoQxRRtSZCcdsZEEbdNGJSTFJJbMljIlRW46GlVPk0BUHny8WPjgX:1w8Xl1:z3BrMJh68nGOg2MzlalG2zCO9HVLkvonPNsCvO-eNjM",
-    "expire_date": "2026-04-17T06:11:51.145Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "y8vo1skwg1s4nnh1pnw5tthmj5nntcm6",
-  "fields": {
-    "session_data": "e30:1wHwR8:SxpWE0jvTNJE5O_fDNME21sI37_t6mMygRR-CD-V8e8",
-    "expire_date": "2026-05-13T04:22:10.972Z"
-  }
-},
-{
-  "model": "account.emailaddress",
-  "pk": 10,
-  "fields": {
-    "user": 112,
-    "email": "clubfzx@gmail.com",
-    "verified": true,
-    "primary": true
-  }
-},
+[
 {
   "model": "wishlist.wishlist",
   "pk": 70,
@@ -189,16 +27,6 @@
     "variant": 34,
     "created_at": "2026-04-29T06:31:43.918Z",
     "updated_at": "2026-04-29T06:31:43.918Z"
-  }
-},
-{
-  "model": "wishlist.wishlist",
-  "pk": 77,
-  "fields": {
-    "user": 76,
-    "variant": 11,
-    "created_at": "2026-04-29T06:32:00.842Z",
-    "updated_at": "2026-04-29T06:32:00.842Z"
   }
 },
 {
@@ -246,7 +74,7 @@
   "pk": 76,
   "fields": {
     "password": "pbkdf2_sha256$1200000$LH5et1BZf00Zc0er7VSLyV$jinLhbno4x5akvDM0h0ybgcj7duLqoSsQkWCf/WqQTE=",
-    "last_login": "2026-04-29T18:35:45.456Z",
+    "last_login": "2026-05-02T15:10:07.882Z",
     "is_superuser": false,
     "username": "nandhumobilee@gmail.com",
     "first_name": "",
@@ -255,20 +83,14 @@
     "date_joined": "2026-03-31T06:26:06.999Z",
     "full_name": "Nandhu Jr",
     "email": "nandhumobilee@gmail.com",
-    "phone_number": null,
-    "profile_image": "profile/images.jpeg",
+    "phone_number": "+917366366666",
+    "profile_image": "profile/avatar_c42ff3d9.jpg",
     "is_verified": true,
     "is_active": true,
     "created_at": "2026-03-31T06:26:07.620Z",
     "referral_code": "JK0A87KF",
     "referred_by": null,
     "referral_count": 2,
-    "resend_count": 0,
-    "resend_blocked_until": null,
-    "reset_token": null,
-    "reset_requested_at": null,
-    "reset_block_until": null,
-    "reset_attempts": 0,
     "groups": [],
     "user_permissions": []
   }
@@ -295,12 +117,6 @@
     "referral_code": "",
     "referred_by": null,
     "referral_count": 0,
-    "resend_count": 0,
-    "resend_blocked_until": null,
-    "reset_token": null,
-    "reset_requested_at": null,
-    "reset_block_until": null,
-    "reset_attempts": 0,
     "groups": [],
     "user_permissions": []
   }
@@ -327,12 +143,6 @@
     "referral_code": "JK0A87KF",
     "referred_by": 76,
     "referral_count": 0,
-    "resend_count": 0,
-    "resend_blocked_until": null,
-    "reset_token": null,
-    "reset_requested_at": null,
-    "reset_block_until": null,
-    "reset_attempts": 0,
     "groups": [],
     "user_permissions": []
   }
@@ -359,12 +169,6 @@
     "referral_code": "UYRJLUFI",
     "referred_by": null,
     "referral_count": 0,
-    "resend_count": 0,
-    "resend_blocked_until": null,
-    "reset_token": null,
-    "reset_requested_at": null,
-    "reset_block_until": null,
-    "reset_attempts": 0,
     "groups": [],
     "user_permissions": []
   }
@@ -391,12 +195,6 @@
     "referral_code": "CH6HC2ZM",
     "referred_by": null,
     "referral_count": 0,
-    "resend_count": 0,
-    "resend_blocked_until": null,
-    "reset_token": null,
-    "reset_requested_at": null,
-    "reset_block_until": null,
-    "reset_attempts": 0,
     "groups": [],
     "user_permissions": []
   }
@@ -423,14 +221,125 @@
     "referral_code": "54UZDPFJ",
     "referred_by": null,
     "referral_count": 0,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.profileuser",
+  "pk": 114,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$Zt3OEEvzQNxrkZFmsyg4Au$cuoNrpQkqcrTdrTnBiv0mI8WTOHVNU4HvILwKKIzVdw=",
+    "last_login": "2026-05-02T11:18:59.294Z",
+    "is_superuser": false,
+    "username": "hohyde@fxzig.com",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "date_joined": "2026-05-02T11:16:42.843Z",
+    "full_name": "Nandagopan",
+    "email": "hohyde@fxzig.com",
+    "phone_number": null,
+    "profile_image": "profile/default.png",
+    "is_verified": true,
+    "is_active": true,
+    "created_at": "2026-05-02T11:16:44.374Z",
+    "referral_code": "AJSXG08M",
+    "referred_by": null,
+    "referral_count": 0,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.usersecurity",
+  "pk": 1,
+  "fields": {
+    "user": 88,
     "resend_count": 0,
     "resend_blocked_until": null,
     "reset_token": null,
     "reset_requested_at": null,
     "reset_block_until": null,
-    "reset_attempts": 0,
-    "groups": [],
-    "user_permissions": []
+    "reset_attempts": 0
+  }
+},
+{
+  "model": "accounts.usersecurity",
+  "pk": 2,
+  "fields": {
+    "user": 112,
+    "resend_count": 0,
+    "resend_blocked_until": null,
+    "reset_token": null,
+    "reset_requested_at": null,
+    "reset_block_until": null,
+    "reset_attempts": 0
+  }
+},
+{
+  "model": "accounts.usersecurity",
+  "pk": 3,
+  "fields": {
+    "user": 77,
+    "resend_count": 0,
+    "resend_blocked_until": null,
+    "reset_token": null,
+    "reset_requested_at": null,
+    "reset_block_until": null,
+    "reset_attempts": 0
+  }
+},
+{
+  "model": "accounts.usersecurity",
+  "pk": 4,
+  "fields": {
+    "user": 91,
+    "resend_count": 0,
+    "resend_blocked_until": null,
+    "reset_token": null,
+    "reset_requested_at": null,
+    "reset_block_until": null,
+    "reset_attempts": 0
+  }
+},
+{
+  "model": "accounts.usersecurity",
+  "pk": 5,
+  "fields": {
+    "user": 113,
+    "resend_count": 0,
+    "resend_blocked_until": null,
+    "reset_token": null,
+    "reset_requested_at": null,
+    "reset_block_until": null,
+    "reset_attempts": 0
+  }
+},
+{
+  "model": "accounts.usersecurity",
+  "pk": 6,
+  "fields": {
+    "user": 76,
+    "resend_count": 0,
+    "resend_blocked_until": null,
+    "reset_token": null,
+    "reset_requested_at": null,
+    "reset_block_until": null,
+    "reset_attempts": 0
+  }
+},
+{
+  "model": "accounts.usersecurity",
+  "pk": 7,
+  "fields": {
+    "user": 114,
+    "resend_count": 0,
+    "resend_blocked_until": null,
+    "reset_token": null,
+    "reset_requested_at": null,
+    "reset_block_until": null,
+    "reset_attempts": 0
   }
 },
 {
@@ -467,6 +376,37 @@
   }
 },
 {
+  "model": "accounts.otpverification",
+  "pk": 103,
+  "fields": {
+    "user": 114,
+    "otp_code": "4299",
+    "expires_at": "2026-05-02T11:17:44.414Z",
+    "is_verified": true,
+    "created_at": "2026-05-02T11:16:44.415Z"
+  }
+},
+{
+  "model": "accounts.loginattempt",
+  "pk": 1,
+  "fields": {
+    "ip_address": "127.0.0.1",
+    "username": "hohyde@fxzig.com",
+    "timestamp": "2026-05-02T11:18:59.284Z",
+    "is_successful": true
+  }
+},
+{
+  "model": "accounts.loginattempt",
+  "pk": 2,
+  "fields": {
+    "ip_address": "127.0.0.1",
+    "username": "nandhumobilee@gmail.com",
+    "timestamp": "2026-05-02T15:10:07.861Z",
+    "is_successful": true
+  }
+},
+{
   "model": "user.address",
   "pk": 9,
   "fields": {
@@ -493,12 +433,12 @@
     "full_name": "Nandhu",
     "street_address": "cheeral po kaliinkar",
     "city": "Sulthan Bathery",
-    "district": "Wayanad",
+    "district": "Wayanadds",
     "state": "Kerala",
     "pincode": "673595",
     "country": "India",
     "phone_number": "6235099533",
-    "is_default": true,
+    "is_default": false,
     "created_at": "2026-04-09T03:43:44.630Z"
   }
 },
@@ -536,6 +476,24 @@
     "phone_number": "9544274072",
     "is_default": true,
     "created_at": "2026-04-30T09:43:53.950Z"
+  }
+},
+{
+  "model": "user.address",
+  "pk": 16,
+  "fields": {
+    "user": 76,
+    "label": "HOME",
+    "full_name": "Nandagopan",
+    "street_address": "Cheeral fdfgfg",
+    "city": "Sulthan Bathery",
+    "district": "Wayanad",
+    "state": "Kerala",
+    "pincode": "673595",
+    "country": "India",
+    "phone_number": "6235099533",
+    "is_default": true,
+    "created_at": "2026-05-02T15:26:58.657Z"
   }
 },
 {
@@ -620,23 +578,6 @@
     "is_deleted": false,
     "created_at": "2026-04-24T07:10:21.698Z",
     "updated_at": "2026-04-29T07:41:04.960Z"
-  }
-},
-{
-  "model": "product.product",
-  "pk": 5,
-  "fields": {
-    "name": "srerumm  BB",
-    "slug": "srerumm-bbbc",
-    "category": 2,
-    "description": "WDEFGFDEWQDFV<br>efv CDSV&nbsp;",
-    "ingredients": "DSSDFVVCDEFV\r\nFVFEDR CVB GDfgffb dsvcfdv",
-    "how_to_use": "[{\"title\":\"wewewwewe\",\"desc\":\"safdgfdbdfb\"},{\"title\":\"new\",\"desc\":\"sfcxazcdscds\"}]",
-    "skin_type": "OOYY,Acne-prone,Normal,Dry,Combination,Sensitive",
-    "is_active": true,
-    "is_deleted": true,
-    "created_at": "2026-03-28T04:41:55.481Z",
-    "updated_at": "2026-04-08T22:52:41.664Z"
   }
 },
 {
@@ -892,36 +833,6 @@
     "is_deleted": true,
     "created_at": "2026-04-24T07:11:37.382Z",
     "updated_at": "2026-04-27T10:01:05.140Z"
-  }
-},
-{
-  "model": "product.productimage",
-  "pk": 22,
-  "fields": {
-    "product": 5,
-    "image": "products/new_0_gyt1xjr.jpg",
-    "is_primary": true,
-    "created_at": "2026-03-28T04:42:18.325Z"
-  }
-},
-{
-  "model": "product.productimage",
-  "pk": 23,
-  "fields": {
-    "product": 5,
-    "image": "products/new_0_MIjClL8.jpg",
-    "is_primary": false,
-    "created_at": "2026-03-28T05:24:09.522Z"
-  }
-},
-{
-  "model": "product.productimage",
-  "pk": 24,
-  "fields": {
-    "product": 5,
-    "image": "products/new_0_1NiLflC.jpg",
-    "is_primary": false,
-    "created_at": "2026-03-28T05:24:23.352Z"
   }
 },
 {
@@ -1434,48 +1345,6 @@
 },
 {
   "model": "product.variant",
-  "pk": 4,
-  "fields": {
-    "product": 5,
-    "size": "50ml",
-    "sku": "SRERUMM-BBBC-50ML",
-    "price": "399.00",
-    "stock": 50,
-    "is_default": false,
-    "is_active": true,
-    "created_at": "2026-03-28T14:15:05.247Z"
-  }
-},
-{
-  "model": "product.variant",
-  "pk": 8,
-  "fields": {
-    "product": 5,
-    "size": "150ml",
-    "sku": "SRERUMM-BBBC-150ML",
-    "price": "599.00",
-    "stock": 27,
-    "is_default": true,
-    "is_active": true,
-    "created_at": "2026-03-28T16:19:53.162Z"
-  }
-},
-{
-  "model": "product.variant",
-  "pk": 9,
-  "fields": {
-    "product": 5,
-    "size": "75ml",
-    "sku": "SRERUMM-BBBC-75ML",
-    "price": "449.00",
-    "stock": 89,
-    "is_default": false,
-    "is_active": true,
-    "created_at": "2026-03-28T18:36:50.464Z"
-  }
-},
-{
-  "model": "product.variant",
   "pk": 10,
   "fields": {
     "product": 8,
@@ -1496,7 +1365,7 @@
     "size": "100ml",
     "sku": "BIFF-SP5-100ML",
     "price": "299.00",
-    "stock": 18,
+    "stock": 17,
     "is_default": false,
     "is_active": true,
     "created_at": "2026-03-30T05:45:15.983Z"
@@ -1552,7 +1421,7 @@
     "size": "50ml",
     "sku": "SURUM-F5-50ML",
     "price": "199.00",
-    "stock": 3,
+    "stock": 0,
     "is_default": true,
     "is_active": true,
     "created_at": "2026-03-31T09:13:13.916Z"
@@ -1678,7 +1547,7 @@
     "size": "100ml",
     "sku": "VITAMIN-C-FACE-CLEANSER-FOR-DAILY-GLOW-BRIGHTNESS-100ML",
     "price": "445.00",
-    "stock": 45,
+    "stock": 43,
     "is_default": true,
     "is_active": true,
     "created_at": "2026-04-08T22:32:19.733Z"
@@ -3226,6 +3095,40 @@
   }
 },
 {
+  "model": "order.order",
+  "pk": 114,
+  "fields": {
+    "user": 76,
+    "order_number": "ORD-E04ZNU5LX9",
+    "address": 11,
+    "subtotal": "896.00",
+    "delivery_charge": "100.00",
+    "discount_amount": "0.00",
+    "total_amount": "996.00",
+    "order_status": "DELIVERED",
+    "created_at": "2026-05-02T09:24:01.482Z",
+    "updated_at": "2026-05-02T09:24:44.537Z",
+    "delivered_date": "2026-05-02T09:24:39.741Z"
+  }
+},
+{
+  "model": "order.order",
+  "pk": 115,
+  "fields": {
+    "user": 76,
+    "order_number": "ORD-0DMHDPTUNI",
+    "address": 16,
+    "subtotal": "890.00",
+    "delivery_charge": "100.00",
+    "discount_amount": "0.00",
+    "total_amount": "990.00",
+    "order_status": "CONFIRMED",
+    "created_at": "2026-05-02T19:20:57.472Z",
+    "updated_at": "2026-05-02T19:20:57.572Z",
+    "delivered_date": null
+  }
+},
+{
   "model": "order.orderitem",
   "pk": 4,
   "fields": {
@@ -3407,18 +3310,6 @@
 },
 {
   "model": "order.orderitem",
-  "pk": 19,
-  "fields": {
-    "order": 10,
-    "variant": 8,
-    "price_at_time": "599.00",
-    "quantity": 2,
-    "item_status": "CANCELLED",
-    "cancel_reason": "Ordered by mistake so for my mistake "
-  }
-},
-{
-  "model": "order.orderitem",
   "pk": 20,
   "fields": {
     "order": 10,
@@ -3427,30 +3318,6 @@
     "quantity": 1,
     "item_status": "CANCELLED",
     "cancel_reason": "Found a better price"
-  }
-},
-{
-  "model": "order.orderitem",
-  "pk": 21,
-  "fields": {
-    "order": 10,
-    "variant": 8,
-    "price_at_time": "599.00",
-    "quantity": 2,
-    "item_status": "CANCELLED",
-    "cancel_reason": "Wrong item selected"
-  }
-},
-{
-  "model": "order.orderitem",
-  "pk": 22,
-  "fields": {
-    "order": 10,
-    "variant": 8,
-    "price_at_time": "599.00",
-    "quantity": 1,
-    "item_status": "CANCELLED",
-    "cancel_reason": "Changed my mind"
   }
 },
 {
@@ -4589,6 +4456,42 @@
     "variant": 29,
     "price_at_time": "799.00",
     "quantity": 3,
+    "item_status": "PENDING",
+    "cancel_reason": null
+  }
+},
+{
+  "model": "order.orderitem",
+  "pk": 152,
+  "fields": {
+    "order": 114,
+    "variant": 11,
+    "price_at_time": "299.00",
+    "quantity": 1,
+    "item_status": "DELIVERED",
+    "cancel_reason": null
+  }
+},
+{
+  "model": "order.orderitem",
+  "pk": 153,
+  "fields": {
+    "order": 114,
+    "variant": 16,
+    "price_at_time": "199.00",
+    "quantity": 3,
+    "item_status": "DELIVERED",
+    "cancel_reason": null
+  }
+},
+{
+  "model": "order.orderitem",
+  "pk": 154,
+  "fields": {
+    "order": 115,
+    "variant": 26,
+    "price_at_time": "445.00",
+    "quantity": 2,
     "item_status": "PENDING",
     "cancel_reason": null
   }
@@ -5850,6 +5753,38 @@
     "full_name": "Nandhu",
     "phone": "6235099533",
     "address_line1": "cheeral po kaliinkar",
+    "city": "Sulthan Bathery",
+    "district": "Wayanad",
+    "state": "Kerala",
+    "country": "India",
+    "pincode": "673595"
+  }
+},
+{
+  "model": "order.shippingaddress",
+  "pk": 111,
+  "fields": {
+    "order": 114,
+    "user": 76,
+    "full_name": "Nandhu",
+    "phone": "6235099533",
+    "address_line1": "cheeral po kaliinkar",
+    "city": "Sulthan Bathery",
+    "district": "Wayanad",
+    "state": "Kerala",
+    "country": "India",
+    "pincode": "673595"
+  }
+},
+{
+  "model": "order.shippingaddress",
+  "pk": 112,
+  "fields": {
+    "order": 115,
+    "user": 76,
+    "full_name": "Nandagopan",
+    "phone": "6235099533",
+    "address_line1": "Cheeral fdfgfg",
     "city": "Sulthan Bathery",
     "district": "Wayanad",
     "state": "Kerala",
@@ -7040,6 +6975,36 @@
     "amount": "7392.00",
     "payment_status": "SUCCESS",
     "created_at": "2026-04-30T10:43:28.947Z"
+  }
+},
+{
+  "model": "order.payment",
+  "pk": 111,
+  "fields": {
+    "order": 114,
+    "payment_method": "COD",
+    "razorpay_order_id": null,
+    "razorpay_payment_id": null,
+    "razorpay_signature": null,
+    "transaction_id": null,
+    "amount": "996.00",
+    "payment_status": "SUCCESS",
+    "created_at": "2026-05-02T09:24:01.549Z"
+  }
+},
+{
+  "model": "order.payment",
+  "pk": 112,
+  "fields": {
+    "order": 115,
+    "payment_method": "COD",
+    "razorpay_order_id": null,
+    "razorpay_payment_id": null,
+    "razorpay_signature": null,
+    "transaction_id": null,
+    "amount": "990.00",
+    "payment_status": "PENDING",
+    "created_at": "2026-05-02T19:20:57.545Z"
   }
 },
 {
@@ -9613,6 +9578,86 @@
   }
 },
 {
+  "model": "order.orderstatushistory",
+  "pk": 295,
+  "fields": {
+    "order": 114,
+    "status": "PENDING",
+    "description": null,
+    "updated_at": "2026-05-02T09:24:01.570Z"
+  }
+},
+{
+  "model": "order.orderstatushistory",
+  "pk": 296,
+  "fields": {
+    "order": 114,
+    "status": "CONFIRMED",
+    "description": null,
+    "updated_at": "2026-05-02T09:24:01.591Z"
+  }
+},
+{
+  "model": "order.orderstatushistory",
+  "pk": 297,
+  "fields": {
+    "order": 114,
+    "status": "PROCESSING",
+    "description": null,
+    "updated_at": "2026-05-02T09:24:30.637Z"
+  }
+},
+{
+  "model": "order.orderstatushistory",
+  "pk": 298,
+  "fields": {
+    "order": 114,
+    "status": "SHIPPED",
+    "description": null,
+    "updated_at": "2026-05-02T09:24:34.831Z"
+  }
+},
+{
+  "model": "order.orderstatushistory",
+  "pk": 299,
+  "fields": {
+    "order": 114,
+    "status": "OUT_FOR_DELIVERY",
+    "description": null,
+    "updated_at": "2026-05-02T09:24:37.499Z"
+  }
+},
+{
+  "model": "order.orderstatushistory",
+  "pk": 300,
+  "fields": {
+    "order": 114,
+    "status": "DELIVERED",
+    "description": null,
+    "updated_at": "2026-05-02T09:24:44.542Z"
+  }
+},
+{
+  "model": "order.orderstatushistory",
+  "pk": 301,
+  "fields": {
+    "order": 115,
+    "status": "PENDING",
+    "description": null,
+    "updated_at": "2026-05-02T19:20:57.560Z"
+  }
+},
+{
+  "model": "order.orderstatushistory",
+  "pk": 302,
+  "fields": {
+    "order": 115,
+    "status": "CONFIRMED",
+    "description": null,
+    "updated_at": "2026-05-02T19:20:57.582Z"
+  }
+},
+{
   "model": "return.returnrequest",
   "pk": 1,
   "fields": {
@@ -10185,6 +10230,16 @@
     "balance": "0.00",
     "created_at": "2026-04-30T09:41:15.903Z",
     "updated_at": "2026-04-30T09:41:15.903Z"
+  }
+},
+{
+  "model": "wallet.wallet",
+  "pk": 32,
+  "fields": {
+    "user": 114,
+    "balance": "0.00",
+    "created_at": "2026-05-02T11:17:23.987Z",
+    "updated_at": "2026-05-02T11:17:23.987Z"
   }
 },
 {
