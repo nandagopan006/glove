@@ -17,6 +17,8 @@ def export_data():
                 '--exclude', 'account',
                 '--exclude', 'sites',
                 '--exclude', 'sessions',
+                '--exclude', 'wallet.Wallet',
+                '--exclude', 'accounts.UserSecurity',
                 '--indent', '2'
             ], stdout=f, env=env, check=True)
         print("Data exported successfully to db_export.json")

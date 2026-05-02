@@ -98,12 +98,16 @@ class LoginAttempt(models.Model):
 
 @receiver(post_save, sender=ProfileUser)
 def create_user_profiles(sender, instance, created, **kwargs):
+    if kwargs.get("raw"):
+        return
     if created:
-        UserSecurity.objects.create(user=instance)
+        UserSecurity.objects.get_or_create(user=instance)
 
 
 @receiver(post_save, sender=ProfileUser)
 def save_user_profiles(sender, instance, **kwargs):
+    if kwargs.get("raw"):
+        return
     # Check if security exists before saving
     if hasattr(instance, "security"):
         instance.security.save()

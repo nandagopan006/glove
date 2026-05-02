@@ -8,5 +8,7 @@ User = get_user_model()
 
 @receiver(post_save, sender=User)
 def create_wallet(sender, instance, created, **kwargs):
+    if kwargs.get("raw"):
+        return
     if created:
-        Wallet.objects.create(user=instance)
+        Wallet.objects.get_or_create(user=instance)
