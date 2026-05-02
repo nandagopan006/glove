@@ -5,224 +5,388 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>404 – Page Not Found | Glowé</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-            playfair: ['"Playfair Display"', 'serif'],
-          },
-          colors: {
-            sage: {
-              50:  '#f2f7f2', 100: '#e2f0e2', 200: '#c3dfc3',
-              300: '#94c494', 400: '#64a864', 500: '#4a9050',
-              600: '#3a7a3e', 700: '#2f6232', 800: '#264f29', 900: '#1e3e20',
-            }
-          },
-          animation: {
-            'float':        'float 4s ease-in-out infinite',
-            'fade-up':      'fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both',
-            'fade-up-d1':   'fadeUp 0.7s 0.1s cubic-bezier(0.16,1,0.3,1) both',
-            'fade-up-d2':   'fadeUp 0.7s 0.2s cubic-bezier(0.16,1,0.3,1) both',
-            'fade-up-d3':   'fadeUp 0.7s 0.35s cubic-bezier(0.16,1,0.3,1) both',
-            'fade-up-d4':   'fadeUp 0.7s 0.5s cubic-bezier(0.16,1,0.3,1) both',
-            'glitch1':      'glitch1 3s infinite',
-            'glitch2':      'glitch2 3s infinite',
-            'scan':         'scan 2.5s linear infinite',
-            'orbit':        'orbit 6s linear infinite',
-          },
-          keyframes: {
-            float:      { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-14px)' } },
-            fadeUp:     { from: { opacity: '0', transform: 'translateY(28px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
-            glitch1:    {
-              '0%,100%': { clip: 'rect(0,0,0,0)', transform: 'translate(0)' },
-              '20%':     { clip: 'rect(10px,200px,20px,0)', transform: 'translate(-3px, 2px)' },
-              '40%':     { clip: 'rect(40px,200px,50px,0)', transform: 'translate(3px,-2px)' },
-              '60%':     { clip: 'rect(20px,200px,30px,0)', transform: 'translate(-2px,0)' },
-              '80%':     { clip: 'rect(60px,200px,70px,0)', transform: 'translate(2px,0)' },
-            },
-            glitch2:    {
-              '0%,100%': { clip: 'rect(0,0,0,0)', transform: 'translate(0)' },
-              '25%':     { clip: 'rect(30px,200px,40px,0)', transform: 'translate(3px,-2px)' },
-              '50%':     { clip: 'rect(5px,200px,15px,0)', transform: 'translate(-3px, 2px)' },
-              '75%':     { clip: 'rect(50px,200px,60px,0)', transform: 'translate(0, 2px)' },
-            },
-            scan:       { '0%': { top: '0%' }, '100%': { top: '100%' } },
-            orbit:      { '0%': { transform: 'rotate(0deg) translateX(60px) rotate(0deg)' }, '100%': { transform: 'rotate(360deg) translateX(60px) rotate(-360deg)' } },
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
 
   <style>
-    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
-    body { background: #F6F7F5; overflow-x: hidden; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* ─── Glitch 404 ─── */
-    .glitch-wrapper { position: relative; display: inline-block; }
-    .glitch-text    { font-family: 'Inter', sans-serif; font-weight: 800; font-size: clamp(100px, 18vw, 180px); line-height: 1; color: #1e3e20; letter-spacing: -0.04em; }
-    .glitch-text::before,
-    .glitch-text::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-    .glitch-text::before { color: #4a9050; animation: glitch1 3s infinite; opacity: 0.6; }
-    .glitch-text::after  { color: #94c494; animation: glitch2 3s infinite; opacity: 0.4; }
-
-    /* ─── Scanline ─── */
-    .scanline { position: absolute; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, rgba(74,144,80,0.4), transparent); animation: scan 2.5s linear infinite; pointer-events: none; }
-
-    /* ─── Orbiting dot ─── */
-    .orbit-dot { position: absolute; width: 10px; height: 10px; border-radius: 9999px; background: #4a9050; animation: orbit 6s linear infinite; top: 50%; left: 50%; transform-origin: 0 0; }
-
-    /* ─── Grid background ─── */
-    .grid-bg {
-      background-image:
-        linear-gradient(rgba(74,144,80,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(74,144,80,0.05) 1px, transparent 1px);
-      background-size: 32px 32px;
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #111111;
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.15);
+      --text: #ededed;
+      --text-muted: #888;
+      --text-subtle: #555;
+      --accent: #fff;
+      --accent-green: #22c55e;
+      --accent-green-dim: rgba(34,197,94,0.15);
+      --accent-red: #ef4444;
+      --accent-red-dim: rgba(239,68,68,0.12);
+      --glow: rgba(34,197,94,0.08);
     }
 
-    /* ─── Glow card ─── */
-    .glow-card { box-shadow: 0 0 40px rgba(74,144,80,0.08), 0 24px 48px rgba(0,0,0,0.06); }
-
-    /* ─── Button shimmer ─── */
-    @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-    .btn-shimmer {
-      background: linear-gradient(90deg, #2f6232 0%, #4a9050 40%, #94c494 60%, #4a9050 80%, #2f6232 100%);
-      background-size: 200% auto;
-      animation: shimmer 3s linear infinite;
+    .user-mode {
+      --bg: #faf9f7;
+      --bg2: #f4f1ed;
+      --border: rgba(0,0,0,0.07);
+      --border-hover: rgba(0,0,0,0.15);
+      --text: #1a1310;
+      --text-muted: #7a6a5a;
+      --text-subtle: #b0a090;
+      --accent: #1a1310;
+      --glow: rgba(0,0,0,0.03);
     }
 
-    /* ─── Status badge pulse ─── */
-    @keyframes statusPulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.85); } }
-    .status-dot { animation: statusPulse 1.5s ease-in-out infinite; }
-
-    @media (max-width: 640px) {
-      .glitch-text { font-size: clamp(72px, 22vw, 110px); }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      transition: background 0.3s;
     }
 
-    /* USER THEME OVERRIDES (Beige) */
-    .user-theme { background: #f6f2ef; }
-    .user-card { background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.6); }
-    .user-text { color: #2a1f14; }
+    /* ─── Noise texture ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    /* ─── Radial glow background ─── */
+    .glow-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.35;
+      animation: pulse-orb 6s ease-in-out infinite alternate;
+    }
+    .glow-orb.g1 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(34,197,94,0.2), transparent); top: -100px; left: -100px; animation-delay: 0s; }
+    .glow-orb.g2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(99,102,241,0.15), transparent); bottom: -80px; right: -80px; animation-delay: 2s; }
+
+    @keyframes pulse-orb { from { transform: scale(1); } to { transform: scale(1.15); } }
+
+    /* ─── ADMIN HEADER ─── */
+    .admin-header {
+      position: relative; z-index: 10;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,10,10,0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .admin-logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+    }
+    .admin-logo-icon {
+      width: 32px; height: 32px;
+      background: #22c55e;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .admin-logo-icon svg { width: 16px; height: 16px; color: #fff; }
+    .admin-logo-text {
+      font-size: 14px; font-weight: 600;
+      color: var(--text); letter-spacing: 0.02em;
+    }
+    .admin-logo-text span {
+      font-size: 10px; font-weight: 500;
+      color: var(--text-muted); letter-spacing: 0.1em;
+      text-transform: uppercase; margin-left: 6px;
+    }
+    .admin-nav { display: flex; align-items: center; gap: 8px; }
+    .admin-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--accent-red-dim);
+      border: 1px solid rgba(239,68,68,0.2);
+      color: var(--accent-red);
+      font-size: 11px; font-weight: 600;
+      padding: 4px 10px; border-radius: 100px;
+      letter-spacing: 0.04em;
+    }
+    .admin-badge .dot { width: 5px; height: 5px; background: var(--accent-red); border-radius: 50%; animation: blink 1.5s ease-in-out infinite; }
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+    .nav-link {
+      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      text-decoration: none; padding: 6px 12px; border-radius: 8px;
+      transition: all 0.2s; border: 1px solid transparent;
+    }
+    .nav-link:hover { color: var(--text); background: rgba(255,255,255,0.05); border-color: var(--border); }
+    .nav-link.danger { color: var(--accent-red); }
+    .nav-link.danger:hover { background: var(--accent-red-dim); border-color: rgba(239,68,68,0.2); }
+
+    /* ─── MAIN CONTENT ─── */
+    main {
+      flex: 1; display: flex;
+      align-items: center; justify-content: center;
+      padding: 40px 24px;
+      position: relative; z-index: 1;
+    }
+
+    .container {
+      width: 100%; max-width: 560px;
+      text-align: center;
+      animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Error code number ─── */
+    .error-number {
+      font-size: clamp(100px, 20vw, 160px);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.05em;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,255,255,0.08);
+      position: relative;
+      margin-bottom: -10px;
+      user-select: none;
+    }
+    .user-mode .error-number { -webkit-text-stroke: 1px rgba(0,0,0,0.07); }
+
+    /* ─── Divider line ─── */
+    .divider {
+      width: 40px; height: 1px;
+      background: var(--border-hover);
+      margin: 20px auto;
+    }
+
+    /* ─── Status pill ─── */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-green-dim);
+      border: 1px solid rgba(34,197,94,0.2);
+      color: var(--accent-green);
+      font-size: 11px; font-weight: 600;
+      padding: 5px 14px 5px 10px;
+      border-radius: 100px; letter-spacing: 0.06em;
+      text-transform: uppercase; margin-bottom: 24px;
+    }
+    .status-pill .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-green); animation: blink 2s ease-in-out infinite; }
+
+    /* ─── Heading ─── */
+    h1 {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(26px, 5vw, 36px);
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+      line-height: 1.15;
+    }
+    p.sub {
+      font-size: 15px; line-height: 1.7;
+      color: var(--text-muted); font-weight: 400;
+      max-width: 400px; margin: 0 auto 32px;
+    }
+
+    /* ─── Path display ─── */
+    .path-tag {
+      display: inline-block;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px; color: var(--text-subtle);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      padding: 6px 14px; border-radius: 8px;
+      margin-bottom: 36px;
+      letter-spacing: 0.02em;
+      max-width: 100%; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+    .user-mode .path-tag { background: rgba(0,0,0,0.03); }
+
+    /* ─── Buttons ─── */
+    .btn-group { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: 12px;
+      font-size: 14px; font-weight: 600;
+      background: var(--text); color: var(--bg);
+      text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      letter-spacing: -0.01em;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,255,255,0.12); opacity: 0.9; }
+    .user-mode .btn-primary:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: 12px;
+      font-size: 14px; font-weight: 500;
+      background: transparent; color: var(--text-muted);
+      border: 1px solid var(--border); cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      letter-spacing: -0.01em;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-secondary:hover { color: var(--text); border-color: var(--border-hover); background: rgba(255,255,255,0.04); transform: translateY(-2px); }
+    .user-mode .btn-secondary:hover { background: rgba(0,0,0,0.04); }
+
+    /* ─── USER HEADER ─── */
+    .user-header {
+      position: relative; z-index: 10;
+      padding: 20px 32px;
+      display: flex; align-items: center; justify-content: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .user-logo {
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none;
+    }
+    .user-logo svg { width: 18px; height: 18px; color: var(--text); }
+    .user-logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 600;
+      color: var(--text); letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ─── USER footer hint ─── */
+    .footer-hint {
+      position: relative; z-index: 10;
+      padding: 20px;
+      text-align: center;
+    }
+    .footer-hint p { font-size: 12px; color: var(--text-subtle); margin-bottom: 4px; }
+    .footer-hint a { font-size: 12px; color: var(--text-muted); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; transition: color 0.2s; }
+    .footer-hint a:hover { color: var(--text); }
+    .footer-copy { font-size: 11px; color: var(--text-subtle); margin-top: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    /* ─── Admin Footer ─── */
+    .admin-footer { position: relative; z-index: 10; text-align: center; padding: 20px; }
+    .admin-footer p { font-size: 11px; color: var(--text-subtle); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 480px) {
+      .admin-header { padding: 0 16px; }
+      .admin-badge { display: none; }
+      main { padding: 32px 16px; }
+      .btn-group { flex-direction: column; width: 100%; }
+      .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+    }
   </style>
 </head>
 
-<body class="min-h-screen grid-bg flex flex-col {% if 'admin' not in request.path and 'admin-panel' not in request.path and 'management' not in request.path and 'offers' not in request.path %}user-theme{% endif %}">
+{% if 'admin' in request.path or 'management' in request.path or 'offers' in request.path %}
+{# ═══════════════ ADMIN 404 ═══════════════ #}
+<body>
+  <div class="glow-bg">
+    <div class="glow-orb g1"></div>
+    <div class="glow-orb g2"></div>
+  </div>
 
-  {% if 'admin' in request.path or 'admin-panel' in request.path or 'management' in request.path or 'offers' in request.path %}
-    <!-- ════════════════════ ADMIN DESIGN ════════════════════ -->
-    <header class="w-full bg-white/80 backdrop-blur-md border-b border-sage-100 px-4 sm:px-8 py-4 flex items-center justify-between animate-fade-up z-10">
-      <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-2.5 no-underline group">
-        <div class="w-8 h-8 rounded-lg bg-sage-600 flex items-center justify-center group-hover:bg-sage-700 transition-colors">
-          <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2C8 6 4 9 4 13a8 8 0 0016 0c0-4-4-7-8-11z"/>
-          </svg>
-        </div>
-        <span class="font-playfair text-[17px] font-semibold text-sage-900 tracking-wide">Glowé <span class="text-sage-500 font-sans text-xs font-medium tracking-widest uppercase">Admin</span></span>
-      </a>
-
-      <div class="flex items-center gap-6">
-        <div class="hidden sm:flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-xs font-semibold px-3 py-1.5 rounded-full">
-          <span class="status-dot w-2 h-2 rounded-full bg-red-500 inline-block"></span>
-          Error 404
-        </div>
-        {% if user.is_authenticated and user.is_superuser %}
-          <a href="{% url 'admin_dashboard' %}" class="text-sage-700 text-sm font-medium hover:text-sage-900 transition-colors hidden sm:block">Dashboard</a>
-          <a href="{% url 'admin_signout' %}" class="text-red-500 text-sm font-medium hover:text-red-700 transition-colors hidden sm:block">Sign Out</a>
-        {% else %}
-          <a href="{% url 'admin_signin' %}" class="text-sage-700 text-sm font-medium hover:text-sage-900 transition-colors hidden sm:block">Sign In</a>
-        {% endif %}
-      </div>
-    </header>
-
-    <main class="flex-1 flex items-center justify-center px-4 py-12 sm:py-16">
-      <div class="w-full max-w-2xl">
-        <div class="glow-card bg-white/90 backdrop-blur-md rounded-3xl border border-sage-100 overflow-hidden animate-fade-up-d1">
-          <div class="h-1 w-full bg-gradient-to-r from-sage-300 via-sage-500 to-sage-300"></div>
-          <div class="px-8 sm:px-12 py-12 sm:py-16 text-center relative overflow-hidden">
-            <div class="scanline"></div>
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 pointer-events-none opacity-20">
-              <div class="orbit-dot"></div>
-            </div>
-            <div class="animate-float mx-auto mb-6 w-20 h-20 bg-sage-50 border border-sage-200 rounded-2xl flex items-center justify-center shadow-inner">
-              <svg class="w-10 h-10 text-sage-600" viewBox="0 0 40 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="14" y="2" width="12" height="6" rx="2" stroke="currentColor" stroke-width="1.5"/>
-                <rect x="16" y="8" width="8" height="4" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M9 14 Q8 20 8 30 Q8 40 20 41 Q32 40 32 30 Q32 20 31 14 Z" stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.08"/>
-                <path d="M20 22 C20 22 17 26 17 28.5 C17 30.2 18.3 31.5 20 31.5 C21.7 31.5 23 30.2 23 28.5 C23 26 20 22 20 22Z" stroke="currentColor" stroke-width="1.2" fill="none"/>
-                <text x="20" y="38" text-anchor="middle" font-family="Inter" font-size="4" fill="currentColor" letter-spacing="1.5" opacity="0.6">EMPTY</text>
-              </svg>
-            </div>
-            <div class="glitch-wrapper mb-4 animate-fade-up-d2">
-              <div class="glitch-text" data-text="404">404</div>
-            </div>
-            <div class="animate-fade-up-d3">
-              <h1 class="font-playfair text-2xl sm:text-3xl font-semibold text-sage-900 mb-3">Admin Page Not Found</h1>
-              <p class="text-sm sm:text-[15px] text-sage-600 font-light leading-relaxed max-w-md mx-auto mb-2">The admin page you're looking for doesn't exist. Let's get your dashboard back on track.</p>
-              <div class="inline-flex items-center gap-2 bg-sage-50 border border-sage-200 rounded-full px-4 py-1.5 mt-2 mb-8">
-                <code class="text-xs text-sage-600 font-mono">{{ request.path }}</code>
-              </div>
-            </div>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-up-d4">
-              {% if user.is_authenticated and user.is_superuser %}
-                <a href="{% url 'admin_dashboard' %}" class="btn-shimmer w-full sm:w-auto flex items-center justify-center gap-2.5 text-white text-sm font-semibold tracking-wide px-8 py-3.5 rounded-2xl transition-all duration-200 hover:scale-105 hover:shadow-xl no-underline">Back to Dashboard</a>
-              {% else %}
-                <a href="{% url 'admin_signin' %}" class="btn-shimmer w-full sm:w-auto flex items-center justify-center gap-2.5 text-white text-sm font-semibold tracking-wide px-8 py-3.5 rounded-2xl transition-all duration-200 hover:scale-105 hover:shadow-xl no-underline">Go to Sign In</a>
-              {% endif %}
-              <button onclick="history.back()" class="w-full sm:w-auto flex items-center justify-center gap-2.5 bg-transparent border-2 border-sage-200 text-sage-700 hover:border-sage-500 hover:text-sage-900 hover:bg-sage-50 text-sm font-semibold tracking-wide px-8 py-3.5 rounded-2xl transition-all duration-200 hover:scale-105">Go Back</button>
-            </div>
-          </div>
-        </div>
-        <p class="text-center text-xs text-sage-400 mt-8 tracking-widest uppercase animate-fade-up-d4">© 2025 Glowé Skincare Admin Panel</p>
-      </div>
-    </main>
-
-  {% else %}
-    <!-- ════════════════════ USER DESIGN ════════════════════ -->
-    <main class="min-h-screen flex flex-col items-center justify-between px-4 py-10 user-theme">
-      <!-- Logo -->
-      <div class="fade-up d1 flex items-center gap-2 mb-8">
-        <svg class="w-5 h-5 text-[#2a1f14]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <header class="admin-header">
+    <a href="{% url 'admin_dashboard' %}" class="admin-logo">
+      <div class="admin-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2C8 6 4 9 4 13a8 8 0 0016 0c0-4-4-7-8-11z"/>
-          <path d="M12 12v4"/>
         </svg>
-        <span class="font-playfair text-[18px] font-semibold tracking-[0.3em] text-[#2a1f14] uppercase">Glowé</span>
       </div>
+      <span class="admin-logo-text">Glowé<span>Admin</span></span>
+    </a>
+    <nav class="admin-nav">
+      <div class="admin-badge"><span class="dot"></span> Error 404</div>
+      {% if user.is_authenticated and user.is_superuser %}
+        <a href="{% url 'admin_dashboard' %}" class="nav-link">Dashboard</a>
+        <a href="{% url 'admin_signout' %}" class="nav-link danger">Sign Out</a>
+      {% else %}
+        <a href="{% url 'admin_signin' %}" class="nav-link">Sign In</a>
+      {% endif %}
+    </nav>
+  </header>
 
-      <!-- Main Card -->
-      <div class="fade-up d2 w-full max-w-lg bg-white/80 backdrop-blur-md rounded-3xl shadow-xl px-8 py-12 text-center border border-white/60">
-        <div class="flex items-center justify-center gap-4 mb-8">
-          <span class="font-playfair text-[90px] md:text-[110px] font-bold text-[#2a1f14] leading-none select-none">4</span>
-          <div class="animate-float flex flex-col items-center justify-center relative">
-            <svg class="w-[80px] md:w-[100px]" viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="28" y="4" width="24" height="12" rx="4" stroke="#2a1f14" stroke-width="2"/>
-              <rect x="32" y="16" width="16" height="8" stroke="#2a1f14" stroke-width="2"/>
-              <path d="M18 28 Q16 40 16 60 Q16 80 40 82 Q64 80 64 60 Q64 40 62 28 Z" stroke="#2a1f14" stroke-width="2" fill="#faf7f4"/>
-              <path d="M40 45 C40 45 34 52 34 57 C34 60.3 36.7 63 40 63 C43.3 63 46 60.3 46 57 C46 52 40 45 40 45Z" stroke="#2a1f14" stroke-width="1.5" fill="none"/>
-              <text x="40" y="76" text-anchor="middle" font-family="Inter" font-size="7" fill="#9a8a7a" letter-spacing="2">EMPTY</text>
-            </svg>
-          </div>
-          <span class="font-playfair text-[90px] md:text-[110px] font-bold text-[#2a1f14] leading-none select-none">4</span>
-        </div>
-        <h1 class="font-playfair text-[26px] md:text-[30px] font-semibold text-[#2a1f14] mb-4">Page Not Found</h1>
-        <p class="text-[13px] md:text-[14px] text-[#8c7f77] font-light leading-relaxed mb-8 max-w-sm mx-auto">The page you are looking for might have been moved. Let's get your glow back on track.</p>
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <a href="{% url 'home' %}" class="flex items-center gap-2 bg-[#2a1f14] text-white text-[12px] font-semibold px-7 py-3.5 rounded-full transition-all duration-200 hover:scale-105 no-underline">Back to Home</a>
-          <a href="{% url 'product_listing' %}" class="flex items-center gap-2 border border-[#2a1f14] text-[#2a1f14] text-[12px] font-semibold px-7 py-3.5 rounded-full transition-all duration-200 hover:scale-105 no-underline">Shop Collections</a>
-        </div>
+  <main>
+    <div class="container">
+      <div class="error-number">404</div>
+      <div class="divider"></div>
+      <div class="status-pill"><span class="dot"></span> Page not found</div>
+      <h1>Admin page doesn't exist</h1>
+      <p class="sub">The admin route you're looking for has been moved, deleted, or never existed. Check the URL and try again.</p>
+      <div class="path-tag">{{ request.path }}</div>
+      <div class="btn-group">
+        {% if user.is_authenticated and user.is_superuser %}
+          <a href="{% url 'admin_dashboard' %}" class="btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            Back to Dashboard
+          </a>
+        {% else %}
+          <a href="{% url 'admin_signin' %}" class="btn-primary">Sign In to Admin</a>
+        {% endif %}
+        <button onclick="history.back()" class="btn-secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Go Back
+        </button>
       </div>
+    </div>
+  </main>
 
-      <div class="fade-up d4 text-center mt-10">
-        <p class="text-[12px] text-[#8c7f77] mb-1">Lost? Our skin experts are here to help.</p>
-        <a href="{% url 'home' %}" class="text-[12px] font-semibold text-[#2a1f14] underline">Visit Help Center</a>
-        <p class="text-[10px] text-[#b0a49a] uppercase mt-6">© Glowé Skincare</p>
-      </div>
-    </main>
-  {% endif %}
-
+  <footer class="admin-footer">
+    <p>© 2025 Glowé Skincare · Admin Panel</p>
+  </footer>
 </body>
+
+{% else %}
+{# ═══════════════ USER 404 ═══════════════ #}
+<body class="user-mode">
+  <header class="user-header">
+    <a href="{% url 'home' %}" class="user-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2C8 6 4 9 4 13a8 8 0 0016 0c0-4-4-7-8-11z"/>
+        <path d="M12 12v4"/>
+      </svg>
+      <span class="user-logo-text">Glowé</span>
+    </a>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="error-number">404</div>
+      <div class="divider"></div>
+      <h1>Page not found</h1>
+      <p class="sub">The page you're looking for might have been moved, removed, or never existed. Let's get your glow back on track.</p>
+      <div class="btn-group">
+        <a href="{% url 'home' %}" class="btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Back to Home
+        </a>
+        <a href="{% url 'product_listing' %}" class="btn-secondary">
+          Shop Collections
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer-hint">
+    <p>Lost? Our skin experts are here to help.</p>
+    <a href="{% url 'home' %}">Visit Help Center</a>
+    <p class="footer-copy">© Glowé Skincare</p>
+  </footer>
+</body>
+{% endif %}
+
 </html>
