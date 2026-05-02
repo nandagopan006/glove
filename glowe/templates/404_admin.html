@@ -134,16 +134,10 @@
   <header class="relative z-10 border-b border-sage-100/60 bg-white/60 backdrop-blur-xl s1" style="height:60px;">
     <div class="max-w-6xl mx-auto px-4 sm:px-8 h-full flex items-center justify-between">
 
-      <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-2.5 no-underline group">
-        <div class="w-8 h-8 rounded-[10px] flex items-center justify-center transition-all duration-200 group-hover:scale-105"
-             style="background:linear-gradient(135deg,#3a7a3e,#2f6232);box-shadow:0 2px 8px rgba(47,98,50,0.3);">
-          <svg class="w-[15px] h-[15px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-            <path d="M12 2C8 6 4 9 4 13a8 8 0 0016 0c0-4-4-7-8-11z"/>
-          </svg>
-        </div>
-        <div class="flex items-baseline gap-1.5">
-          <span class="font-semibold text-[15px] text-sage-900 tracking-[-0.01em]">Glowé</span>
-          <span class="text-[9px] font-medium text-sage-500 tracking-[0.14em] uppercase">Admin</span>
+      <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 no-underline group">
+        <img src="{{ logo_url }}" alt="{{ site_name }} Logo" class="h-8 md:h-9 w-auto object-contain transition-transform duration-200 group-hover:scale-105">
+        <div class="flex items-baseline gap-1.5 border-l border-sage-200 pl-3">
+          <span class="font-semibold text-[15px] text-sage-900 tracking-[-0.01em]">Admin</span>
         </div>
       </a>
 
@@ -249,7 +243,7 @@
 
       {# Footer hint #}
       <p class="s5 text-center text-[11px] text-sage-400 mt-6 tracking-[0.1em] uppercase">
-        © 2025 Glowé Skincare · Admin Panel
+        © {% now "Y" %} {{ site_name }} · Admin Panel
       </p>
 
     </div>

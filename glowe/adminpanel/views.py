@@ -90,12 +90,13 @@ def admin_dashboard(request):
     filter_type = request.GET.get(
         "filter", "month"
     )  # Default to 'month' instead of 'all'
-    now = timezone.now()
+    now = timezone.localtime(timezone.now())
+    today_midnight = now.replace(hour=0, minute=0, second=0)
     start_date = None
     end_date = now
 
     if filter_type == "day":
-        start_date = now.replace(hour=0, minute=0, second=0)
+        start_date = today_midnight
     elif filter_type == "week":
         start_date = now - timedelta(days=7)
     elif filter_type == "month":
@@ -110,7 +111,9 @@ def admin_dashboard(request):
                 start_date = make_aware(
                     datetime.strptime(start_str, "%Y-%m-%d")
                 )
-                end_date = make_aware(datetime.strptime(end_str, "%Y-%m-%d"))
+                end_date = make_aware(
+                    datetime.strptime(end_str, "%Y-%m-%d")
+                ).replace(hour=23, minute=59, second=59,)
 
                 # Start must be before or equal to End
                 if start_date > end_date:
@@ -122,9 +125,6 @@ def admin_dashboard(request):
                     filter_type = "month"
                     start_date = now.replace(day=1, hour=0, minute=0, second=0)
                     end_date = now
-                else:
-                    # Make end_date include the full day
-                    end_date = end_date.replace(hour=23, minute=59, second=59)
             except (ValueError, TypeError):
                 filter_type = "month"
                 start_date = now.replace(day=1, hour=0, minute=0, second=0)
@@ -712,7 +712,7 @@ def sales_report(request):
 
     filter_type = request.GET.get("filter", "month")
     now = timezone.localtime(timezone.now())
-    today_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_midnight = now.replace(hour=0, minute=0, second=0)
 
     if filter_type == "day":
         # Today (since midnight)
@@ -732,16 +732,66 @@ def sales_report(request):
         if start and end:
             try:
                 start_date = make_aware(datetime.strptime(start, "%Y-%m-%d"))
-                end_date = make_aware(datetime.strptime(end, "%Y-%m-%d"))
-            except Exception:
-                start_date = now - timedelta(days=30)
+                end_date = make_aware(
+                    datetime.strptime(end, "%Y-%m-%d")
+                ).replace(hour=23, minute=59, second=59)
+                
+                #End date cannot be before start date
+                if end_date < start_date:
+                    messages.error(
+                        request,
+                        "Invalid Date Range: End date cannot be before start date.",
+                    )
+                    # Default back to month if validation fails
+                    filter_type = "month"
+                    start_date = now.replace(day=1, hour=0, minute=0, second=0)
+                    end_date = now
+                #Start date cannot be in the future
+                elif start_date > now:
+                    messages.error(
+                        request,
+                        "Invalid Date Range: Start date cannot be in the future.",
+                    )
+                    filter_type = "month"
+                    start_date = now.replace(day=1, hour=0, minute=0, second=0)
+                    end_date = now
+                #End date cannot be in the future
+                elif end_date > now:
+                    messages.error(
+                        request,
+                        "Invalid Date Range: End date cannot be in the future.",
+                    )
+                    filter_type = "month"
+                    start_date = now.replace(day=1, hour=0, minute=0, second=0)
+                    end_date = now
+                #Date range cannot exceed 1 year
+                elif (end_date - start_date).days > 365:
+                    messages.error(
+                        request,
+                        "Invalid Date Range: Date range cannot exceed 1 year.",
+                    )
+                    filter_type = "month"
+                    start_date = now.replace(day=1, hour=0, minute=0, second=0)
+                    end_date = now
+            except (ValueError, TypeError):
+                messages.error(
+                    request,
+                    "Invalid Date Format: Please use valid dates.",
+                )
+                filter_type = "month"
+                start_date = now.replace(day=1, hour=0, minute=0, second=0)
                 end_date = now
         else:
-            start_date = now - timedelta(days=30)
+            messages.error(
+                request,
+                "Missing Dates: Both start and end dates are required.",
+            )
+            filter_type = "month"
+            start_date = now.replace(day=1, hour=0, minute=0, second=0)
             end_date = now
     else:  # default: month
-        # Last 30 days
-        start_date = now - timedelta(days=30)
+        # Start from the first day of the current month
+        start_date = now.replace(day=1, hour=0, minute=0, second=0)
         end_date = now
 
     # Get all delivered orders in the date range
@@ -760,36 +810,183 @@ def sales_report(request):
     products_sold = sum(item.quantity for item in order_items)
 
     chart_dict = {}
+    chart_list = []
+    
     if filter_type == "day":
-        # Hourly data for Today
+        # Hourly data for Today - show all 24 hours
         for h in range(24):
-            chart_dict[f"{h:02d}:00"] = 0.0
+            hour_key = f"{h:02d}:00"
+            chart_dict[hour_key] = 0.0
 
+        # Aggregate orders by hour
         for order in orders:
             hour_key = order.created_at.strftime("%H:00")
             if hour_key in chart_dict:
                 chart_dict[hour_key] += float(order.total_amount)
-
-        chart_list = [{"date": k, "total": v} for k, v in chart_dict.items()]
+        
+        # Create ordered list
+        chart_list = [{"date": f"{h:02d}:00", "total": chart_dict[f"{h:02d}:00"]} for h in range(24)]
+        
+    elif filter_type == "custom":
+        # For custom dates, determine granularity based on range
+        delta_days = (end_date - start_date).days
+        
+        if delta_days <= 1:
+            # Hourly data for 1 day or less - show all 24 hours
+            for h in range(24):
+                hour_key = f"{h:02d}:00"
+                chart_dict[hour_key] = 0.0
+            
+            for order in orders:
+                hour_key = order.created_at.strftime("%H:00")
+                if hour_key in chart_dict:
+                    chart_dict[hour_key] += float(order.total_amount)
+            
+            # Create ordered list
+            chart_list = [{"date": f"{h:02d}:00", "total": chart_dict[f"{h:02d}:00"]} for h in range(24)]
+            
+        elif delta_days <= 60:
+            # Daily data for ranges up to 60 days
+            temp_date = start_date.date()
+            end_date_only = end_date.date()
+            date_list = []
+            
+            while temp_date <= end_date_only:
+                formatted_date = temp_date.strftime("%b %d")
+                chart_dict[str(temp_date)] = 0.0
+                date_list.append((str(temp_date), formatted_date))
+                temp_date += timedelta(days=1)
+            
+            for order in orders:
+                date_key = str(order.created_at.date())
+                if date_key in chart_dict:
+                    chart_dict[date_key] += float(order.total_amount)
+            
+            # Create ordered list with formatted dates
+            chart_list = [{"date": formatted, "total": chart_dict[date_key]} for date_key, formatted in date_list]
+            
+        else:
+            # Monthly data for ranges > 60 days
+            temp_date = start_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            month_list = []
+            
+            while temp_date <= end_date:
+                month_key = temp_date.strftime("%Y-%m")
+                month_label = temp_date.strftime("%b %Y")
+                chart_dict[month_key] = 0.0
+                month_list.append((month_key, month_label))
+                
+                # Move to next month
+                if temp_date.month == 12:
+                    temp_date = temp_date.replace(year=temp_date.year + 1, month=1)
+                else:
+                    temp_date = temp_date.replace(month=temp_date.month + 1)
+            
+            for order in orders:
+                month_key = order.created_at.strftime("%Y-%m")
+                if month_key in chart_dict:
+                    chart_dict[month_key] += float(order.total_amount)
+            
+            # Create ordered list with formatted labels
+            chart_list = [{"date": label, "total": chart_dict[key]} for key, label in month_list]
+            
     else:
-        # Daily data for other filters
+        # Daily data for week, month, year filters
         temp_date = start_date.date()
         end_date_only = end_date.date()
-        while temp_date <= end_date_only:
-            chart_dict[str(temp_date)] = 0.0
-            temp_date += timedelta(days=1)
+        
+        if filter_type == "week":
+            # Show day name for week view (Mon, Tue, etc.)
+            date_list = []
+            while temp_date <= end_date_only:
+                day_name = temp_date.strftime("%a")
+                chart_dict[str(temp_date)] = 0.0
+                date_list.append((str(temp_date), day_name))
+                temp_date += timedelta(days=1)
+            
+            for order in orders:
+                date_key = str(order.created_at.date())
+                if date_key in chart_dict:
+                    chart_dict[date_key] += float(order.total_amount)
+            
+            # Create ordered list
+            chart_list = [{"date": day_name, "total": chart_dict[date_key]} for date_key, day_name in date_list]
+            
+        elif filter_type == "month":
+            # Show day number for month view (1, 2, 3, etc.)
+            date_list = []
+            while temp_date <= end_date_only:
+                day_num = str(temp_date.day)
+                chart_dict[str(temp_date)] = 0.0
+                date_list.append((str(temp_date), day_num))
+                temp_date += timedelta(days=1)
+            
+            for order in orders:
+                date_key = str(order.created_at.date())
+                if date_key in chart_dict:
+                    chart_dict[date_key] += float(order.total_amount)
+            
+            # Create ordered list
+            chart_list = [{"date": day_num, "total": chart_dict[date_key]} for date_key, day_num in date_list]
+            
+        elif filter_type == "year":
+            # Show last 12 months from today (rolling 12 months)
+            month_list = []
+            
+            # Start from 12 months ago
+            temp_date = (now - timedelta(days=365)).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            
+            # Generate 12 months
+            for i in range(12):
+                month_key = temp_date.strftime("%Y-%m")
+                month_name = temp_date.strftime("%b %y")  # e.g., "May 25", "Jun 25"
+                chart_dict[month_key] = 0.0
+                month_list.append((month_key, month_name))
+                
+                # Move to next month
+                if temp_date.month == 12:
+                    temp_date = temp_date.replace(year=temp_date.year + 1, month=1)
+                else:
+                    temp_date = temp_date.replace(month=temp_date.month + 1)
+            
+            for order in orders:
+                month_key = order.created_at.strftime("%Y-%m")
+                if month_key in chart_dict:
+                    chart_dict[month_key] += float(order.total_amount)
+            
+            # Create ordered list
+            chart_list = [{"date": month_name, "total": chart_dict[month_key]} for month_key, month_name in month_list]
+            
+        else:
+            # Default: show full date
+            date_list = []
+            while temp_date <= end_date_only:
+                date_str = str(temp_date)
+                chart_dict[date_str] = 0.0
+                date_list.append(date_str)
+                temp_date += timedelta(days=1)
+            
+            for order in orders:
+                date_str = str(order.created_at.date())
+                if date_str in chart_dict:
+                    chart_dict[date_str] += float(order.total_amount)
+            
+            # Create ordered list
+            chart_list = [{"date": date_str, "total": chart_dict[date_str]} for date_str in date_list]
 
-        for order in orders:
-            date_str = str(order.created_at.date())
-            if date_str in chart_dict:
-                chart_dict[date_str] += float(order.total_amount)
-
-        chart_list = [{"date": k, "total": v} for k, v in chart_dict.items()]
-        chart_list.sort(key=lambda x: x["date"])
-
+    # Calculate previous period for growth comparison
+    prev_start = None
+    prev_end = None
+    
     if filter_type == "day":
         # Exactly yesterday (full day)
         prev_date = start_date.date() - timedelta(days=1)
+        prev_start = timezone.make_aware(
+            datetime.combine(prev_date, datetime.min.time())
+        )
+        prev_end = timezone.make_aware(
+            datetime.combine(prev_date, datetime.max.time())
+        )
         prev_rev_sum = (
             Order.objects.filter(
                 created_at__date=prev_date, order_status="DELIVERED"
@@ -803,7 +1000,40 @@ def sales_report(request):
             prev_start, prev_end = start_date - timedelta(days=7), start_date
         elif filter_type == "year":
             prev_start, prev_end = start_date - timedelta(days=365), start_date
+        elif filter_type == "month":
+            comparison_type = request.GET.get("comparison", "partial")
+            last_month_end = start_date - timedelta(seconds=1)
+            prev_start = last_month_end.replace(
+                day=1, hour=0, minute=0, second=0
+            )
+            
+            if comparison_type == "partial":
+                # Compare current month-to-date with same days in previous month
+                # e.g., May 1-2 vs April 1-2
+                try:
+                    prev_end = prev_start.replace(
+                        day=now.day,
+                        hour=now.hour,
+                        minute=now.minute,
+                        second=now.second,
+                    )
+                except ValueError:
+                    # Handle cases like March 31 -> Feb 28
+                    prev_end = last_month_end
+            else:
+                # Compare current month-to-date with FULL previous month
+                prev_end = last_month_end
+        elif filter_type == "custom":
+            # For custom dates, calculate the previous period with same duration
+            period_length = end_date - start_date
+            # Previous period ends where current period starts (minus 1 second)
+            prev_end = start_date - timedelta(seconds=1)
+            # Previous period starts by going back the same duration
+            prev_start = prev_end - period_length
+            # Ensure prev_start has proper time set (start of day)
+            prev_start = prev_start.replace(hour=0, minute=0, second=0)
         else:
+            # Default fallback for any other filter type
             period_length = end_date - start_date
             prev_start, prev_end = start_date - period_length, start_date
 
@@ -847,6 +1077,9 @@ def sales_report(request):
         "filter_type": filter_type,
         "start_date": start_date,
         "end_date": end_date,
+        "prev_start_date": prev_start,
+        "prev_end_date": prev_end,
+        "comparison_type": request.GET.get("comparison", "partial"),
         "orders_list": order_page_obj,
         "coupon_stats": coupon_page_obj,
     }
@@ -859,7 +1092,7 @@ def sales_report(request):
 def export_sales_excel(request):
     filter_type = request.GET.get("filter", "month")
     now = timezone.localtime(timezone.now())
-    today_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_midnight = now.replace(hour=0, minute=0, second=0)
 
     if filter_type == "day":
         start_date, end_date = today_midnight, now
@@ -872,13 +1105,18 @@ def export_sales_excel(request):
         if start and end:
             try:
                 start_date = make_aware(datetime.strptime(start, "%Y-%m-%d"))
-                end_date = make_aware(datetime.strptime(end, "%Y-%m-%d"))
+                end_date = make_aware(datetime.strptime(end, "%Y-%m-%d")).replace(
+                    hour=23, minute=59, second=59
+                )
+                # Validation
+                if end_date < start_date or start_date > now or end_date > now:
+                    start_date, end_date = now.replace(day=1, hour=0, minute=0, second=0,), now
             except Exception:
-                start_date, end_date = now - timedelta(days=30), now
+                start_date, end_date = now.replace(day=1, hour=0, minute=0, second=0), now
         else:
-            start_date, end_date = now - timedelta(days=30), now
+            start_date, end_date = now.replace(day=1, hour=0, minute=0, second=0), now
     else:
-        start_date, end_date = now - timedelta(days=30), now
+        start_date, end_date = now.replace(day=1, hour=0, minute=0, second=0), now
 
     orders = (
         Order.objects.filter(
@@ -983,13 +1221,18 @@ def export_sales_pdf(request):
         if start and end:
             try:
                 start_date = make_aware(datetime.strptime(start, "%Y-%m-%d"))
-                end_date = make_aware(datetime.strptime(end, "%Y-%m-%d"))
+                end_date = make_aware(datetime.strptime(end, "%Y-%m-%d")).replace(
+                    hour=23, minute=59, second=59
+                )
+                # Validation
+                if end_date < start_date or start_date > now or end_date > now:
+                    start_date, end_date = now.replace(day=1, hour=0, minute=0, second=0), now
             except Exception:
-                start_date, end_date = now - timedelta(days=30), now
+                start_date, end_date = now.replace(day=1, hour=0, minute=0, second=0), now
         else:
-            start_date, end_date = now - timedelta(days=30), now
+            start_date, end_date = now.replace(day=1, hour=0, minute=0, second=0), now
     else:
-        start_date, end_date = now - timedelta(days=30), now
+        start_date, end_date = now.replace(day=1, hour=0, minute=0, second=0), now
 
     orders = (
         Order.objects.filter(

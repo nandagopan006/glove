@@ -125,24 +125,8 @@
     </div>
   </div>
 
-  {% if total_orders == 0 and total_revenue == 0 %}
-  <!-- ── EMPTY STATE ── -->
-  <div class="chart-card flex flex-col items-center justify-center py-20 mb-8 text-center">
-    <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-5">
-      <svg class="w-9 h-9 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24">
-        <path stroke-linecap="round" d="M9 17v-2m3 2v-4m3 4v-6M5 17H4a2 2 0 01-2-2V5a2 2 0 012-2h16a2 2 0 012 2v10a2 2 0 01-2 2h-1"/>
-      </svg>
-    </div>
-    <p class="text-gray-700 font-bold text-xl">No delivered orders in this period</p>
-    <p class="text-gray-400 text-sm mt-1 mb-6">Try a wider date range above.</p>
-    <div class="flex gap-3">
-      <a href="?filter=month" class="px-5 py-2.5 bg-[#4a9050] text-white rounded-full text-sm font-semibold hover:bg-[#3a7a3e] transition-colors">This Month</a>
-      <a href="?filter=year"  class="px-5 py-2.5 border border-gray-200 text-gray-700 rounded-full text-sm font-semibold hover:bg-gray-50 transition-colors">This Year</a>
-    </div>
-  </div>
-
-  {% else %}
-
+  {% comment %} Always show metrics and charts to see growth comparison even if current period is empty {% endcomment %}
+  
   <!-- ── METRIC CARDS ── -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
 
@@ -239,13 +223,29 @@
 
     <!-- Growth Comparison Chart -->
     <div class="chart-card flex flex-col h-full min-h-[320px]">
-      <div class="flex items-center justify-between mb-6">
-        <div class="font-bold text-gray-900 text-[16px]">Growth Comparison</div>
-        {% if growth >= 0 %}
-          <span class="text-[12px] font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-full">+{{ growth }}%</span>
-        {% else %}
-          <span class="text-[12px] font-bold text-red-500 bg-red-50 px-2.5 py-1 rounded-full">{{ growth }}%</span>
-        {% endif %}
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <div class="font-bold text-gray-900 text-[16px]">Growth Comparison</div>
+          {% if filter_type == 'month' or not filter_type %}
+            <div class="flex items-center gap-2 mt-1.5 p-0.5 bg-gray-50 rounded-lg border border-gray-100 w-fit">
+              <a href="?filter=month&comparison=partial" 
+                 class="px-2 py-1 text-[9px] font-bold rounded-md transition-all {% if comparison_type == 'partial' %}bg-white text-sage-600 shadow-sm border border-gray-100{% else %}text-gray-400 hover:text-gray-600{% endif %}">
+                SAME PERIOD
+              </a>
+              <a href="?filter=month&comparison=full" 
+                 class="px-2 py-1 text-[9px] font-bold rounded-md transition-all {% if comparison_type == 'full' %}bg-white text-sage-600 shadow-sm border border-gray-100{% else %}text-gray-400 hover:text-gray-600{% endif %}">
+                FULL MONTH
+              </a>
+            </div>
+          {% endif %}
+        </div>
+        <div class="text-right">
+          {% if growth >= 0 %}
+            <span class="text-[13px] font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-full">+{{ growth }}%</span>
+          {% else %}
+            <span class="text-[13px] font-bold text-red-500 bg-red-50 px-2.5 py-1 rounded-full">{{ growth }}%</span>
+          {% endif %}
+        </div>
       </div>
       
       <div class="flex-grow relative" style="min-height:200px">
@@ -534,8 +534,6 @@
     {% endif %}
   </div>
   </div>
-
-  {% endif %}
 
 </main>
 </div>
