@@ -393,11 +393,11 @@
                            data-variant-stock="{{ variant.stock }}"
                            data-variant-active="{{ variant.is_active|yesno:'true,false' }}"
                            class="variant-btn px-6 py-2.5 rounded-lg font-montserrat text-[11px] font-semibold transition-colors border
-                                  {% if not variant.is_active %} opacity-60 border-gray-200 text-gray-500 bg-gray-50
+                                  {% if not variant.is_active %} opacity-50 border-[#e5e7eb] text-gray-400 bg-gray-50 cursor-not-allowed
                                   {% elif variant.stock == 0 %} opacity-40 border-gray-200 text-gray-400 pointer-events-none
                                   {% elif selected_variant and variant.id == selected_variant.id %} bg-[#3b2e2a] text-white border-[#3b2e2a] shadow-md
                                   {% else %} bg-transparent text-[#1a1208] border-[#e5e7eb] hover:border-[#1a1208] hover:shadow-sm {% endif %}">
-                            <span class="{% if not variant.is_active %}line-through opacity-80 decoration-gray-500{% endif %}">{{ variant.size }}</span>
+                            <span class="{% if not variant.is_active %}line-through{% endif %}">{{ variant.size }}</span>
                         </button>
                         {% endfor %}
                     </div>
@@ -1798,9 +1798,21 @@
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
 
+                    const vActive = this.getAttribute('data-variant-active') === 'true';
+
+                    if (!vActive) {
+                        if (typeof showToast === 'function') {
+                            showToast('error', 'Variant Unavailable', 'This size is currently not available.');
+                        }
+                        return; // Prevent selection
+                    }
+
                     variantButtons.forEach(b => {
-                        b.classList.remove('bg-[#3b2e2a]', 'text-white', 'border-[#3b2e2a]', 'shadow-md');
-                        b.classList.add('bg-transparent', 'text-[#1a1208]', 'border-[#e5e7eb]');
+                        // Don't reset styles of inactive buttons
+                        if (b.getAttribute('data-variant-active') !== 'false') {
+                            b.classList.remove('bg-[#3b2e2a]', 'text-white', 'border-[#3b2e2a]', 'shadow-md');
+                            b.classList.add('bg-transparent', 'text-[#1a1208]', 'border-[#e5e7eb]');
+                        }
                     });
                     this.classList.remove('bg-transparent', 'text-[#1a1208]', 'border-[#e5e7eb]');
                     this.classList.add('bg-[#3b2e2a]', 'text-white', 'border-[#3b2e2a]', 'shadow-md');
@@ -1808,7 +1820,6 @@
                     const vId = this.getAttribute('data-variant-id');
                     const vPrice = this.getAttribute('data-variant-price');
                     const vStock = parseInt(this.getAttribute('data-variant-stock')) || 0;
-                    const vActive = this.getAttribute('data-variant-active') === 'true';
                     const vFinalPrice = this.getAttribute('data-final-price');
                     const vHasOffer = this.getAttribute('data-has-offer') === 'true';
                     const vOfferText = this.getAttribute('data-offer-text');
@@ -1872,10 +1883,7 @@
 
 
                     const stockBadge = document.getElementById('stock-badge');
-                    if (!vActive) {
-                        stockBadge.textContent = 'Unavailable';
-                        stockBadge.className = 'px-2.5 py-1 text-[9px] font-bold tracking-[0.1em] rounded uppercase bg-red-100 text-red-800';
-                    } else if (vStock > 0) {
+                    if (vStock > 0) {
                         stockBadge.textContent = 'In Stock';
                         stockBadge.className = 'px-2.5 py-1 text-[9px] font-bold tracking-[0.1em] rounded uppercase bg-[#eae6e1] text-[#1a1208]';
                     } else {
@@ -1885,7 +1893,7 @@
 
                     const lowStockP = document.getElementById('low-stock-warning');
                     const lowStockSpan = document.getElementById('low-stock-count');
-                    if (vActive && vStock > 0 && vStock <= 5) {
+                    if (vStock > 0 && vStock <= 5) {
                         lowStockSpan.textContent = vStock;
                         lowStockP.classList.remove('hidden');
                     } else {
@@ -1893,7 +1901,7 @@
                     }
 
                     const cartBtn = document.getElementById('add-to-cart-btn');
-                    if (!vActive || vStock === 0) {
+                    if (vStock === 0) {
                         cartBtn.disabled = true;
                     } else {
                         cartBtn.disabled = false;
