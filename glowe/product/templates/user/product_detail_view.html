@@ -393,11 +393,11 @@
                            data-variant-stock="{{ variant.stock }}"
                            data-variant-active="{{ variant.is_active|yesno:'true,false' }}"
                            class="variant-btn px-6 py-2.5 rounded-lg font-montserrat text-[11px] font-semibold transition-colors border
-                                  {% if not variant.is_active %} opacity-50 border-[#e5e7eb] text-gray-400 bg-gray-50 cursor-not-allowed
-                                  {% elif variant.stock == 0 %} opacity-40 border-gray-200 text-gray-400 pointer-events-none
+                                  {% if not variant.is_active %} border-[#d1d5db] text-gray-500 bg-gray-100 cursor-not-allowed
+                                  {% elif variant.stock == 0 %} border-[#d1d5db] text-gray-500 bg-gray-100 cursor-not-allowed
                                   {% elif selected_variant and variant.id == selected_variant.id %} bg-[#3b2e2a] text-white border-[#3b2e2a] shadow-md
                                   {% else %} bg-transparent text-[#1a1208] border-[#e5e7eb] hover:border-[#1a1208] hover:shadow-sm {% endif %}">
-                            <span class="{% if not variant.is_active %}line-through{% endif %}">{{ variant.size }}</span>
+                            <span class="{% if not variant.is_active or variant.stock == 0 %}line-through decoration-gray-500{% endif %}">{{ variant.size }}</span>
                         </button>
                         {% endfor %}
                     </div>
@@ -1799,6 +1799,7 @@
                     e.preventDefault();
 
                     const vActive = this.getAttribute('data-variant-active') === 'true';
+                    const vStock = parseInt(this.getAttribute('data-variant-stock')) || 0;
 
                     if (!vActive) {
                         if (typeof showToast === 'function') {
@@ -1807,9 +1808,18 @@
                         return; // Prevent selection
                     }
 
+                    if (vStock === 0) {
+                        if (typeof showToast === 'function') {
+                            showToast('error', 'Out of Stock', 'This size is currently out of stock.');
+                        }
+                        return; // Prevent selection
+                    }
+
                     variantButtons.forEach(b => {
-                        // Don't reset styles of inactive buttons
-                        if (b.getAttribute('data-variant-active') !== 'false') {
+                        // Don't reset styles of inactive/out-of-stock buttons
+                        const isActive = b.getAttribute('data-variant-active') !== 'false';
+                        const isStock = (parseInt(b.getAttribute('data-variant-stock')) || 0) > 0;
+                        if (isActive && isStock) {
                             b.classList.remove('bg-[#3b2e2a]', 'text-white', 'border-[#3b2e2a]', 'shadow-md');
                             b.classList.add('bg-transparent', 'text-[#1a1208]', 'border-[#e5e7eb]');
                         }
@@ -1819,7 +1829,6 @@
 
                     const vId = this.getAttribute('data-variant-id');
                     const vPrice = this.getAttribute('data-variant-price');
-                    const vStock = parseInt(this.getAttribute('data-variant-stock')) || 0;
                     const vFinalPrice = this.getAttribute('data-final-price');
                     const vHasOffer = this.getAttribute('data-has-offer') === 'true';
                     const vOfferText = this.getAttribute('data-offer-text');
