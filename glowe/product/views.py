@@ -939,24 +939,25 @@ def product_detail_view(request, slug):
     if not product.is_active:
         return redirect("product_listing")
 
-    variants = product.variants.filter(is_active=True).order_by("size")
+    all_variants = product.variants.all().order_by("size")
+    active_variants = all_variants.filter(is_active=True)
 
-    if not variants.exists():
+    if not active_variants.exists():
         return redirect("product_listing")
 
     variant_id = request.GET.get("variant")
     # get selected variant
+    selected_variant = None
     if variant_id:
-        selected_variant = variants.filter(id=variant_id).first()
-    else:
-        selected_variant = None
+        selected_variant = active_variants.filter(id=variant_id).first()
+
     # If fallback.. to first variant
     if not selected_variant:
-        selected_variant = variants.first()
+        selected_variant = active_variants.first()
 
     stock = selected_variant.stock if selected_variant else 0
     low_stock_count = stock if 0 < stock <= 5 else None
-    all_out_of_stock = not variants.filter(stock__gt=0).exists()
+    all_out_of_stock = not active_variants.filter(stock__gt=0).exists()
 
     sv_price = Decimal("0.00")
 
@@ -996,7 +997,7 @@ def product_detail_view(request, slug):
         offer_text = ""
         best_offer = None
 
-    for v in variants:
+    for v in all_variants:
         try:
             v_price = Decimal(str(v.price))
             v_offer, v_disc = get_best_offer(product, v_price)
@@ -1172,7 +1173,7 @@ def product_detail_view(request, slug):
         "user/product_detail_view.html",
         {
             "product": product,
-            "variants": variants,
+            "variants": all_variants,
             "selected_variant": selected_variant,
             "stock": stock,
             "low_stock_count": low_stock_count,
