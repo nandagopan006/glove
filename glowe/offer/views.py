@@ -77,7 +77,7 @@ def add_offer(request):
         except Exception:
             return error("Invalid date format")
 
-        today = timezone.now().date()
+        today = timezone.localtime().date()
         start_date_only = (
             start_date.date() if hasattr(start_date, "date") else start_date
         )
@@ -227,7 +227,7 @@ def edit_offer(request, id):
             return error("Invalid date format")
 
         # Get today's date
-        today = timezone.now().date()
+        today = timezone.localtime().date()
         start_date_only = (
             start_date.date() if hasattr(start_date, "date") else start_date
         )
@@ -235,11 +235,12 @@ def edit_offer(request, id):
             end_date.date() if hasattr(end_date, "date") else end_date
         )
 
-        # Get the original offer's start
+        # Get the original offer's start in local time
+        original_start_dt = timezone.localtime(offer.start_date) if timezone.is_aware(offer.start_date) else offer.start_date
         original_start_date = (
-            offer.start_date.date()
-            if hasattr(offer.start_date, "date")
-            else offer.start_date
+            original_start_dt.date()
+            if hasattr(original_start_dt, "date")
+            else original_start_dt
         )
 
         if original_start_date > today:
