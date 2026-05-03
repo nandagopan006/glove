@@ -676,6 +676,8 @@ def product_listing(request):
     products = Product.objects.filter(
         is_active=True,
         is_deleted=False,
+        category__is_deleted=False,
+        category__is_active=True,
         variants__is_active=True,
         variants__is_default=True,
     ).distinct()
@@ -1009,11 +1011,18 @@ def product_detail_view(request, slug):
     primary_image = images.filter(is_primary=True).first()
 
     related_products = Product.objects.filter(
-        category=product.category, is_active=True, is_deleted=False
+        category=product.category,
+        category__is_deleted=False,
+        category__is_active=True,
+        is_active=True,
+        is_deleted=False
     ).exclude(id=product.id)[:7]
 
     others_bought = Product.objects.filter(
-        is_active=True, is_deleted=False
+        is_active=True,
+        is_deleted=False,
+        category__is_deleted=False,
+        category__is_active=True,
     ).exclude(category=product.category).exclude(id=product.id).order_by('?')[:9]
 
     def process_rel_products(products_list):

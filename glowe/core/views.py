@@ -16,14 +16,24 @@ def home(request):
 
     # Get featured/new products (latest 8 products)
     featured_products = (
-        Product.objects.filter(is_deleted=False, is_active=True)
+        Product.objects.filter(
+            is_deleted=False,
+            is_active=True,
+            category__is_deleted=False,
+            category__is_active=True,
+        )
         .prefetch_related("images", "variants")
         .order_by("-created_at")[:8]
     )
 
     # Get best selling products (top 4 by order count)
     best_sellers = (
-        Product.objects.filter(is_deleted=False, is_active=True)
+        Product.objects.filter(
+            is_deleted=False,
+            is_active=True,
+            category__is_deleted=False,
+            category__is_active=True,
+        )
         .annotate(order_count=Count("variants__orderitem"))
         .filter(order_count__gt=0)
         .prefetch_related("images", "variants")
