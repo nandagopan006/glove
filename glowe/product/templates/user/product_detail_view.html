@@ -282,11 +282,13 @@
                         <img id="mainImage" 
                              src="{{ primary_image.image.url }}" 
                              alt="{{ product.name }}" 
+                             loading="lazy"
                              class="w-full h-full object-cover object-center transition-opacity duration-300">
                     {% elif images %}
                         <img id="mainImage" 
                              src="{{ images.0.image.url }}" 
                              alt="{{ product.name }}" 
+                             loading="lazy"
                              class="w-full h-full object-cover object-center transition-opacity duration-300">
                     {% else %}
                         <span class="font-montserrat text-gray-400">No Image Available</span>
@@ -1219,7 +1221,7 @@
 
                     {% with fi=rel.images.first %}
                     {% if fi %}
-                    <img src="{{ fi.image.url }}" alt="{{ rel.name }}" class="sp-img">
+                    <img src="{{ fi.image.url }}" alt="{{ rel.name }}" loading="lazy" class="sp-img">
                     {% else %}
                     <div class="absolute inset-0 bg-gradient-to-br from-[#3b2e2a] to-[#1a1208] flex items-center justify-center">
                         <span class="font-cormorant text-7xl text-white/10 select-none">{{ rel.name|first|upper }}</span>
@@ -1296,7 +1298,7 @@
 
                     {% with fi=rel.images.first %}
                     {% if fi %}
-                    <img src="{{ fi.image.url }}" alt="{{ rel.name }}" class="sp-img">
+                    <img src="{{ fi.image.url }}" alt="{{ rel.name }}" loading="lazy" class="sp-img">
                     {% else %}
                     <div class="absolute inset-0 bg-gradient-to-br from-[#3b2e2a] to-[#1a1208] flex items-center justify-center">
                         <span class="font-cormorant text-7xl text-white/10 select-none">{{ rel.name|first|upper }}</span>
