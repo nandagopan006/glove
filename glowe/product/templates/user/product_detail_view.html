@@ -2039,6 +2039,17 @@
                     
                     const data = await response.json();
                     
+                    // User is not logged in — redirect them to sign in
+                    if (data.status === 'redirect') {
+                        showToast('warning', 'Sign In Required', data.message || 'Please sign in to continue.');
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url || '/signin/';
+                        }, 1200);
+                        addToCartBtn.disabled = false;
+                        addToCartBtn.innerHTML = originalHTML;
+                        return;
+                    }
+
                     if (data.status === 'success' || data.status === 'warning') {
                         const type = data.status === 'warning' ? 'warning' : 'success';
                         const title = data.status === 'warning' ? 'Limit Reached' : 'Added!';
@@ -2064,7 +2075,7 @@
                     }
                 } catch (error) {
                     console.error('Add to cart error:', error);
-                    showToast('error', 'Error', 'Failed to add item to cart.');
+                    showToast('error', 'Error', 'Something went wrong. Please try again.');
                     addToCartBtn.disabled = false;
                     addToCartBtn.innerHTML = originalHTML;
                 }

@@ -1224,8 +1224,14 @@ def product_detail_view(request, slug):
     )
 
 
-@login_required
 def add_to_cart(request):
+
+    # Manual auth check — return JSON redirect for AJAX callers
+    if not request.user.is_authenticated:
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"status": "redirect", "redirect_url": "/signin/", "message": "Please sign in to add items to your cart."})
+        messages.info(request, "Please sign in to add items to your cart.")
+        return redirect("signin")
 
     if request.method != "POST":
         return redirect("product_listing")
@@ -1235,11 +1241,10 @@ def add_to_cart(request):
     max_qty = 5
 
     try:
-
         quantity = int(request.POST.get("quantity", 1))
     except Exception:
         quantity = 1
-    # if neg or 0 not aloow
+    # if neg or 0 not allow
     if quantity <= 0:
         quantity = 1
 
