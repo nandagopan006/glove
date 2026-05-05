@@ -34,6 +34,9 @@ class ProductForm(forms.ModelForm):
         if not re.match(r'^[a-zA-Z0-9\s]+$', name):
             raise forms.ValidationError("Product name can only contain letters, numbers, and spaces.")
 
+        # Standardize spaces for robust duplicate checking
+        name = re.sub(r'\s+', ' ', name)
+
         qs = Product.objects.filter(name__iexact=name)
         if self.instance.id:  # editing existing product
             qs = qs.exclude(pk=self.instance.id)  # ignore itself
@@ -152,12 +155,18 @@ class VariantForm(forms.ModelForm):
         if is_default:
             cleaned_data["is_active"] = True
 
-        if size and getattr(self.instance, "product", None):
+        product = (
+            self.instance.product
+            if self.instance.pk
+            else self.initial.get("product")
+        )
+
+        if size and product:
             exists = (
                 Variant.objects.filter(
-                    product=self.instance.product, size=size
+                    product=product, size=size
                 )
-                .exclude(id=self.instance.id)
+                .exclude(id=self.instance.id if self.instance.pk else None)
                 .exists()
             )
 

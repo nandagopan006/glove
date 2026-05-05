@@ -118,6 +118,11 @@ class OfferForm(forms.ModelForm):
 
         if discount_type == "FLAT":
             cleaned_data["max_discount"] = None
+            
+            min_purchase = cleaned_data.get("min_purchase")
+            if min_purchase is not None and discount_value is not None:
+                if discount_value >= min_purchase:
+                    self.add_error("discount_value", "Flat discount amount must be strictly lower than minimum purchase amount")
 
         # Target Validation
         if not self.instance.pk:  # Only strict on creation for target, since edit doesn't change target usually

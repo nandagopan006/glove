@@ -138,6 +138,13 @@ class CouponForm(forms.ModelForm):
                     "Flat discount cannot exceed ₹20,000"
                 )
 
+            
+            if value is not None and min_purchase is not None:
+                if value >= min_purchase:
+                    raise forms.ValidationError(
+                        "Flat discount amount must be strictly lower than the minimum purchase amount"
+                    )
+
             # Remove max_discount if mistakenly added for flat
             cleaned["max_discount"] = None
 
