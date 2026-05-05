@@ -17,15 +17,15 @@ from wallet.models import Wallet, WalletTransaction
 import re
 from django.views.decorators.cache import never_cache
 from core.decorators import unauthenticated_user
+import logging
+from core.utils import get_client_ip
+# Set up loggers
+logger = logging.getLogger('project')
+security_logger = logging.getLogger('security')
 
 
-def get_client_ip(request):
-    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(",")[0]
-    else:
-        ip = request.META.get("REMOTE_ADDR")
-    return ip
+
+
 
 
 @never_cache
@@ -365,12 +365,14 @@ def signin_page(request):
                 ip_address=client_ip, username=email, is_successful=True
             )
             login(request, user)
+            security_logger.info(f"LOGIN SUCCESS: User {email} logged in from IP {client_ip}")
             request.session["welcome"] = "Welcome to Glowé.  !"
             return redirect("home")
         else:
             LoginAttempt.objects.create(
                 ip_address=client_ip, username=email, is_successful=False
             )
+            security_logger.warning(f"LOGIN FAILED: Invalid credentials for user {email} from IP {client_ip}")
             return render(
                 request,
                 "signin.html",

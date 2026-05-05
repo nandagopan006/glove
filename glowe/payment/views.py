@@ -11,66 +11,84 @@ from django.views.decorators.cache import never_cache
 from django.utils import timezone
 from datetime import timedelta
 from product.models import Variant
+from core.utils import get_client_ip
+import logging
+
+# Set up loggers
+logger = logging.getLogger('project')
+payment_logger = logging.getLogger('payment')
+
 
 
 @never_cache
 @login_required
 def payment_page(request, order_id):
+    try:
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+        payment = order.payment
 
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    payment = order.payment
+        # already paid
+        if payment.payment_status == Payment.Status.SUCCESS:
+            return redirect("order_success", order_id=order.id)
 
-    # already paid
-    if payment.payment_status == Payment.Status.SUCCESS:
-        return redirect("order_success", order_id=order.id)
+        # 5-minute timeout check
+        if timezone.now() > order.created_at + timedelta(minutes=5):
+            if order.order_status != Order.Status.CANCELLED:
+                order.order_status = Order.Status.CANCELLED
+                order.save()
+                OrderStatusHistory.objects.create(
+                    order=order, status=Order.Status.CANCELLED
+                )
 
-    # 5-minute timeout check
-    if timezone.now() > order.created_at + timedelta(minutes=5):
-        if order.order_status != Order.Status.CANCELLED:
-            order.order_status = Order.Status.CANCELLED
-            order.save()
-            OrderStatusHistory.objects.create(
-                order=order, status=Order.Status.CANCELLED
+            messages.error(
+                request,
+                "Payment retry limit exceeded (5 minutes). The order has been cancelled.",  # noqa: E501
+            )
+            return redirect("order_detail", order_id=order.id)
+
+        try:
+            client = razorpay.Client(
+                auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
             )
 
-        messages.error(
-            request,
-            "Payment retry limit exceeded (5 minutes). The order has been cancelled.",  # noqa: E501
-        )
-        return redirect("order_detail", order_id=order.id)
+            # create razorpay order
+            razorpay_order = client.order.create(
+                {
+                    "amount": int(order.total_amount * 100),  # paisa
+                    "currency": "INR",
+                    "payment_capture": 1,
+                }
+            )
 
-    client = razorpay.Client(
-        auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
-    )
+            # save razorpay order id correctly
+            payment.razorpay_order_id = razorpay_order["id"]
+            payment.save()
 
-    # create razorpay order
-    razorpay_order = client.order.create(
-        {
-            "amount": int(order.total_amount * 100),  # paisa
-            "currency": "INR",
-            "payment_capture": 1,
-        }
-    )
+            expiration_time = order.created_at + timedelta(minutes=5)
+            time_left_seconds = max(
+                0, int((expiration_time - timezone.now()).total_seconds())
+            )
 
-    # save razorpay order id correctly
-    payment.razorpay_order_id = razorpay_order["id"]
-    payment.save()
+            context = {
+                "order": order,
+                "payment": payment,
+                "razorpay_key": settings.RAZORPAY_KEY_ID,
+                "razorpay_order_id": razorpay_order["id"],
+                "amount": int(order.total_amount * 100),
+                "time_left_seconds": time_left_seconds,
+            }
 
-    expiration_time = order.created_at + timedelta(minutes=5)
-    time_left_seconds = max(
-        0, int((expiration_time - timezone.now()).total_seconds())
-    )
+            return render(request, "payment/payment_page.html", context)
 
-    context = {
-        "order": order,
-        "payment": payment,
-        "razorpay_key": settings.RAZORPAY_KEY_ID,
-        "razorpay_order_id": razorpay_order["id"],
-        "amount": int(order.total_amount * 100),
-        "time_left_seconds": time_left_seconds,
-    }
+        except Exception as razor_err:
+            print(f"RAZORPAY ERROR: {str(razor_err)}")
+            messages.error(request, "Payment gateway is currently unavailable. Please try again later.")
+            return redirect("order_detail", order_id=order.id)
 
-    return render(request, "payment/payment_page.html", context)
+    except Exception as e:
+        print(f"PAYMENT PAGE CRITICAL ERROR: {str(e)}")
+        messages.error(request, "Something went wrong. Please try again.")
+        return redirect("order_listing")
 
 
 @csrf_exempt
@@ -147,7 +165,7 @@ def verify_payment(request):
         return redirect("order_success", order_id=order.id)
 
     except Exception as e:
-        print("ERROR:", e)
+        payment_logger.error(f"PAYMENT VERIFICATION FAILED: {str(e)} for order {order_id} - IP {get_client_ip(request)}")
         payment.payment_status = Payment.Status.FAILED
         payment.save()
         return redirect("payment_failed", order_id=order.id)

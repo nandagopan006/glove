@@ -43,6 +43,12 @@ from decimal import Decimal
 from wallet.models import WalletTransaction
 from offer.utils import get_best_offer
 from order.invoice_utils import calculate_invoice
+import logging
+
+# Set up loggers
+logger = logging.getLogger('project')
+payment_logger = logging.getLogger('payment')
+
 
 
 @never_cache
@@ -61,164 +67,178 @@ def place_order(request):
     request.session["order_processing"] = True
 
     try:
-        cart = request.user.cart
-        cart_items = cart.items.select_related("variant", "variant__product")
-    except Cart.DoesNotExist:
-        request.session["order_processing"] = False
-        messages.error(request, "Cart not found")
-        return redirect("cart")
+        try:
+            cart = request.user.cart
+            cart_items = cart.items.select_related("variant", "variant__product")
+        except Cart.DoesNotExist:
+            request.session["order_processing"] = False
+            messages.error(request, "Cart not found")
+            return redirect("cart")
 
-    if not cart_items.exists():
-        request.session["order_processing"] = False
-        messages.error(request, "Cart is empty")
-        return redirect("cart")
+        if not cart_items.exists():
+            request.session["order_processing"] = False
+            messages.error(request, "Cart is empty")
+            return redirect("cart")
 
-    address_id = request.POST.get("address_id")
-    payment_method = request.POST.get("payment_method")
+        address_id = request.POST.get("address_id")
+        payment_method = request.POST.get("payment_method")
 
-    if not address_id:
-        request.session["order_processing"] = False
-        messages.error(request, "Please select a delivery address")
-        return redirect("checkout")
+        if not address_id:
+            request.session["order_processing"] = False
+            messages.error(request, "Please select a delivery address")
+            return redirect("checkout")
+            
+        if not payment_method:
+            request.session["order_processing"] = False
+            messages.error(request, "Please select a payment method")
+            return redirect("checkout")
 
-    address = get_object_or_404(Address, id=address_id, user=request.user)
+        address = get_object_or_404(Address, id=address_id, user=request.user)
 
-    subtotal = Decimal("0.00")
+        subtotal = Decimal("0.00")
 
-    with transaction.atomic():
-        for item in cart_items:
-            # Implement pessimistic locking to prevent overselling
-            variant = Variant.objects.select_for_update().get(id=item.variant.id)
-            product = variant.product
+        with transaction.atomic():
+            for item in cart_items:
+                # Implement pessimistic locking to prevent overselling
+                variant = Variant.objects.select_for_update().get(id=item.variant.id)
+                product = variant.product
 
-            if not product.is_active or product.is_deleted:
-                request.session["order_processing"] = False
-                messages.error(request, f"{product.name} is unavailable")
-                return redirect("cart")
+                if not product.is_active or product.is_deleted:
+                    request.session["order_processing"] = False
+                    messages.error(request, f"{product.name} is unavailable")
+                    return redirect("cart")
 
-            if not variant.is_active:
-                request.session["order_processing"] = False
-                messages.error(request, f"{product.name} is not available")
-                return redirect("cart")
+                if not variant.is_active:
+                    request.session["order_processing"] = False
+                    messages.error(request, f"{product.name} is not available")
+                    return redirect("cart")
 
-            if variant.stock == 0:
-                request.session["order_processing"] = False
-                messages.error(request, f"{product.name} is out of stock")
-                return redirect("cart")
+                if variant.stock == 0:
+                    request.session["order_processing"] = False
+                    messages.error(request, f"{product.name} is out of stock")
+                    return redirect("cart")
 
-            if item.quantity > variant.stock:
-                request.session["order_processing"] = False
-                messages.error(request, f"{product.name}: only {variant.stock} left")
-                return redirect("cart")
+                if item.quantity > variant.stock:
+                    request.session["order_processing"] = False
+                    messages.error(request, f"{product.name}: only {variant.stock} left")
+                    return redirect("cart")
 
-            try:
-                price = Decimal(str(variant.price))
-                offer, offer_disc = get_best_offer(product, price)
-                if offer:
-                    if offer_disc > price:
-                        offer_disc = price
-                    final_price = price - offer_disc
-                    if final_price < Decimal("0.00"):
-                        final_price = Decimal("0.00")
-                else:
-                    final_price = price
-            except Exception:
-                final_price = Decimal(str(variant.price))
+                try:
+                    price = Decimal(str(variant.price))
+                    offer, offer_disc = get_best_offer(product, price)
+                    if offer:
+                        if offer_disc > price:
+                            offer_disc = price
+                        final_price = price - offer_disc
+                        if final_price < Decimal("0.00"):
+                            final_price = Decimal("0.00")
+                    else:
+                        final_price = price
+                except Exception:
+                    final_price = Decimal(str(variant.price))
 
-            item.item_total = item.quantity * final_price
-            item.offer_price = final_price  # Store final price for the order item
-            subtotal += Decimal(item.item_total)
+                item.item_total = item.quantity * final_price
+                item.offer_price = final_price  # Store final price for the order item
+                subtotal += Decimal(item.item_total)
 
-        shipping = Decimal("0.00") if subtotal > Decimal("999") else Decimal("100.00")
+            shipping = Decimal("0.00") if subtotal > Decimal("999") else Decimal("100.00")
 
-        # Calculate discount
-        discount = calculate_discount(request, subtotal)
-        total = subtotal + shipping - discount
-        if total < 0:
-            total = Decimal("0.00")
+            # Calculate discount
+            discount = calculate_discount(request, subtotal)
+            total = subtotal + shipping - discount
+            if total < 0:
+                total = Decimal("0.00")
 
-        order = Order.objects.create(
-            user=request.user,
-            order_number="ORD-" + get_random_string(10).upper(),
-            address=address,
-            subtotal=subtotal,
-            delivery_charge=shipping,
-            discount_amount=discount,
-            total_amount=total,
-            order_status=Order.Status.PENDING,
-        )
+            order = Order.objects.create(
+                user=request.user,
+                order_number="ORD-" + get_random_string(10).upper(),
+                address=address,
+                subtotal=subtotal,
+                delivery_charge=shipping,
+                discount_amount=discount,
+                total_amount=total,
+                order_status=Order.Status.PENDING,
+            )
 
-        # create order items + reduce stock
-        for item in cart_items:
-            OrderItem.objects.create(
+            # create order items + reduce stock
+            for item in cart_items:
+                OrderItem.objects.create(
+                    order=order,
+                    variant=item.variant,
+                    price_at_time=item.offer_price,
+                    quantity=item.quantity,
+                )
+
+            # save the ordered address
+            ShippingAddress.objects.create(
                 order=order,
-                variant=item.variant,
-                price_at_time=item.offer_price,
-                quantity=item.quantity,
+                user=request.user,
+                full_name=address.full_name,
+                phone=address.phone_number,
+                address_line1=address.street_address,
+                city=address.city,
+                district=address.district,
+                state=address.state,
+                country=address.country,
+                pincode=address.pincode,
             )
 
-        # save the ordered address
-        ShippingAddress.objects.create(
-            order=order,
-            user=request.user,
-            full_name=address.full_name,
-            phone=address.phone_number,
-            address_line1=address.street_address,
-            city=address.city,
-            district=address.district,
-            state=address.state,
-            country=address.country,
-            pincode=address.pincode,
-        )
+            Payment.objects.create(
+                order=order,
+                amount=total,
+                payment_method=payment_method,
+                payment_status=Payment.Status.PENDING,
+            )
 
-        Payment.objects.create(
-            order=order,
-            amount=total,
-            payment_method=payment_method,
-            payment_status=Payment.Status.PENDING,
-        )
+            # Store coupon ID specifically for THIS order to prevent multi-tab issues
+            coupon_id = request.session.get("coupon_id")
+            if coupon_id and discount > 0:
+                request.session[f"order_coupon_{order.id}"] = coupon_id
 
-        # Store coupon ID specifically for THIS order to prevent multi-tab issues  # noqa: E501
-        coupon_id = request.session.get("coupon_id")
-        if coupon_id and discount > 0:
-            request.session[f"order_coupon_{order.id}"] = coupon_id
+            # Initial status history
+            OrderStatusHistory.objects.create(order=order, status=Order.Status.PENDING)
 
-        # Initial status history
-        OrderStatusHistory.objects.create(order=order, status=Order.Status.PENDING)
+            # If COD, confirm immediately and reduce stock
+            if payment_method == Payment.Method.COD:
+                order.order_status = Order.Status.CONFIRMED
+                order.save()
 
-        # If COD, confirm immediately and reduce stock
+                OrderStatusHistory.objects.create(
+                    order=order, status=Order.Status.CONFIRMED
+                )
+
+                for item in order.items.all():
+                    v = item.variant
+                    v.stock -= item.quantity
+                    v.save()
+
+                try:
+                    send_order_confirmation_email(request, order)
+                except Exception:
+                    pass
+
+            cart_items.delete()
+
+        # Store current order ID for the success page
+        request.session["last_order_id"] = order.id
+        request.session["order_processing"] = False
+
+        # Redirect based on payment method
         if payment_method == Payment.Method.COD:
-            order.order_status = Order.Status.CONFIRMED
-            order.save()
+            payment_logger.info(f"ORDER SUCCESS: Created COD order {order.order_number} for user {request.user}")
+            return redirect("order_success", order_id=order.id)
+        elif payment_method == Payment.Method.WALLET:
+            payment_logger.info(f"ORDER PENDING: Created Wallet order {order.order_number} for user {request.user}")
+            return redirect("process_wallet_payment", order_id=order.id)
+        else:
+            payment_logger.info(f"ORDER PENDING: Created Online order {order.order_number} for user {request.user}")
+            return redirect("payment_page", order_id=order.id)
 
-            OrderStatusHistory.objects.create(
-                order=order, status=Order.Status.CONFIRMED
-            )
-
-            for item in order.items.all():
-                v = item.variant
-                v.stock -= item.quantity
-                v.save()
-
-            try:
-                send_order_confirmation_email(request, order)
-            except Exception:
-                pass
-
-        cart_items.delete()
-
-    # Store current order ID for the success page
-    request.session["last_order_id"] = order.id
-
-    request.session["order_processing"] = False
-
-    # Redirect based on payment method
-    if payment_method == Payment.Method.COD:
-        return redirect("order_success", order_id=order.id)
-    elif payment_method == Payment.Method.WALLET:
-        return redirect("process_wallet_payment", order_id=order.id)
-    else:
-        return redirect("payment_page", order_id=order.id)
+    except Exception as e:
+        request.session["order_processing"] = False
+        payment_logger.exception(f"ORDER CRITICAL FAILURE: {str(e)} for user {request.user}")
+        messages.error(request, "Something went wrong while placing your order. Please try again.")
+        return redirect("checkout")
 
 
 @never_cache
